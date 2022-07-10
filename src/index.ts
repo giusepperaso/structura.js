@@ -338,5 +338,9 @@ error handling oggetti non supportati (in realtà forse basterebbe su function) 
 
 IMMEr consente solo return oppure modifica draft, mai insieme; supportare questo use case
 
-set: attenzione perchè l'insertion order non viene mantenuto nell'oggetto modificato
+patches come in immer, opzionale
+
+object freeze come in immer, ma opzionale
+
+supportare una api simile ad immer
 */
