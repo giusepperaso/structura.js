@@ -1,0 +1,3 @@
+# structura.js
+
+structural sharing
