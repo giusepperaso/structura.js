@@ -94,9 +94,9 @@ export function produce(state, producer) {
             };
           } else if (p === Methods.forEach) {
             return function forEach(fn) {
-              actualTarget.forEach(function (v, k) {
+              actualTarget.forEach(function (_v, k) {
                 fn(
-                  proxify(v, data, handler, {
+                  proxify(_v, data, handler, {
                     obj: t,
                     link: k,
                   }).proxy
@@ -129,22 +129,25 @@ export function produce(state, producer) {
             return function* iterator() {
               const isEntries = p === Methods.entries;
               const values = actualTarget.values();
-              const parent = {
-                obj: t,
-              };
               let value;
               let proxy;
+              let parent;
               for (value of values) {
+                parent = {
+                  obj: t,
+                  link: value,
+                };
                 proxy = proxify(value, data, handler, parent, type).proxy;
                 yield isEntries ? [proxy, proxy] : proxy;
               }
             };
           } else if (p === Methods.forEach) {
             return function forEach(fn) {
-              actualTarget.forEach(function (v) {
+              actualTarget.forEach(function (_v) {
                 fn(
-                  proxify(v, data, handler, {
+                  proxify(_v, data, handler, {
                     obj: t,
+                    link: _v,
                   }).proxy
                 );
               });
@@ -226,7 +229,8 @@ function walkParents(action, data, t, p, v, curr = t, link, child) {
     if (type === Types.Map) {
       shallow.set(link, child);
     } else if (type === Types.Set) {
-      shallow.add(child);
+      shallow.delete(link);
+      shallow.add(child); // insertion order is not mantained in sets
     } else {
       shallow[link] = child;
     }
@@ -333,4 +337,6 @@ Non è che se chiamo push o altri metodi, a questa funzione fa lo shallow clone?
 error handling oggetti non supportati (in realtà forse basterebbe su function) oppure type checking statico
 
 IMMEr consente solo return oppure modifica draft, mai insieme; supportare questo use case
+
+set: attenzione perchè l'insertion order non viene mantenuto nell'oggetto modificato
 */
