@@ -3,7 +3,7 @@ import { produce } from "..";
 
 describe.concurrent("circular tests", () => {
   it("works with circular references, even with repeating references", async () => {
-    const myObj = {
+    const myObj: any = {
       prop: {
         sub: null,
       },
@@ -17,10 +17,10 @@ describe.concurrent("circular tests", () => {
     myObj.prop.sub = myObj;
     myObj.prop2.sub = myObj;
     myObj.prop3.sub = myObj;
-    const result = produce(myObj, (draft) => {
+    const result = produce(myObj, (draft: any) => {
       draft.prop.sub.subprop = {};
       draft.prop3.sub.subprop = {};
-    });
+    }) as any;
     expect(myObj).not.toBe(result);
     expect(myObj.prop).not.toBe(result.prop);
     expect(myObj.prop.sub).not.toBe(result.prop.sub);
@@ -28,7 +28,7 @@ describe.concurrent("circular tests", () => {
     expect(result.prop3.sub).toBe(result.prop.sub);
   });
   it("works with multiple parents", async () => {
-    const myObj = {
+    const myObj: any = {
       prop: {
         sub: null,
       },
@@ -43,10 +43,10 @@ describe.concurrent("circular tests", () => {
     myObj.prop.sub = mySubObj;
     myObj.prop2.sub = mySubObj;
     myObj.prop3.sub = mySubObj;
-    const result = produce(myObj, (draft) => {
+    const result = produce(myObj, (draft: any) => {
       draft.prop.sub.subprop = {};
       draft.prop3.sub.subprop = {};
-    });
+    }) as any;
     expect(myObj).not.toBe(result);
     expect(myObj.prop).not.toBe(result.prop);
     expect(myObj.prop.sub).not.toBe(result.prop.sub);
