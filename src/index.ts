@@ -57,17 +57,16 @@ type UnknownMap = Map<unknown, unknown>;
 type UnknownSet = Set<unknown>;
 type UnknownArray = Array<unknown>;
 
-//type Producer<T, Q = T> = (state: T, original: T) => Q extends T ? Q | void : Q;
 type Producer<T, Q = T> = (state: T, original: T) => Q | void;
 
 type Options = { proxify?: typeof createProxy };
 
-export function produce<T, Q = T>(
+export function produce<T, Q = T, R = Q extends void ? T : Q>(
   state: T,
   producer: Producer<T, Q>,
   { proxify = createProxy }: Options = {}
-) /* : Q */ {
-  if (isPrimitive(state)) return producer(state, state) as Q;
+): R {
+  if (isPrimitive(state)) return producer(state, state) as unknown as R;
   const data = new WeakMap();
   const handler = {
     get(t: Target, p: Prop, r: Target) {
@@ -203,11 +202,11 @@ export function produce<T, Q = T>(
   const result = producer(currData.proxy as T, state);
 
   if (typeof result !== "undefined") {
-    return result;
+    return result as unknown as R;
   } else if (currData.shallow === null) {
-    return state;
+    return state as unknown as R;
   } else {
-    return currData.shallow;
+    return currData.shallow as unknown as R;
   }
 }
 
