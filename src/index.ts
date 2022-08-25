@@ -199,6 +199,7 @@ export function produce<T, Q = T, R = Q extends void ? T : Q>(
   };
 
   const currData = proxify(state as Target, data, handler);
+
   const result = producer(currData.proxy as T, state);
 
   if (typeof result !== "undefined") {
