@@ -1,11 +1,7 @@
-//ats-nocheck
-// ATTENZIONE: se l'oggetto è innestato in diversi punti, solo il parent attraverso cui si è entrati ottiene la modifica
-// sarebbe risolvibile ma solo facendo un ciclo su tutto l'oggetto
-// https://github.com/immerjs/immer/issues/374
-
 enum Types {
   primitive = "primitive",
   function = "function",
+  Function = "[object Function]",
   object = "object",
   Object = "[object Object]",
   Array = "[object Array]",
@@ -47,28 +43,31 @@ type Target =
   | Date
   | RegExp
   | Object
-  /* | AnyObj */
-  | AnyArray
-  | AnyMap
-  | AnySet;
+  | UnknownArray
+  | UnknownMap
+  | UnknownSet;
 
 type NonEmptyPrimitive = string | number | boolean | symbol;
 type Primitive = null | undefined | NonEmptyPrimitive;
 
 type Prop = string | number | symbol;
 
-type AnyObj = Record<Prop, unknown>;
-type AnyMap = Map<unknown, unknown>;
-type AnySet = Set<unknown>;
-type AnyArray = Array<unknown>;
+type UnknownObj = Record<Prop, unknown>;
+type UnknownMap = Map<unknown, unknown>;
+type UnknownSet = Set<unknown>;
+type UnknownArray = Array<unknown>;
 
-type Producer = /* <T extends Target | Primitive> */ (
-  state: Target | Primitive,
-  original: Target | Primitive
-) => Target | Primitive | void;
+//type Producer<T, Q = T> = (state: T, original: T) => Q extends T ? Q | void : Q;
+type Producer<T, Q = T> = (state: T, original: T) => Q | void;
 
-export function produce(state: Target | Primitive, producer: Producer) {
-  if (isPrimitive(state)) return producer(state, state);
+type Options = { proxify?: typeof createProxy };
+
+export function produce<T, Q = T>(
+  state: T,
+  producer: Producer<T, Q>,
+  { proxify = createProxy }: Options = {}
+) /* : Q */ {
+  if (isPrimitive(state)) return producer(state, state) as Q;
   const data = new WeakMap();
   const handler = {
     get(t: Target, p: Prop, r: Target) {
@@ -184,6 +183,8 @@ export function produce(state: Target | Primitive, producer: Producer) {
             return actualTarget.bind(t);
           }
         }
+      } else if (type === Types.Function) {
+        return v;
       } else {
         return proxify(v, data, handler, { obj: t, link: p }).proxy;
       }
@@ -196,18 +197,18 @@ export function produce(state: Target | Primitive, producer: Producer) {
       walkParents(Actions.delete, data, t, p);
       return true;
     },
-    /* 
-    TODO:
-     - defineProperty
-     - setPrototypeOF
-     - preventExtensions
-     - apply?
-    */
   };
 
   const currData = proxify(state as Target, data, handler);
-  producer(currData.proxy, state);
-  return currData.shallow === null ? state : currData.shallow;
+  const result = producer(currData.proxy as T, state);
+
+  if (typeof result !== "undefined") {
+    return result;
+  } else if (currData.shallow === null) {
+    return state;
+  } else {
+    return currData.shallow;
+  }
 }
 
 type Data = WeakMap<Target, TargetData>;
@@ -224,7 +225,7 @@ type TargetParent = {
   link: Target | Prop;
 };
 
-function proxify(
+export function createProxy(
   obj: Target,
   data: Data,
   handler: ProxyHandler<Target>,
@@ -264,31 +265,31 @@ function walkParents(
     shallow = currData.shallow = shallowClone(t, type as Types);
   }
   if (action === Actions.set) {
-    (shallow as AnyObj)[p as Prop] = v;
+    (shallow as UnknownObj)[p as Prop] = v;
   } else if (action === Actions.delete) {
-    delete (shallow as AnyObj)[p as Prop];
+    delete (shallow as UnknownObj)[p as Prop];
   } else if (action === Actions.set_map) {
-    (shallow as AnyMap).set(p, v);
+    (shallow as UnknownMap).set(p, v);
   } else if (action === Actions.delete_map) {
-    (shallow as AnyMap).delete(p);
+    (shallow as UnknownMap).delete(p);
   } else if (action === Actions.add_set) {
-    (shallow as AnySet).add(v);
+    (shallow as UnknownSet).add(v);
   } else if (action === Actions.delete_set) {
-    (shallow as AnySet).delete(v);
+    (shallow as UnknownSet).delete(v);
   } else if (action === Actions.clear) {
-    (shallow as AnyMap | AnySet).clear();
+    (shallow as UnknownMap | UnknownSet).clear();
   } else if (action === Actions.append) {
     const children = currData.children;
     if (children.has(child as Target)) return;
     children.add(child as Target);
     type = type || getTypeString(t);
     if (type === Types.Map) {
-      (shallow as AnyMap).set(link, child);
+      (shallow as UnknownMap).set(link, child);
     } else if (type === Types.Set) {
-      (shallow as AnySet).delete(link);
-      (shallow as AnySet).add(child); // insertion order is not mantained in sets
+      (shallow as UnknownSet).delete(link);
+      (shallow as UnknownSet).add(child); // insertion order is not mantained in sets
     } else {
-      (shallow as AnyObj)[link as Prop] = child;
+      (shallow as UnknownObj)[link as Prop] = child;
     }
   }
   currData.parents.forEach(function (pa) {
@@ -321,12 +322,12 @@ function copyProps(from: Object, to: Object) {
   let key;
   for (; i < l; i++) {
     key = keys[i];
-    (to as AnyObj)[key] = (from as AnyObj)[key];
+    (to as UnknownObj)[key] = (from as UnknownObj)[key];
   }
-  // aggiunge hoverhead anche quando non utilizzato, si potrebbe disattivare con impostazione globale
+
   const symbols = Object.getOwnPropertySymbols(from);
   for (key of symbols) {
-    (to as AnyObj)[key] = (from as AnyObj)[key];
+    (to as UnknownObj)[key] = (from as UnknownObj)[key];
   }
   return to;
 }
@@ -366,29 +367,20 @@ const cloneTypes: Partial<Record<Types, Function>> = {
   [Types.RegExp](x: RegExp) {
     return copyProps(x, new RegExp(x.source, x.flags));
   },
-  [Types.Map](x: AnyMap) {
+  [Types.Map](x: UnknownMap) {
     const shallow = new Map();
     x.forEach(function (item, key) {
       shallow.set(key, item);
     });
     return shallow;
   },
-  [Types.Set](x: AnySet) {
+  [Types.Set](x: UnknownSet) {
     const shallow = new Set();
     x.forEach(function (item) {
       shallow.add(item);
     });
     return shallow;
   },
-  /* 
-    TODO:
-     - TypedArray
-     - DataView?
-     - File?
-     - Blob?
-     - FileList?
-     - DomExceotio
-  */
 };
 
 /* 
