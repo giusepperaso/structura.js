@@ -47,8 +47,7 @@ type Target =
   | UnknownMap
   | UnknownSet;
 
-type NonEmptyPrimitive = string | number | boolean | symbol;
-type Primitive = null | undefined | NonEmptyPrimitive;
+type Primitive = null | undefined | string | number | boolean | symbol;
 
 type Prop = string | number | symbol;
 
