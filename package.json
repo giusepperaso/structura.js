@@ -3,16 +3,22 @@
   "private": true,
   "version": "0.0.0",
   "main": "./dist/index.js",
+  "type": "module",
   "scripts": {
-    "dev": "start http://localhost:3000/ && vite",
-    "build": "tsc && vite build && tsc --project tsconfig.build.json",
+    "dev": "vite",
+    "build": "tsc --project tsconfig.build.json && vite build && tsc --project tsconfig.build.declarations.json",
     "preview": "vite preview",
     "test": "vitest --coverage",
-    "test:prod": "vitest run"
+    "test:prod": "vitest run",
+    "benchmark": "node --experimental-specifier-resolution=node --loader ts-node/esm ./src/benchmark"
   },
   "devDependencies": {
     "@types/node": "^17.0.42",
+    "benny": "^3.7.1",
     "c8": "^7.11.3",
+    "immer": "^9.0.15",
+    "immutable": "^4.1.0",
+    "ts-node": "^10.9.1",
     "typescript": "^4.5.4",
     "vite": "^2.9.9",
     "vitest": "^0.14.2"
