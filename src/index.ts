@@ -1,4 +1,4 @@
-enum Types {
+const enum Types {
   primitive = "primitive",
   function = "function",
   Function = "[object Function]",
@@ -14,7 +14,7 @@ enum Types {
   Set = "[object Set]",
 }
 
-enum Methods {
+const enum Methods {
   get = "get",
   set = "set",
   add = "add",
@@ -25,7 +25,7 @@ enum Methods {
   forEach = "forEach",
 }
 
-enum Actions {
+const enum Actions {
   set,
   set_map,
   add_set,
