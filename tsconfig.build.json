@@ -1,8 +1,4 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "declaration": true,
-    "emitDeclarationOnly": true
-  },
-  "exclude": ["src/**/*.test.ts", "src/**/*dev.ts"]
+  "exclude": ["src/benchmark/*.ts", "src/integration/*.ts", "src/**/dev*.ts"]
 }
