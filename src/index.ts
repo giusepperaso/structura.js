@@ -386,8 +386,6 @@ const cloneTypes: Partial<Record<Types, Function>> = {
 /* 
 Cosa succede se prendo un oggetto senza settare nulla, poi lo setto in un'altra riga e poi lo setto dopo dalla prima?
 
-Non è che se chiamo push o altri metodi, a questa funzione fa lo shallow clone?
-
 error handling oggetti non supportati (in realtà forse basterebbe su function) oppure type checking statico
 
 IMMEr consente solo return oppure modifica draft, mai insieme; supportare questo use case
