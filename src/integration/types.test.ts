@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { produce } from "..";
-import { Obj, Obj2 } from "./";
+import { Obj, Obj2 } from "./utils";
 
 describe.concurrent("tests all(most) of the basic types", () => {
   it("works with primitives as root", async () => {

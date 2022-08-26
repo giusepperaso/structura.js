@@ -56,15 +56,18 @@ type UnknownMap = Map<unknown, unknown>;
 type UnknownSet = Set<unknown>;
 type UnknownArray = Array<unknown>;
 
-type Producer<T, Q = T> = (state: T, original: T) => Q | void;
+type Producer<T, Q> = (state: T, original: T) => Q | void;
 
 type Options = { proxify?: typeof createProxy };
 
-export function produce<T, Q = T, R = Q extends void ? T : Q>(
+type Return<T, Q> = Q extends void ? T : Q;
+
+export function produce<T, Q>(
   state: T,
   producer: Producer<T, Q>,
   { proxify = createProxy }: Options = {}
-): R {
+): Return<T, Q> {
+  type R = Return<T, Q>;
   if (isPrimitive(state)) return producer(state, state) as unknown as R;
   const data = new WeakMap();
   const handler = {
@@ -298,7 +301,7 @@ function walkParents(
 
 const toString = Object.prototype.toString;
 
-function isPrimitive(x: unknown) {
+function isPrimitive(x: unknown): x is Primitive {
   if (x === null) return true;
   const type = typeof x;
   if (type !== Types.function && type !== Types.object) return true;
@@ -386,14 +389,6 @@ const cloneTypes: Partial<Record<Types, Function>> = {
 Cosa succede se prendo un oggetto senza settare nulla, poi lo setto in un'altra riga e poi lo setto dopo dalla prima?
 
 error handling oggetti non supportati (in realtà forse basterebbe su function) oppure type checking statico
-
-IMMEr consente solo return oppure modifica draft, mai insieme; supportare questo use case
-
-patches come in immer, opzionale
-
-object freeze come in immer, ma opzionale
-
-supportare una api simile ad immer
 
 conserva il tipo per un lookup veloce
 */

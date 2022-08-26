@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Obj2 } from ".";
+import { Obj2 } from "./utils";
 import { produce } from "..";
 
 describe.concurrent("try returning directly from the producer", () => {
@@ -31,7 +31,7 @@ describe.concurrent("try returning directly from the producer", () => {
         },
       },
     ];
-    const result = produce<typeof myObj, Obj2<string>[]>(myObj, (draft) => {
+    const result = produce(myObj, (draft) => {
       return [
         {
           prop: {
@@ -51,7 +51,7 @@ describe.concurrent("try returning directly from the producer", () => {
         },
       },
     ];
-    const result = produce<typeof myObj, Obj2<number>>(myObj, (draft) => {
+    const result = produce(myObj, (draft) => {
       draft[0].prop.sub++;
       return draft[0];
     });

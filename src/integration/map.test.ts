@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Obj } from ".";
+import { Obj } from "./utils";
 import { produce } from "..";
 
 type Entry = [string, Obj<number>];
@@ -80,7 +80,7 @@ describe.concurrent("verify that Maps work correctly", () => {
       for (const v of draft.values()) {
         v.prop = v.prop + 1;
       }
-      for (const [k, v] of draft.entries()) {
+      for (const [, v] of draft.entries()) {
         v.prop = v.prop + 1;
       }
     });

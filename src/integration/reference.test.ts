@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Obj } from ".";
+import { Obj } from "./utils";
 import { produce } from "..";
 
 describe.concurrent(
