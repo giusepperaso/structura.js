@@ -36,39 +36,46 @@ const enum Actions {
   append,
 }
 
-type Target =
-  | String
-  | Number
-  | Boolean
-  | Date
-  | RegExp
-  | Object
-  | UnknownArray
-  | UnknownMap
-  | UnknownSet;
+export type Target = Object | UnknownArray | UnknownMap | UnknownSet;
 
-type Primitive = null | undefined | string | number | boolean | symbol;
+export type Primitive = null | undefined | string | number | boolean | symbol;
 
-type Prop = string | number | symbol;
+export type Prop = string | number | symbol;
 
-type UnknownObj = Record<Prop, unknown>;
-type UnknownMap = Map<unknown, unknown>;
-type UnknownSet = Set<unknown>;
-type UnknownArray = Array<unknown>;
+export type UnknownObj = Record<Prop, unknown>;
+export type UnknownMap = Map<unknown, unknown>;
+export type UnknownSet = Set<unknown>;
+export type UnknownArray = Array<unknown>;
 
-type Producer<T, Q> = (state: T, original: T) => Q | void;
+export type Producer<T, Q> = (state: T, original: T) => Q | void;
 
-type Options = { proxify?: typeof createProxy };
+export type Options = { proxify?: typeof createProxy };
 
-type Return<T, Q> = Q extends void ? T : Q;
+export type Return<T, Q> = Q extends void ? T : Q;
+
+// https://stackoverflow.com/a/58993872/12580673
+export type ImmutableArray<T> = ReadonlyArray<Immutable<T>>;
+export type ImmutableMap<K, V> = ReadonlyMap<Immutable<K>, Immutable<V>>;
+export type ImmutableSet<T> = ReadonlySet<Immutable<T>>;
+export type ImmutableObject<T> = { readonly [K in keyof T]: Immutable<T[K]> };
+
+export type Immutable<T> = T extends Primitive
+  ? T
+  : T extends Array<infer U>
+  ? ImmutableArray<U>
+  : T extends Map<infer K, infer V>
+  ? ImmutableMap<K, V>
+  : T extends Set<infer M>
+  ? ImmutableSet<M>
+  : ImmutableObject<T>;
 
 export function produce<T, Q>(
   state: T,
   producer: Producer<T, Q>,
   { proxify = createProxy }: Options = {}
-): Return<T, Q> {
-  type R = Return<T, Q>;
-  if (isPrimitive(state)) return producer(state, state) as unknown as R;
+): Immutable<Return<T, Q>> {
+  type R = Immutable<Return<T, Q>>;
+  if (isPrimitive(state)) return producer(state, state) as R;
   const data = new WeakMap();
   const handler = {
     get(t: Target, p: Prop, r: Target) {
@@ -200,16 +207,16 @@ export function produce<T, Q>(
     },
   };
 
-  const currData = proxify(state as Target, data, handler);
+  const currData = proxify(state, data, handler);
 
   const result = producer(currData.proxy as T, state);
 
   if (typeof result !== "undefined") {
-    return result as unknown as R;
+    return result as R;
   } else if (currData.shallow === null) {
-    return state as unknown as R;
+    return state as R;
   } else {
-    return currData.shallow as unknown as R;
+    return currData.shallow as R;
   }
 }
 
