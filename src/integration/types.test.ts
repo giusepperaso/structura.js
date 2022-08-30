@@ -38,6 +38,14 @@ describe.concurrent("tests all(most) of the basic types", () => {
     expect(result.prop3).toBe(myObj.prop.sub);
     expect(result.prop4).toBe("t3staa");
     expect(myObj.prop4).toBe("test");
+
+    const result2 = produce(result, (draft) => {
+      draft.prop2.sub = 3;
+    });
+
+    produce(result2, (draft) => {
+      draft.prop2.sub = 3;
+    });
   });
   it("works with arrays", async () => {
     const myObj = [
@@ -77,6 +85,12 @@ describe.concurrent("tests all(most) of the basic types", () => {
     expect((result[2] as Obj2[])[0].prop.sub).toBe(10);
     expect(result[4]).toEqual([0, 1, 2]);
     expect((result[4] as number[]).length).toBe(3);
+    const result2 = produce(result, (draft) => {
+      draft.push([]);
+    });
+    produce(result2, (draft) => {
+      draft.push([]);
+    });
   });
   // regexp etc...
 });

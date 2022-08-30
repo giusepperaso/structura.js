@@ -11,6 +11,12 @@ describe.concurrent("verify that Maps work correctly", () => {
     const result = produce(myObj, (draft) => {
       draft.get("test")[0]++;
     });
+    const result2 = produce(result, (draft) => {
+      draft.get("test")[0]++;
+    });
+    produce(result2, (draft) => {
+      draft.get("test")[0]++;
+    });
     expect(myObj).not.toBe(result);
     expect(myObj.get("test")[0]).toBe(0);
     expect(result.get("test")[0]).toBe(1);

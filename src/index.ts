@@ -51,14 +51,9 @@ export type Producer<T, Q> = (state: T, original: T) => Q | void;
 
 export type Options = { proxify?: typeof createProxy };
 
-export type Return<T, Q> = Q extends void ? T : Q;
+export type Return<T, Q> = ImmutableIfNotAlready<Q extends void ? T : Q>;
 
-// https://stackoverflow.com/a/58993872/12580673
-export type ImmutableArray<T> = ReadonlyArray<Immutable<T>>;
-export type ImmutableMap<K, V> = ReadonlyMap<Immutable<K>, Immutable<V>>;
-export type ImmutableSet<T> = ReadonlySet<Immutable<T>>;
-export type ImmutableObject<T> = { readonly [K in keyof T]: Immutable<T[K]> };
-
+// make T deeply immutable; https://stackoverflow.com/a/58993872/12580673
 export type Immutable<T> = T extends Primitive
   ? T
   : T extends Array<infer U>
@@ -69,13 +64,63 @@ export type Immutable<T> = T extends Primitive
   ? ImmutableSet<M>
   : ImmutableObject<T>;
 
+export type ImmutableArray<T> = ReadonlyArray<Immutable<T>>;
+export type ImmutableMap<K, V> = ReadonlyMap<Immutable<K>, Immutable<V>>;
+export type ImmutableSet<T> = ReadonlySet<Immutable<T>>;
+export type ImmutableObject<T> = { readonly [K in keyof T]: Immutable<T[K]> };
+
+// make T deeply mutable; used in the producer function on draft
+/* export type Mutable<T> = T extends Primitive
+  ? T
+  : T extends Array<infer U>
+  ? MutableArray<U>
+  : T extends Map<infer K, infer V>
+  ? MutableMap<K, V>
+  : T extends Set<infer M>
+  ? MutableSet<M>
+  : MutableObject<T>;
+
+export type MutableArray<T> = Array<Mutable<T>>;
+export type MutableMap<K, V> = Map<Mutable<K>, Mutable<V>>;
+export type MutableSet<T> = Set<Mutable<T>>;
+export type MutableObject<T> = { -readonly [K in keyof T]: Mutable<T[K]> }; */
+
+// make T deeply immutable, but only if it's not already; avoids Immutable type repetition
+export type ImmutableIfNotAlready<T> = T extends Primitive
+  ? T
+  : T extends ImmutableArray<infer Q>
+  ? ImmutableArray<Q>
+  : T extends ImmutableMap<infer K, infer V>
+  ? ImmutableMap<K, V>
+  : T extends ImmutableSet<infer M>
+  ? ImmutableSet<M>
+  : T extends ImmutableObject<infer U>
+  ? Immutable<U>
+  : T extends Immutable<infer Q>
+  ? Immutable<Q>
+  : Immutable<T>;
+
+// reverse deep immutability on T; used in the producer function on draft
+export type Mutable<T> = T extends Primitive
+  ? T
+  : T extends ImmutableArray<infer Q>
+  ? Array<Mutable<Q>>
+  : T extends ImmutableMap<infer K, infer V>
+  ? Map<Mutable<K>, Mutable<V>>
+  : T extends ImmutableSet<infer M>
+  ? Set<Mutable<M>>
+  : T extends ImmutableObject<infer U>
+  ? { -readonly [K in keyof U]: Mutable<U[K]> }
+  : T;
+
 export function produce<T, Q>(
   state: T,
-  producer: Producer<T, Q>,
+  producer: Producer<Mutable<T>, Q>,
   { proxify = createProxy }: Options = {}
-): Immutable<Return<T, Q>> {
-  type R = Immutable<Return<T, Q>>;
-  if (isPrimitive(state)) return producer(state, state) as R;
+): Return<T, Q> {
+  type R = Return<T, Q>;
+  if (isPrimitive(state))
+    return producer(state as Mutable<T>, state as any) as R;
   const data = new WeakMap();
   const handler = {
     get(t: Target, p: Prop, r: Target) {
@@ -209,7 +254,7 @@ export function produce<T, Q>(
 
   const currData = proxify(state, data, handler);
 
-  const result = producer(currData.proxy as T, state);
+  const result = producer(currData.proxy as Mutable<T>, state as any);
 
   if (typeof result !== "undefined") {
     return result as R;
@@ -391,11 +436,3 @@ const cloneTypes: Partial<Record<Types, Function>> = {
     return shallow;
   },
 };
-
-/* 
-Cosa succede se prendo un oggetto senza settare nulla, poi lo setto in un'altra riga e poi lo setto dopo dalla prima?
-
-error handling oggetti non supportati (in realtà forse basterebbe su function) oppure type checking statico
-
-conserva il tipo per un lookup veloce
-*/

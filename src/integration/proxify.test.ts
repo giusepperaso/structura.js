@@ -14,6 +14,6 @@ describe.concurrent("proxify tests", () => {
       { proxify }
     );
     expect(proxify).not.toHaveBeenCalledWith(myObj.push);
-    expect(result.push).toBe(myObj.push);
+    expect((result as any).push).toBe(myObj.push);
   });
 });
