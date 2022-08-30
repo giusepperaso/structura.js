@@ -43,56 +43,57 @@ export type Primitive = null | undefined | string | number | boolean | symbol;
 export type Prop = string | number | symbol;
 
 export type UnknownObj = Record<Prop, unknown>;
+
 export type UnknownMap = Map<unknown, unknown>;
+
 export type UnknownSet = Set<unknown>;
+
 export type UnknownArray = Array<unknown>;
 
 export type Producer<T, Q> = (state: T, original: T) => Q | void;
 
 export type Options = { proxify?: typeof createProxy };
 
-export type Return<T, Q> = ImmutableIfNotAlready<Q extends void ? T : Q>;
+export type Return<T, Q> = FreezeOnce<Q extends void ? T : Q>;
 
-export type Immutable<T> = T extends Primitive
+export type FreezeOnce<T> = T extends Freeze<infer Q> ? Freeze<Q> : Freeze<T>;
+
+export type Freeze<T> = T extends Primitive
   ? T
   : T extends Array<infer U>
-  ? ReadonlyArray<Immutable<U>>
+  ? ReadonlyArray<Freeze<U>>
   : T extends Map<infer K, infer V>
-  ? ReadonlyMap<Immutable<K>, Immutable<V>>
+  ? ReadonlyMap<Freeze<K>, Freeze<V>>
   : T extends ReadonlyMap<infer K, infer V>
-  ? ReadonlyMap<Immutable<K>, Immutable<V>>
+  ? ReadonlyMap<Freeze<K>, Freeze<V>>
   : T extends Set<infer M>
-  ? ReadonlySet<Immutable<M>>
+  ? ReadonlySet<Freeze<M>>
   : T extends ReadonlySet<infer M>
-  ? ReadonlySet<Immutable<M>>
-  : { readonly [K in keyof T]: Immutable<T[K]> };
+  ? ReadonlySet<Freeze<M>>
+  : { readonly [K in keyof T]: Freeze<T[K]> };
 
-export type ImmutableIfNotAlready<T> = T extends Immutable<infer Q>
-  ? Immutable<Q>
-  : Immutable<T>;
-
-export type Mutable<T> = T extends Primitive
+export type UnFreeze<T> = T extends Primitive
   ? T
   : T extends Array<infer Q>
-  ? Array<Mutable<Q>>
+  ? Array<UnFreeze<Q>>
   : T extends Map<infer K, infer V>
-  ? Map<Mutable<K>, Mutable<V>>
+  ? Map<UnFreeze<K>, UnFreeze<V>>
   : T extends ReadonlyMap<infer K, infer V>
-  ? Map<Mutable<K>, Mutable<V>>
+  ? Map<UnFreeze<K>, UnFreeze<V>>
   : T extends Set<infer M>
-  ? Set<Mutable<M>>
+  ? Set<UnFreeze<M>>
   : T extends ReadonlySet<infer M>
-  ? Set<Mutable<M>>
-  : { -readonly [K in keyof T]: Mutable<T[K]> };
+  ? Set<UnFreeze<M>>
+  : { -readonly [K in keyof T]: UnFreeze<T[K]> };
 
 export function produce<T, Q>(
   state: T,
-  producer: Producer<Mutable<T>, Q>,
+  producer: Producer<UnFreeze<T>, Q>,
   { proxify = createProxy }: Options = {}
 ): Return<T, Q> {
   type R = Return<T, Q>;
   if (isPrimitive(state))
-    return producer(state as Mutable<T>, state as any) as R;
+    return producer(state as UnFreeze<T>, state as any) as R;
   const data = new WeakMap();
   const handler = {
     get(t: Target, p: Prop, r: Target) {
@@ -226,7 +227,7 @@ export function produce<T, Q>(
 
   const currData = proxify(state, data, handler);
 
-  const result = producer(currData.proxy as Mutable<T>, state as any);
+  const result = producer(currData.proxy as UnFreeze<T>, state as any);
 
   if (typeof result !== "undefined") {
     return result as R;
