@@ -53,49 +53,37 @@ export type Options = { proxify?: typeof createProxy };
 
 export type Return<T, Q> = ImmutableIfNotAlready<Q extends void ? T : Q>;
 
-// make T deeply immutable; https://stackoverflow.com/a/58993872/12580673
 export type Immutable<T> = T extends Primitive
   ? T
   : T extends Array<infer U>
-  ? ImmutableArray<U>
+  ? ReadonlyArray<Immutable<U>>
   : T extends Map<infer K, infer V>
-  ? ImmutableMap<K, V>
+  ? ReadonlyMap<Immutable<K>, Immutable<V>>
+  : T extends ReadonlyMap<infer K, infer V>
+  ? ReadonlyMap<Immutable<K>, Immutable<V>>
   : T extends Set<infer M>
-  ? ImmutableSet<M>
-  : ImmutableObject<T>;
+  ? ReadonlySet<Immutable<M>>
+  : T extends ReadonlySet<infer M>
+  ? ReadonlySet<Immutable<M>>
+  : { readonly [K in keyof T]: Immutable<T[K]> };
 
-export type ImmutableArray<T> = ReadonlyArray<Immutable<T>>;
-export type ImmutableMap<K, V> = ReadonlyMap<Immutable<K>, Immutable<V>>;
-export type ImmutableSet<T> = ReadonlySet<Immutable<T>>;
-export type ImmutableObject<T> = { readonly [K in keyof T]: Immutable<T[K]> };
-
-// make T deeply immutable, but only if it's not already; avoids Immutable type repetition
-export type ImmutableIfNotAlready<T> = T extends Primitive
-  ? T
-  : T extends ImmutableArray<infer Q>
-  ? ImmutableArray<Q>
-  : T extends ImmutableMap<infer K, infer V>
-  ? ImmutableMap<K, V>
-  : T extends ImmutableSet<infer M>
-  ? ImmutableSet<M>
-  : T extends ImmutableObject<infer U>
-  ? Immutable<U>
-  : T extends Immutable<infer Q>
+export type ImmutableIfNotAlready<T> = T extends Immutable<infer Q>
   ? Immutable<Q>
   : Immutable<T>;
 
-// reverse deep immutability on T; used in the producer function on draft
 export type Mutable<T> = T extends Primitive
   ? T
-  : T extends ImmutableArray<infer Q>
+  : T extends Array<infer Q>
   ? Array<Mutable<Q>>
-  : T extends ImmutableMap<infer K, infer V>
+  : T extends Map<infer K, infer V>
   ? Map<Mutable<K>, Mutable<V>>
-  : T extends ImmutableSet<infer M>
+  : T extends ReadonlyMap<infer K, infer V>
+  ? Map<Mutable<K>, Mutable<V>>
+  : T extends Set<infer M>
   ? Set<Mutable<M>>
-  : T extends ImmutableObject<infer U>
-  ? { -readonly [K in keyof U]: Mutable<U[K]> }
-  : T;
+  : T extends ReadonlySet<infer M>
+  ? Set<Mutable<M>>
+  : { -readonly [K in keyof T]: Mutable<T[K]> };
 
 export function produce<T, Q>(
   state: T,
