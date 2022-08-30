@@ -8,6 +8,12 @@ describe.concurrent("verify that Sets work correctly", () => {
     const result = produce(myObj, (draft) => {
       draft.forEach((v) => (v[0] = 1));
     });
+    const result2 = produce(result, (draft) => {
+      draft.forEach((v) => (v[0] = 1));
+    });
+    produce(result2, (draft) => {
+      draft.forEach((v) => (v[0] = 1));
+    });
     expect(myObj).not.toBe(result);
     expect(myObj.size).toBe(1);
     expect(result.size).toBe(1);
@@ -36,6 +42,14 @@ describe.concurrent("verify that Sets work correctly", () => {
     myObj.add(myObj2);
     myObj2.add([0]);
     const result = produce(myObj, (draft) => {
+      for (const v of draft.values()) {
+        for (const sub of v.values()) {
+          sub[0]++;
+          sub[0]++;
+        }
+      }
+    });
+    produce(result, (draft) => {
       for (const v of draft.values()) {
         for (const sub of v.values()) {
           sub[0]++;
