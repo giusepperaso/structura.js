@@ -11,14 +11,16 @@ A library for structural sharing
 
 ## ADVANTAGES OVER IMMUTABLE
 - simpler syntax
+- faster in some cases
 
 (a table to show the differences would be better)
 
 ## TYPESCRIPT GOTCHAS
 
 You can return a different type from a producer freely, as the return type is inferred.
+This could be a problem because a different return type might be accidental.
 If you don't want this, you should explicity define generic parameters.
 
 ## LIMITATIONS
 
-- If you manipulate an element in a set, the element is deleted and then readded, so the insertion order of elements will not be mantained into the shallowly cloned set (unless the element itself was already the last one inserted)
+- The order of elements into a set is not guaranteed to remain equal if you modify some of its elements. This is because if you manipulate an element of a set, the element is deleted and then readded.

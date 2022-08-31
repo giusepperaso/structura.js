@@ -36,7 +36,7 @@ const enum Actions {
   append,
 }
 
-export type Target = Object | UnknownArray | UnknownMap | UnknownSet;
+export type Target = UnknownArray | UnknownMap | UnknownSet | Object;
 
 export type Primitive = null | undefined | string | number | boolean | symbol;
 
