@@ -36,28 +36,21 @@ const enum Actions {
   append,
 }
 
-export type Target = UnknownArray | UnknownMap | UnknownSet | Object;
-
 export type Primitive = null | undefined | string | number | boolean | symbol;
-
+export type Target = UnknownArray | UnknownMap | UnknownSet | Object;
 export type Prop = string | number | symbol;
-
 export type UnknownObj = Record<Prop, unknown>;
-
 export type UnknownMap = Map<unknown, unknown>;
-
 export type UnknownSet = Set<unknown>;
-
 export type UnknownArray = Array<unknown>;
 
-
-export type Options = { proxify?: typeof createProxy };
 export type Producer<T, Q> = (
   draft: UnFreeze<T>,
   original: Freeze<T>
 ) => Q | void;
 
-export type Return<T, Q> = FreezeOnce<Q extends void ? T : Q>;
+export type ProduceOptions = { proxify?: typeof createProxy };
+export type ProduceReturn<T, Q> = FreezeOnce<Q extends void ? T : Q>;
 
 export type FreezeOnce<T> = T extends Freeze<infer Q> ? Freeze<Q> : Freeze<T>;
 
@@ -91,10 +84,10 @@ export type UnFreeze<T> = T extends Primitive
 
 export function produce<T, Q>(
   state: T,
-  { proxify = createProxy }: Options = {}
-): Return<T, Q> {
-  type R = Return<T, Q>;
   producer: Producer<T, Q>,
+  { proxify = createProxy }: ProduceOptions = {}
+): ProduceReturn<T, Q> {
+  type R = ProduceReturn<T, Q>;
   if (isPrimitive(state))
     return producer(state as UnFreeze<T>, state as Freeze<T>) as R;
   const data = new WeakMap();
