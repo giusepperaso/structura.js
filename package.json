@@ -13,7 +13,7 @@
     "benchmark": "node --experimental-specifier-resolution=node --loader ts-node/esm ./src/benchmark"
   },
   "devDependencies": {
-    "@types/node": "^17.0.42",
+    "@types/node": "^18.7.14",
     "benny": "^3.7.1",
     "c8": "^7.11.3",
     "immer": "^9.0.15",
