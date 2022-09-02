@@ -50,9 +50,12 @@ export type UnknownSet = Set<unknown>;
 
 export type UnknownArray = Array<unknown>;
 
-export type Producer<T, Q> = (state: T, original: T) => Q | void;
 
 export type Options = { proxify?: typeof createProxy };
+export type Producer<T, Q> = (
+  draft: UnFreeze<T>,
+  original: Freeze<T>
+) => Q | void;
 
 export type Return<T, Q> = FreezeOnce<Q extends void ? T : Q>;
 
@@ -88,12 +91,12 @@ export type UnFreeze<T> = T extends Primitive
 
 export function produce<T, Q>(
   state: T,
-  producer: Producer<UnFreeze<T>, Q>,
   { proxify = createProxy }: Options = {}
 ): Return<T, Q> {
   type R = Return<T, Q>;
+  producer: Producer<T, Q>,
   if (isPrimitive(state))
-    return producer(state as UnFreeze<T>, state as any) as R;
+    return producer(state as UnFreeze<T>, state as Freeze<T>) as R;
   const data = new WeakMap();
   const handler = {
     get(t: Target, p: Prop, r: Target) {
@@ -225,9 +228,9 @@ export function produce<T, Q>(
     },
   };
 
-  const currData = proxify(state, data, handler);
+  const currData = proxify(state as Target, data, handler);
 
-  const result = producer(currData.proxy as UnFreeze<T>, state as any);
+  const result = producer(currData.proxy as UnFreeze<T>, state as Freeze<T>);
 
   if (typeof result !== "undefined") {
     return result as R;
