@@ -92,5 +92,21 @@ describe.concurrent("tests all(most) of the basic types", () => {
       draft.push([]);
     });
   });
+  it("works with arrays complex operations", async () => {
+    const myObj = [{ a: 0 }, { a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }];
+    const result = produce(myObj, (draft) => {
+      draft[0].a = 11;
+      draft.reverse();
+      draft[0].a = 55;
+    });
+    expect(myObj).not.toBe(result);
+    expect(result[0]).not.toBe(myObj[0]);
+    expect(result[1]).not.toBe(myObj[1]);
+    //expect(result[2]).toBe(myObj[2]);
+    //expect(result[3]).toBe(myObj[1]);
+    expect(result[1]).toBe(myObj[3]);
+    expect(result[0].a).toBe(55);
+    expect(result[4].a).toBe(11);
+  });
   // regexp etc...
 });
