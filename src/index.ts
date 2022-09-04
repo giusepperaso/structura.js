@@ -1,7 +1,6 @@
 const enum Types {
   primitive = "primitive",
   function = "function",
-  Function = "[object Function]",
   object = "object",
   Object = "[object Object]",
   Array = "[object Array]",
@@ -221,7 +220,7 @@ export function produce<T, Q>(
 
   const currData = proxify(state as Target, data, handler);
 
-  const result = producer(currData.proxy as UnFreeze<T>, state as Freeze<T>);
+  const result = producer(currData.proxy as UnFreeze<T>);
 
   if (typeof result !== "undefined") {
     return original(result) as R;
@@ -327,8 +326,6 @@ function walkParents(
   });
 }
 
-const toString = Object.prototype.toString;
-
 function isPrimitive(x: unknown): x is Primitive {
   if (x === null) return true;
   const type = typeof x;
@@ -336,13 +333,10 @@ function isPrimitive(x: unknown): x is Primitive {
   return false;
 }
 
+const toString = Object.prototype.toString;
+
 function getTypeString(x: Object) {
   return toString.call(x);
-}
-
-function getTypeCategory(x: Object) {
-  if (isPrimitive(x)) return Types.primitive;
-  return getTypeString(x);
 }
 
 function copyProps(from: Object, to: Object) {
@@ -354,7 +348,6 @@ function copyProps(from: Object, to: Object) {
     key = keys[i];
     (to as UnknownObj)[key] = (from as UnknownObj)[key];
   }
-
   const symbols = Object.getOwnPropertySymbols(from);
   for (key of symbols) {
     (to as UnknownObj)[key] = (from as UnknownObj)[key];
@@ -366,10 +359,7 @@ function shallowClone(
   x: Target | Exclude<Primitive, null | undefined>,
   type?: Types
 ): Target {
-  return (
-    (cloneTypes[(type || getTypeCategory(x)) as Types] ||
-      cloneTypes[Types.Object]) as Function
-  )(x);
+  return (cloneTypes[(type || Types.Object) as Types] as Function)(x);
 }
 
 const cloneTypes: Partial<Record<Types, Function>> = {
