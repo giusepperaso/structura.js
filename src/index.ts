@@ -202,8 +202,9 @@ export function produce<T, Q>(
             return actualTarget.bind(t);
           }
         }
-      } else if (type === Types.Function) {
-        return v;
+      } else if (typeof v === Types.function) {
+        // CACHARE
+        return v.bind(actualTarget);
       } else {
         return proxify(v, data, handler, { obj: t, link: p }).proxy;
       }
