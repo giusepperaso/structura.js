@@ -44,11 +44,7 @@ export type UnknownMap = Map<unknown, unknown>;
 export type UnknownSet = Set<unknown>;
 export type UnknownArray = Array<unknown>;
 
-export type Producer<T, Q> = (
-  draft: UnFreeze<T>,
-  original: Freeze<T>
-) => Q | void;
-
+export type Producer<T, Q> = (draft: UnFreeze<T>) => Q | void;
 export type ProduceOptions = { proxify?: typeof createProxy };
 export type ProduceReturn<T, Q> = FreezeOnce<Q extends void ? T : Q>;
 
@@ -88,12 +84,13 @@ export function produce<T, Q>(
   { proxify = createProxy }: ProduceOptions = {}
 ): ProduceReturn<T, Q> {
   type R = ProduceReturn<T, Q>;
-  if (isPrimitive(state))
-    return producer(state as UnFreeze<T>, state as Freeze<T>) as R;
+  if (isPrimitive(state)) return producer(state as UnFreeze<T>) as R;
   const data = new WeakMap();
   const handler = {
     get(t: Target, p: Prop, r: Target) {
+      if (p === self) return t;
       const actualTarget = data.get(t)?.shallow || t;
+      if (p === actual) return actualTarget;
       const v = Reflect.get(actualTarget, p, r);
       if (isPrimitive(v)) return v;
       const type = getTypeString(t);
@@ -226,12 +223,20 @@ export function produce<T, Q>(
   const result = producer(currData.proxy as UnFreeze<T>, state as Freeze<T>);
 
   if (typeof result !== "undefined") {
-    return result as R;
+    return original(result) as R;
   } else if (currData.shallow === null) {
     return state as R;
   } else {
-    return currData.shallow as R;
+    return original(currData.shallow) as R;
   }
+}
+
+const self = Symbol();
+const actual = Symbol();
+
+export function original<T>(obj: T) {
+  if (typeof obj === "undefined" || obj === null) return obj;
+  return (obj as T & { [actual]: T })[actual] || obj;
 }
 
 type Data = WeakMap<Target, TargetData>;
@@ -288,21 +293,22 @@ function walkParents(
     shallow = currData.shallow = shallowClone(t, type as Types);
   }
   if (action === Actions.set) {
-    (shallow as UnknownObj)[p as Prop] = v;
+    (shallow as UnknownObj)[p as Prop] = original(v);
   } else if (action === Actions.delete) {
     delete (shallow as UnknownObj)[p as Prop];
   } else if (action === Actions.set_map) {
-    (shallow as UnknownMap).set(p, v);
+    (shallow as UnknownMap).set(p, original(v));
   } else if (action === Actions.delete_map) {
     (shallow as UnknownMap).delete(p);
   } else if (action === Actions.add_set) {
-    (shallow as UnknownSet).add(v);
+    (shallow as UnknownSet).add(original(v));
   } else if (action === Actions.delete_set) {
-    (shallow as UnknownSet).delete(v);
+    (shallow as UnknownSet).delete(original(v));
   } else if (action === Actions.clear) {
     (shallow as UnknownMap | UnknownSet).clear();
   } else if (action === Actions.append) {
     const children = currData.children;
+    child = original(child);
     if (children.has(child as Target)) return;
     children.add(child as Target);
     type = type || getTypeString(t);
