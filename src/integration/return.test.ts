@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Obj2 } from "./utils";
+import { Obj2, isProxy } from "./utils";
 import { produce } from "..";
 
 describe.concurrent("try returning directly from the producer", () => {
@@ -72,7 +72,7 @@ describe.concurrent("try returning directly from the producer", () => {
       return obj;
     });
     expect(myObj).not.toBe(result);
-    expect(result.isProxy).not.toBe(true);
+    expect(isProxy(result)).toBe(false);
     expect(myObj[0]).toBe(result);
   });
 });

@@ -9,6 +9,10 @@ TRASPOSITIONS HAND MADE:
 if you save an object in a variable and then assign it into the draft, you will get a proxy reference; this also happens if I return a portion of the draft in the producer at the end; to avoid this, at the after the producer we can check all of the objects and see if they were modified or not; if they were not modified, we recurse all of their parents and we assign the original object instead than the proxy
 remove dangling proxies.
 
+NOT HANDLED:
+what happens if you create a new object, then you assign a portion of the draft to it and then assign this new object to the draft?
+the new object will have the proxy reference!!!
+
 
 ## PERFORMANCE
 
