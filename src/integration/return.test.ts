@@ -59,4 +59,20 @@ describe.concurrent("try returning directly from the producer", () => {
     expect(myObj[0]).not.toBe(result);
     expect(result.prop.sub).toBe(2);
   });
+  it("can return part of itself by keeping the reference", async () => {
+    const myObj: Obj2<number>[] = [
+      {
+        prop: {
+          sub: 1,
+        },
+      },
+    ];
+    const result = produce(myObj, (draft) => {
+      const obj = draft[0];
+      return obj;
+    });
+    expect(myObj).not.toBe(result);
+    expect(result.isProxy).not.toBe(true);
+    expect(myObj[0]).toBe(result);
+  });
 });
