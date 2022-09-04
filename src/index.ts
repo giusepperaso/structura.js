@@ -31,9 +31,14 @@ const enum Actions {
   delete,
   delete_map,
   delete_set,
-  clear,
+  clear_map,
+  clear_set,
   append,
 }
+
+const Traps_self = Symbol();
+const Traps_target = Symbol();
+const Traps_data = Symbol();
 
 export type Primitive = null | undefined | string | number | boolean | symbol;
 export type Target = UnknownArray | UnknownMap | UnknownSet | Object;
@@ -87,10 +92,10 @@ export function produce<T, Q>(
   const data = new WeakMap();
   const handler = {
     get(t: Target, p: Prop, r: Target) {
-      if (p === "isProxy") return true;
-      if (p === self) return t;
+      if (p === Traps_self) return t;
+      if (p === Traps_data) return data.get(t);
       const actualTarget = data.get(t)?.shallow || t;
-      if (p === actual) return actualTarget;
+      if (p === Traps_target) return actualTarget;
       const v = Reflect.get(actualTarget, p, r);
       if (isPrimitive(v)) return v;
       const type = getTypeString(t);
@@ -110,14 +115,13 @@ export function produce<T, Q>(
             };
           } else if (p === Methods.clear) {
             return function () {
-              walkParents(Actions.clear, data, t);
+              walkParents(Actions.clear_map, data, t);
             };
           } else if (p === Methods.get) {
             return function (k: Prop) {
               const _v = actualTarget.get(k);
               return !isPrimitive(_v)
-                ? proxify(_v, data, handler, { obj: t, links: new Set([k]) })
-                    .proxy
+                ? proxify(_v, data, handler, t, k).proxy
                 : _v;
             };
           } else if (p === Methods.values || p === Methods.entries) {
@@ -126,27 +130,16 @@ export function produce<T, Q>(
               const entries = actualTarget.entries();
               let entry;
               let proxy;
-              let parent;
               let links;
               for (entry of entries) {
-                links = new Set([entry[0]]);
-                parent = {
-                  obj: t,
-                  links,
-                };
-                proxy = proxify(entry[1], data, handler, parent).proxy;
+                proxy = proxify(entry[1], data, handler, t, entry[0]).proxy;
                 yield isEntries ? [links, proxy] : proxy;
               }
             };
           } else if (p === Methods.forEach) {
             return function forEach(fn: Function) {
               actualTarget.forEach(function (_v: Target, k: Prop) {
-                fn(
-                  proxify(_v, data, handler, {
-                    obj: t,
-                    links: new Set([k]),
-                  }).proxy
-                );
+                fn(proxify(_v, data, handler, t, k).proxy);
               });
             };
           } else {
@@ -170,7 +163,7 @@ export function produce<T, Q>(
             };
           } else if (p === Methods.clear) {
             return function () {
-              walkParents(Actions.clear, data, t);
+              walkParents(Actions.clear_set, data, t);
             };
           } else if (p === Methods.values || p === Methods.entries) {
             return function* iterator() {
@@ -178,25 +171,15 @@ export function produce<T, Q>(
               const values = actualTarget.values();
               let value;
               let proxy;
-              let parent;
               for (value of values) {
-                parent = {
-                  obj: t,
-                  links: new Set([value]),
-                };
-                proxy = proxify(value, data, handler, parent).proxy;
+                proxy = proxify(value, data, handler, t, value).proxy;
                 yield isEntries ? [proxy, proxy] : proxy;
               }
             };
           } else if (p === Methods.forEach) {
             return function forEach(fn: Function) {
               actualTarget.forEach(function (_v: Target) {
-                fn(
-                  proxify(_v, data, handler, {
-                    obj: t,
-                    links: new Set([_v]),
-                  }).proxy
-                );
+                fn(proxify(_v, data, handler, t, _v).proxy);
               });
             };
           } else {
@@ -207,7 +190,7 @@ export function produce<T, Q>(
         // CACHARE
         return v.bind(actualTarget);
       } else {
-        return proxify(v, data, handler, { obj: t, links: new Set([p]) }).proxy;
+        return proxify(v, data, handler, t, p).proxy;
       }
     },
     set(t: Target, p: Prop, v: unknown, r: Target) {
@@ -225,57 +208,76 @@ export function produce<T, Q>(
   const result = producer(currData.proxy as UnFreeze<T>);
 
   if (typeof result !== "undefined") {
-    return original(result) as R;
+    return target(result) as R;
   } else if (currData.shallow === null) {
     return state as R;
   } else {
-    return original(currData.shallow) as R;
+    return target(currData.shallow) as R;
   }
 }
 
-const self = Symbol();
-const actual = Symbol();
+export function target<T>(obj: T) {
+  if (typeof obj === "undefined" || obj === null) return obj;
+  return (obj as T & { [Traps_target]: T })[Traps_target] || obj;
+}
 
 export function original<T>(obj: T) {
   if (typeof obj === "undefined" || obj === null) return obj;
-  return (obj as T & { [actual]: T })[actual] || obj;
+  return (obj as T & { [Traps_self]: T })[Traps_self] || obj;
 }
 
-type Data = WeakMap<Target, TargetData>;
+export function data<T>(obj: T) {
+  if (typeof obj === "undefined" || obj === null) return obj;
+  return (obj as T & { [Traps_data]: T })[Traps_data] || obj;
+}
 
-type TargetData = {
+export type Data = WeakMap<Target, TargetData>;
+
+export type Link = Prop | Target;
+
+export type LinkSet = Set<Link>;
+
+export type TargetData = {
   proxy: Target;
   shallow: Target | null;
-  parents: Set<TargetParent>;
+  parents: Map<Target, LinkSet>;
   children: WeakSet<Object>;
 };
 
-type TargetParent = {
-  obj: Target;
-  links: Set<Target | Prop>;
-};
+export type CreateProxyArgs = [Target, Data, ProxyHandler<Target>];
+export type CreateProxy =
+  | ((...args: [...CreateProxyArgs, Target?, Link?]) => TargetData)
+  | ((...args: CreateProxyArgs) => TargetData);
 
-export function createProxy(
-  obj: Target,
-  data: Data,
-  handler: ProxyHandler<Target>,
-  parent?: TargetParent
+export const createProxy: CreateProxy = function (
+  obj,
+  data,
+  handler,
+  parent,
+  link
 ) {
   let currData: TargetData;
   if (data.has(obj)) {
     currData = data.get(obj) as TargetData;
-    if (parent) currData.parents.add(parent);
+    if (parent && link) {
+      const parents = currData.parents;
+      if (parents.has(parent)) {
+        (parents.get(parent) as LinkSet).add(link);
+      } else {
+        parents.set(parent, new Set([link]));
+      }
+    }
   } else {
     currData = {
       proxy: new Proxy(obj, handler),
       shallow: null,
-      parents: parent ? new Set([parent]) : new Set(),
+      parents: parent ? new Map([[parent, new Set([link])]]) : new Map(),
       children: new WeakSet(),
     };
     data.set(obj, currData);
   }
   return currData;
-}
+};
 
 function walkParents(
   action: Actions,
@@ -283,50 +285,54 @@ function walkParents(
   t: Target,
   p?: Prop,
   v?: unknown,
-  links?: Set<Prop | Target>,
+  links?: LinkSet,
   child?: Target
 ) {
   const currData = data.get(t);
   if (!currData) throw new Error("Missing data from current object");
   let shallow = currData.shallow;
-  let type: string = "";
+  let type = "";
   if (shallow === null) {
     type = getTypeString(t);
     shallow = currData.shallow = shallowClone(t, type as Types);
   }
   if (action === Actions.set) {
-    if (data.get(original(v as Target))) {
-      (data.get(original(v as Target)) as TargetData).parents.forEach((pr) => {
-        if (pr.obj === t) {
-          if (!pr.links.has(p as Prop)) {
-            pr.links.add(p as Prop);
-          }
-        }
-      });
-    }
-    (shallow as UnknownObj)[p as Prop] = original(v);
+    const actualValue = target(v);
+    actionLink("add", data, t, p as Prop, actualValue);
+    (shallow as UnknownObj)[p as Prop] = actualValue;
   } else if (action === Actions.delete) {
+    const actualValue = (shallow as UnknownObj)[p as Prop];
+    actionLink("delete", data, t, p as Prop, actualValue);
     delete (shallow as UnknownObj)[p as Prop];
   } else if (action === Actions.set_map) {
-    (shallow as UnknownMap).set(p, original(v));
+    const actualValue = target(v);
+    actionLink("add", data, t, p as Prop, actualValue);
+    (shallow as UnknownMap).set(p, actualValue);
   } else if (action === Actions.delete_map) {
+    const actualValue = (shallow as UnknownMap).get(p);
+    actionLink("delete", data, t, p as Prop, actualValue);
     (shallow as UnknownMap).delete(p);
+  } else if (action === Actions.clear_map) {
+    //actionLink("delete", data, t, p as Prop, actualValue);
+    (shallow as UnknownMap).clear();
   } else if (action === Actions.add_set) {
-    (shallow as UnknownSet).add(original(v));
+    (shallow as UnknownSet).add(target(v));
   } else if (action === Actions.delete_set) {
-    (shallow as UnknownSet).delete(original(v));
-  } else if (action === Actions.clear) {
-    (shallow as UnknownMap | UnknownSet).clear();
+    (shallow as UnknownSet).delete(target(v));
+  } else if (action === Actions.clear_set) {
+    // ELIMINA TUTTI LINK, INOLTRE ELIMINA DAL PARENTS SE NON HA PIU LINK
+    // solo se map
+    (shallow as UnknownSet).clear();
   } else if (action === Actions.append) {
     const children = currData.children;
-    //child = original(child);
     if (children.has(child as Target)) return;
     children.add(child as Target);
+    // SI POTREBBE OTTIMIZZARE MEGLIO, PER EVITARE CHECK DEL TIPO OGNI VOLTA
+    // INOLTRE FA IL LOOP ANCHE PER I SET (ma può andare bene)
+    // tipo lo si potrebbe prendere solo se esiste links
+    // links si può loopare con links.values
     type = type || getTypeString(t);
-    ((globalThis as any).debug___
-      ? new Set((globalThis as any).debug)
-      : links
-    )?.forEach((link) => {
+    links?.forEach((link) => {
       if (type === Types.Map) {
         (shallow as UnknownMap).set(link, child);
       } else if (type === Types.Set) {
@@ -337,17 +343,31 @@ function walkParents(
       }
     });
   }
-  currData.parents.forEach(function (pa) {
-    walkParents(
-      Actions.append,
-      data,
-      pa.obj,
-      p,
-      v,
-      pa.links,
-      shallow as Target
-    );
-  });
+  for (const [parent, links] of currData.parents) {
+    walkParents(Actions.append, data, parent, p, v, links, shallow as Target);
+  }
+}
+
+function actionLink(
+  action: "add" | "delete",
+  data: Data,
+  t: Target,
+  p: Prop,
+  v: unknown
+) {
+  const childData = data.get(v as Target);
+  if (childData) {
+    const childParents = childData.parents;
+    if (childParents) {
+      if (childParents.has(t)) {
+        const linkSet = childParents.get(t) as LinkSet;
+        linkSet[action](p as Link);
+        if (action === "delete" && !linkSet.size) {
+          childParents.delete(t);
+        }
+      }
+    }
+  }
 }
 
 function isPrimitive(x: unknown): x is Primitive {
