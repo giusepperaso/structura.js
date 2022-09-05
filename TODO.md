@@ -12,6 +12,9 @@ remove dangling proxies.
 NOT HANDLED:
 what happens if you create a new object, then you assign a portion of the draft to it and then assign this new object to the draft?
 the new object will have the proxy reference!!!
+maybe you could use an helper to create new objects
+OR you could cycle every new appended object which was not proxied if it contains proxies
+OR just say to do like this: newObj.prop = target(obj) OR {...obj} if the reference is not important
 
 
 ## PERFORMANCE
