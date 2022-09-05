@@ -187,7 +187,6 @@ export function produce<T, Q>(
           }
         }
       } else if (typeof v === Types.function) {
-        // CACHARE
         return v.bind(actualTarget);
       } else {
         return proxify(v, data, handler, t, p).proxy;
@@ -313,37 +312,47 @@ function walkParents(
     actionLink("delete", data, t, p as Prop, actualValue);
     (shallow as UnknownMap).delete(p);
   } else if (action === Actions.clear_map) {
-    //actionLink("delete", data, t, p as Prop, actualValue);
+    for (const entry of (shallow as UnknownMap).entries()) {
+      actionLink("delete", data, t, entry[0] as Link, target(entry[1]));
+    }
     (shallow as UnknownMap).clear();
   } else if (action === Actions.add_set) {
-    (shallow as UnknownSet).add(target(v));
+    const actualValue = target(v) as Link;
+    actionLink("add", data, t, actualValue, actualValue);
+    (shallow as UnknownSet).add(actualValue);
   } else if (action === Actions.delete_set) {
-    (shallow as UnknownSet).delete(target(v));
+    const actualValue = target(v) as Link;
+    actionLink("delete", data, t, actualValue, actualValue);
+    (shallow as UnknownSet).delete(actualValue);
   } else if (action === Actions.clear_set) {
-    // ELIMINA TUTTI LINK, INOLTRE ELIMINA DAL PARENTS SE NON HA PIU LINK
-    // solo se map
+    for (const value of (shallow as UnknownSet).values()) {
+      const actualValue = target(value) as Link;
+      actionLink("delete", data, t, actualValue, actualValue);
+    }
     (shallow as UnknownSet).clear();
   } else if (action === Actions.append) {
     const children = currData.children;
     if (children.has(child as Target)) return;
     children.add(child as Target);
-    // SI POTREBBE OTTIMIZZARE MEGLIO, PER EVITARE CHECK DEL TIPO OGNI VOLTA
-    // INOLTRE FA IL LOOP ANCHE PER I SET (ma può andare bene)
-    // tipo lo si potrebbe prendere solo se esiste links
-    // links si può loopare con links.values
-    type = type || getTypeString(t);
-    links?.forEach((link) => {
+    if (links) {
+      type = type || getTypeString(t);
       if (type === Types.Map) {
-        (shallow as UnknownMap).set(link, child);
+        for (const link of links.values()) {
+          (shallow as UnknownMap).set(link, child);
+        }
       } else if (type === Types.Set) {
-        (shallow as UnknownSet).delete(link);
-        (shallow as UnknownSet).add(child); // insertion order is not mantained in sets
+        for (const link of links.values()) {
+          (shallow as UnknownSet).delete(link);
+          (shallow as UnknownSet).add(child); // insertion order is not mantained in sets
+        }
       } else {
-        (shallow as UnknownObj)[link as Prop] = child;
+        for (const link of links.values()) {
+          (shallow as UnknownObj)[link as Prop] = child;
+        }
       }
-    });
+    }
   }
-  for (const [parent, links] of currData.parents) {
+  for (const [parent, links] of currData.parents.entries()) {
     walkParents(Actions.append, data, parent, p, v, links, shallow as Target);
   }
 }
@@ -352,7 +361,7 @@ function actionLink(
   action: "add" | "delete",
   data: Data,
   t: Target,
-  p: Prop,
+  link: Link,
   v: unknown
 ) {
   const childData = data.get(v as Target);
@@ -361,7 +370,7 @@ function actionLink(
     if (childParents) {
       if (childParents.has(t)) {
         const linkSet = childParents.get(t) as LinkSet;
-        linkSet[action](p as Link);
+        linkSet[action](link);
         if (action === "delete" && !linkSet.size) {
           childParents.delete(t);
         }
