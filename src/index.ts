@@ -295,39 +295,50 @@ function walkParents(
     type = getTypeString(t);
     shallow = currData.shallow = shallowClone(t, type as Types);
   }
+  function actionLink(action: "add" | "delete", link: Link, v: unknown) {
+    const childData = data.get(v as Target);
+    if (childData) {
+      const childParents = childData.parents;
+      if (childParents && childParents.has(t)) {
+        const linkSet = childParents.get(t) as LinkSet;
+        linkSet[action](link);
+        if (!linkSet.size) childParents.delete(t);
+      }
+    }
+  }
   if (action === Actions.set) {
     const actualValue = target(v);
-    actionLink("add", data, t, p as Prop, actualValue);
+    actionLink("add", p as Prop, actualValue);
     (shallow as UnknownObj)[p as Prop] = actualValue;
   } else if (action === Actions.delete) {
     const actualValue = (shallow as UnknownObj)[p as Prop];
-    actionLink("delete", data, t, p as Prop, actualValue);
+    actionLink("delete", p as Prop, actualValue);
     delete (shallow as UnknownObj)[p as Prop];
   } else if (action === Actions.set_map) {
     const actualValue = target(v);
-    actionLink("add", data, t, p as Prop, actualValue);
+    actionLink("add", p as Prop, actualValue);
     (shallow as UnknownMap).set(p, actualValue);
   } else if (action === Actions.delete_map) {
     const actualValue = (shallow as UnknownMap).get(p);
-    actionLink("delete", data, t, p as Prop, actualValue);
+    actionLink("delete", p as Prop, actualValue);
     (shallow as UnknownMap).delete(p);
   } else if (action === Actions.clear_map) {
     for (const entry of (shallow as UnknownMap).entries()) {
-      actionLink("delete", data, t, entry[0] as Link, target(entry[1]));
+      actionLink("delete", entry[0] as Link, target(entry[1]));
     }
     (shallow as UnknownMap).clear();
   } else if (action === Actions.add_set) {
     const actualValue = target(v) as Link;
-    actionLink("add", data, t, actualValue, actualValue);
+    actionLink("add", actualValue, actualValue);
     (shallow as UnknownSet).add(actualValue);
   } else if (action === Actions.delete_set) {
     const actualValue = target(v) as Link;
-    actionLink("delete", data, t, actualValue, actualValue);
+    actionLink("delete", actualValue, actualValue);
     (shallow as UnknownSet).delete(actualValue);
   } else if (action === Actions.clear_set) {
     for (const value of (shallow as UnknownSet).values()) {
       const actualValue = target(value) as Link;
-      actionLink("delete", data, t, actualValue, actualValue);
+      actionLink("delete", actualValue, actualValue);
     }
     (shallow as UnknownSet).clear();
   } else if (action === Actions.append) {
@@ -354,28 +365,6 @@ function walkParents(
   }
   for (const [parent, links] of currData.parents.entries()) {
     walkParents(Actions.append, data, parent, p, v, links, shallow as Target);
-  }
-}
-
-function actionLink(
-  action: "add" | "delete",
-  data: Data,
-  t: Target,
-  link: Link,
-  v: unknown
-) {
-  const childData = data.get(v as Target);
-  if (childData) {
-    const childParents = childData.parents;
-    if (childParents) {
-      if (childParents.has(t)) {
-        const linkSet = childParents.get(t) as LinkSet;
-        linkSet[action](link);
-        if (action === "delete" && !linkSet.size) {
-          childParents.delete(t);
-        }
-      }
-    }
   }
 }
 
