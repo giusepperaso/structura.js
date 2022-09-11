@@ -1,0 +1,9 @@
+a.title {
+  color: var(--vp-c-brand) !important;
+  font-size: 28px !important;
+}
+
+a.title img {
+  width: 100% !important;
+  height: 40px !important;
+}
