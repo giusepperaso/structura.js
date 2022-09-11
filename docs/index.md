@@ -2,4 +2,4 @@
 
 The library is very similar to [Immer.js](https://immerjs.github.io/immer/), but it's much more performant (~24x on average) and it better solves some edge cases like circular references, multiple references to the same object, transpositions etc... It also avoids freezing the object at runtime, but it does only at compile time, which is again a much more performant way to do it.
 
-![Structural Sharing](/structural-sharing.png)
+![Structural Sharing](/pics/structural-sharing.png)
