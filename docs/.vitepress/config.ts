@@ -16,7 +16,7 @@ export default defineConfig({
       {
         text: "Guide",
         items: [
-          { text: "Why Structura?", link: "/why" },
+          { text: "Why Structura?", link: "/why-structura" },
           { text: "Getting Started", link: "/getting-started" },
         ],
       },
