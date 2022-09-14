@@ -1,6 +1,9 @@
 a.title {
   color: var(--vp-c-brand) !important;
-  font-size: 28px !important;
+  font-size: 25px !important;
+  text-shadow: 1px 1px 1px #008000b8;
+  font-style: italic;
+  font-weight: bold !important;
 }
 
 a.title img {

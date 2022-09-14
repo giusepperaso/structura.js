@@ -16,8 +16,12 @@ export default defineConfig({
       {
         text: "Guide",
         items: [
-          { text: "Why Structura?", link: "/why-structura" },
           { text: "Getting Started", link: "/getting-started" },
+          { text: "Why Structura?", link: "/why-structura" },
+          { text: "Benchmarks", link: "/benchmarks" },
+          { text: "Freezing", link: "/freezing" },
+          { text: "Edge cases", link: "/edge-cases" },
+          { text: "Gotchas", link: "/gotchas" },
         ],
       },
     ],
