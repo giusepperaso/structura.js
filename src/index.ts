@@ -215,6 +215,10 @@ export function produce<T, Q>(
   }
 }
 
+export function safeProduce<T>(...args: Parameters<typeof produce<T, T>>) {
+  return produce<T, T>(...args);
+}
+
 export function target<T>(obj: T) {
   if (typeof obj === "undefined" || obj === null) return obj;
   return (obj as T & { [Traps_target]: T })[Traps_target] || obj;
@@ -306,6 +310,10 @@ function walkParents(
       }
     }
   }
+  /* 
+  in questo caso tutti i target(v) li potresti mettere in un set nel caso in cui siano proxy
+  e se sono anche l'originale; perchè in un secondo momento, se hanno lo shallow, li devi sostituire
+  */
   if (action === Actions.set) {
     const actualValue = target(v);
     actionLink("add", p as Prop, actualValue);
