@@ -30,6 +30,15 @@ describe.concurrent(
       expect(result.prop.sub).not.toBe(result.prop2.sub);
       expect(result.prop3.sub).toBe(result.prop.sub);
     });
+    it("doesn't go infinite with possible loop", () => {
+      const state: any = { test1: [1], test2: [2], test3: null };
+      state.test3 = state;
+
+      // this works without going infinite
+      produce(state, (draft) => {
+        draft.test3.test1.push(1);
+      });
+    });
     it("works with multiple parents", async () => {
       const myObj: Obj2<Obj | null> = {
         prop: {
