@@ -143,7 +143,7 @@ export function produce<T, Q>(
               });
             };
           } else {
-            return actualTarget.bind(t);
+            return v.bind(proxify(t, data, handler).proxy);
           }
         }
       } else if (type === Types.Set) {
@@ -183,11 +183,11 @@ export function produce<T, Q>(
               });
             };
           } else {
-            return actualTarget.bind(t);
+            return v.bind(proxify(t, data, handler).proxy);
           }
         }
       } else if (typeof v === Types.function) {
-        return v.bind(actualTarget);
+        return v.bind(proxify(t, data, handler).proxy);
       } else {
         return proxify(v, data, handler, t, p).proxy;
       }
