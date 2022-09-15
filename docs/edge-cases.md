@@ -43,9 +43,15 @@ const newState1 = produce(state, (draft) => {
     draft.test2.push(1)
 })
 
-// this does not work well because test2 is never accessed,
-// so test2 will remain the same
+// this also works
 const newState2 = produce(state, (draft) => {
+    draft.test1;
+    draft.test2.push(1)
+})
+
+// this does not work well because test2 is never accessed,
+// so test2 will remain the same as before
+const newState3 = produce(state, (draft) => {
     draft.test1.push(1)
 })
 ```
