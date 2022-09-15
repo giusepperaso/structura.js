@@ -54,7 +54,7 @@ describe.concurrent("tests transpositions of element", () => {
     });
     expect(myObj).not.toBe(result);
     expect(result[0].a).toBe(2);
-    expect(result[1].a).toBe(2); // OK
+    expect(result[1].a).toBe(2);
   });
   it("simple switch reverse", async () => {
     const myObj = [{ a: 0 }, { a: 1 }];
@@ -63,8 +63,29 @@ describe.concurrent("tests transpositions of element", () => {
       draft[0].a = 2;
     });
     expect(myObj).not.toBe(result);
-    expect(result[0].a).toBe(2); // OK
+    expect(result[0].a).toBe(2);
     expect(result[1].a).toBe(2);
   });
-  // regexp etc...
+  it("does not create problems if we modify the object after transposition", async () => {
+    const state = [[1], [2]];
+    const newState = produce(state, (draft) => {
+      const first = draft[0];
+      draft[0] = draft[1];
+      draft[1] = first;
+      first.push(9999);
+    });
+    expect(newState[0]).toEqual([2]);
+    expect(newState[1]).toEqual([1, 9999]);
+  });
+  it("does not create problems if we modify the object before transposition", async () => {
+    const state = [[1], [2]];
+    const newState = produce(state, (draft) => {
+      const first = draft[0];
+      first.push(9999);
+      draft[0] = draft[1];
+      draft[1] = first;
+    });
+    expect(newState[0]).toEqual([2]);
+    expect(newState[1]).toEqual([1, 9999]);
+  });
 });

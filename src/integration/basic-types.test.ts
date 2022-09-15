@@ -100,4 +100,5 @@ describe.concurrent("tests all(most) of the basic types", () => {
     });
     expect(result.test1).not.toBe(myObj.test1);
   });
+  // regexp, date etc...
 });

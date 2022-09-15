@@ -73,5 +73,17 @@ describe.concurrent(
       });
       expect(result.prop).toEqual({ ciao: "prova3" });
     });
+    it("should allow multiple references if every of them is called at least once, even read only", async () => {
+      const array = [1];
+      const state = { test1: array, test2: array };
+
+      // it could be useful a flagged function which checks for all the elements
+      const newState2 = produce(state, (draft) => {
+        draft.test2;
+        draft.test1.push(1);
+      });
+      expect(newState2.test1).toEqual([1, 1]);
+      expect(newState2.test2).toEqual([1, 1]);
+    });
   }
 );
