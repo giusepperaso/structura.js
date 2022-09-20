@@ -1,6 +1,6 @@
 # Edge cases
 
-Immer supports some edge cases that are not well handled by other libraries. But beware that some edge cases are not solvable.
+Structura supports some edge cases that are not well handled by other libraries. But beware that some edge cases are not solvable.
 
 ## Returning and modifying in the same producer
 
@@ -60,8 +60,6 @@ const newState3 = produce(state, (draft) => {
 
 You can reassign the key of a sub-object and the result will be what you expect
 
-HOWEVER, if you want to modify an object, you should modify it **at least once before** the transposition
-
 Besides, this will not work if you assign to an object external from the draft
 
 ```typescript
@@ -74,8 +72,7 @@ const newState1 = produce(state, (draft) => {
     draft[1] = first
 })
 
-// this does not work well because we have modified
-// the transposed object only after the transposition itself 
+// this also works
 const newState2 = produce(state, (draft) => {
     const first = draft[0]
     draft[0] = draft[1]

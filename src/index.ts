@@ -37,6 +37,7 @@ const enum Actions {
 }
 
 const Traps_self = Symbol();
+const Traps_shallow = Symbol();
 const Traps_target = Symbol();
 const Traps_data = Symbol();
 
@@ -94,7 +95,9 @@ export function produce<T, Q>(
     get(t: Target, p: Prop, r: Target) {
       if (p === Traps_self) return t;
       if (p === Traps_data) return data.get(t);
-      const actualTarget = data.get(t)?.shallow || t;
+      const shallowTarget = data.get(t)?.shallow;
+      const actualTarget = shallowTarget || t;
+      if (p === Traps_shallow) return shallowTarget;
       if (p === Traps_target) return actualTarget;
       const v = Reflect.get(actualTarget, p, r);
       if (isPrimitive(v)) return v;
@@ -224,6 +227,11 @@ export function target<T>(obj: T) {
   return (obj as T & { [Traps_target]: T })[Traps_target] || obj;
 }
 
+export function getShallow<T>(obj: T) {
+  if (!obj) return;
+  return (obj as T & { [Traps_shallow]: T })[Traps_shallow];
+}
+
 export function original<T>(obj: T) {
   if (typeof obj === "undefined" || obj === null) return obj;
   return (obj as T & { [Traps_self]: T })[Traps_self] || obj;
@@ -240,10 +248,12 @@ export type Link = Prop | Target;
 
 export type LinkSet = Set<Link>;
 
+export type ParentMap = Map<Target, LinkSet>;
+
 export type TargetData = {
   proxy: Target;
   shallow: Target | null;
-  parents: Map<Target, LinkSet>;
+  parents: ParentMap;
   children: WeakSet<Object>;
 };
 
@@ -299,21 +309,32 @@ function walkParents(
     type = getTypeString(t);
     shallow = currData.shallow = shallowClone(t, type as Types);
   }
-  function actionLink(action: "add" | "delete", link: Link, v: unknown) {
+  function actionLink(linkAction: "add" | "delete", link: Link, v: unknown) {
+    if (linkAction === "add") {
+      let prevChildAtLink;
+      if (action === Actions.set) {
+        prevChildAtLink = (shallow as UnknownObj)[link as Prop];
+      } else if (action === Actions.set_map) {
+        prevChildAtLink = (shallow as UnknownMap).get(link as Prop);
+      }
+      if (data.has(prevChildAtLink as Target)) {
+        const prevChildData = data.get(prevChildAtLink as Target) as TargetData;
+        const parentData = prevChildData.parents.get(t);
+        if (parentData) {
+          parentData.delete(link);
+        }
+      }
+    }
     const childData = data.get(v as Target);
     if (childData) {
       const childParents = childData.parents;
       if (childParents && childParents.has(t)) {
         const linkSet = childParents.get(t) as LinkSet;
-        linkSet[action](link);
+        linkSet[linkAction](link);
         if (!linkSet.size) childParents.delete(t);
       }
     }
   }
-  /* 
-  in questo caso tutti i target(v) li potresti mettere in un set nel caso in cui siano proxy
-  e se sono anche l'originale; perchè in un secondo momento, se hanno lo shallow, li devi sostituire
-  */
   if (action === Actions.set) {
     const actualValue = target(v);
     actionLink("add", p as Prop, actualValue);
@@ -351,7 +372,7 @@ function walkParents(
     (shallow as UnknownSet).clear();
   } else if (action === Actions.append) {
     const children = currData.children;
-    if (children.has(child as Target)) return;
+    if (children.has(child as Target)) return; // is it correct? may not work because you could have added another link to the same child
     children.add(child as Target);
     if (links) {
       type = type || getTypeString(t);
