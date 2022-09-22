@@ -372,7 +372,9 @@ function walkParents(
     (shallow as UnknownSet).clear();
   } else if (action === Actions.append) {
     const children = currData.children;
-    if (children.has(child as Target)) return; // is it correct? may not work because you could have added another link to the same child
+    if (children.has(child as Target)) return;
+    // alternative: may look at children
+    // traversed links?
     children.add(child as Target);
     if (links) {
       type = type || getTypeString(t);
@@ -383,7 +385,7 @@ function walkParents(
       } else if (type === Types.Set) {
         for (const link of links.values()) {
           (shallow as UnknownSet).delete(link);
-          (shallow as UnknownSet).add(child); // insertion order is not mantained in sets
+          (shallow as UnknownSet).add(child);
         }
       } else {
         for (const link of links.values()) {
@@ -393,7 +395,7 @@ function walkParents(
     }
   }
   for (const [parent, links] of currData.parents.entries()) {
-    walkParents(Actions.append, data, parent, p, v, links, shallow as Target);
+    walkParents(Actions.append, data, parent, p, v, links, shallow);
   }
 }
 
