@@ -33,8 +33,6 @@ describe.concurrent(
     it("doesn't go infinite with possible loop", async () => {
       const state: any = { test1: [1], test2: [2], test3: null };
       state.test3 = state;
-
-      // this works without going infinite
       produce(state, (draft) => {
         draft.test3.test1.push(1);
       });
