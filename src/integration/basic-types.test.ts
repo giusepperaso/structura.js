@@ -93,7 +93,7 @@ describe.concurrent("tests all(most) of the basic types", () => {
       draft.push([]);
     });
   });
-  it("array push to work well", () => {
+  it("array push to work well", async () => {
     const myObj = { test1: [1] };
     const result = produce(myObj, (draft) => {
       draft.test1.push(1);

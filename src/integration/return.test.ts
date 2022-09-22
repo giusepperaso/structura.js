@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { Obj2, isProxy } from "./utils";
 import { produce } from "..";
 
-describe.concurrent("try returning directly from the producer", () => {
+describe.concurrent("try returning directly from the producer", async () => {
   it("can return the same type", async () => {
     const myObj: Obj2<number>[] = [
       {

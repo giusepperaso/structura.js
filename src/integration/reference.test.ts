@@ -85,5 +85,17 @@ describe.concurrent(
       expect(newState2.test1).toEqual([1, 1]);
       expect(newState2.test2).toEqual([1, 1]);
     });
+    it("works with same child appended in more points", async () => {
+      const sub = { test: [1] };
+      const myObj = { sub1: sub, sub2: sub };
+      const result = produce(myObj, (draft) => {
+        draft.sub1.test.push(2);
+        draft.sub2.test.push(3);
+      });
+      expect(result.sub1.test).toEqual([1, 2, 3]);
+      expect(result.sub2.test).toEqual([1, 2, 3]);
+      expect(result.sub1).toBe(result.sub2);
+      expect(result.sub1).not.toBe(myObj.sub1);
+    });
   }
 );

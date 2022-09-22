@@ -1,7 +1,7 @@
 import { vi, describe, expect, it } from "vitest";
 import { produce, createProxy } from "..";
 
-describe.concurrent("proxify tests", () => {
+describe.concurrent("proxify tests", async () => {
   it("should not proxify methods because it's useless", async () => {
     const _ = { createProxy };
     const proxify = vi.spyOn(_, "createProxy");

@@ -1,7 +1,9 @@
 import b from "benny";
 import { produce as structura } from "../index";
-import { produce as immer } from "immer";
+import { produce as immer, setAutoFreeze } from "immer";
 import { Map as immutable } from "immutable";
+
+setAutoFreeze(false);
 
 b.suite(
   "Produce small object with few modications",

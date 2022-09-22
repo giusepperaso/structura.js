@@ -4,6 +4,3 @@ import "./nested_few.benchmark";
 import "./nested_many.benchmark";
 import "./wide_few.benchmark";
 import "./wide_many.benchmark";
-import { setAutoFreeze } from "immer";
-
-setAutoFreeze(false);

@@ -1,8 +1,10 @@
 import b from "benny";
 import { produce as structura } from "../index";
-import { produce as immer } from "immer";
+import { produce as immer, setAutoFreeze } from "immer";
 import { Map as immutable } from "immutable";
 import { Obj2 } from "../integration/utils";
+
+setAutoFreeze(false);
 
 function getMyObj() {
   const myObj: Obj2<number> = {};

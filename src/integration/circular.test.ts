@@ -30,7 +30,7 @@ describe.concurrent(
       expect(result.prop.sub).not.toBe(result.prop2.sub);
       expect(result.prop3.sub).toBe(result.prop.sub);
     });
-    it("doesn't go infinite with possible loop", () => {
+    it("doesn't go infinite with possible loop", async () => {
       const state: any = { test1: [1], test2: [2], test3: null };
       state.test3 = state;
 

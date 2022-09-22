@@ -4,7 +4,7 @@ import { produce } from "..";
 
 type Entry = [string, Obj<number>];
 
-describe.concurrent("verify that Maps work correctly", () => {
+describe.concurrent("verify that Maps work correctly", async () => {
   it("works with maps with no nesting", async () => {
     const myObj = new Map();
     myObj.set("test", [0]);

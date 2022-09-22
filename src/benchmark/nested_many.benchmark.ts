@@ -1,7 +1,9 @@
 import b from "benny";
 import { produce as structura } from "../index";
-//import { produce as immer } from "immer";
+import { produce as immer, setAutoFreeze } from "immer";
 import { Map as immutable } from "immutable";
+
+setAutoFreeze(false);
 
 function getMyObj() {
   const myObj: any = {};
@@ -25,7 +27,7 @@ b.suite(
     });
   }),
 
-  /* b.add("with immer", () => {
+  b.add("with immer", () => {
     immer(getMyObj(), (draft: any) => {
       let curr = draft.prop;
       for (let i = 0; i != 35; i++) {
@@ -33,7 +35,7 @@ b.suite(
         curr.test = 2;
       }
     });
-  }), */
+  }),
 
   b.add("with immutable", () => {
     const map = immutable(getMyObj());
