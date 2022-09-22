@@ -17,7 +17,7 @@ function getMyObj() {
 b.suite(
   "Produce nested object with many modifications",
 
-  b.add("with structura", () => {
+  b.add("STRUCTURA", () => {
     structura(getMyObj(), (draft) => {
       let curr = draft.prop;
       for (let i = 0; i != 35; i++) {
@@ -27,7 +27,7 @@ b.suite(
     });
   }),
 
-  b.add("with immer", () => {
+  b.add("IMMER", () => {
     immer(getMyObj(), (draft: any) => {
       let curr = draft.prop;
       for (let i = 0; i != 35; i++) {
@@ -37,7 +37,7 @@ b.suite(
     });
   }),
 
-  b.add("with immutable", () => {
+  b.add("IMMUTABLE", () => {
     const map = immutable(getMyObj());
     let curr = [];
     for (let i = 0; i != 35; i++) {

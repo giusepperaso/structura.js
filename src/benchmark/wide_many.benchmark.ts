@@ -19,7 +19,7 @@ function getMyObj() {
 b.suite(
   "Produce wide object with many modifications",
 
-  b.add("with structura", () => {
+  b.add("STRUCTURA", () => {
     structura(getMyObj(), (draft) => {
       draft["prop111"].prop = 2;
       draft["prop1111"].prop = 2;
@@ -60,7 +60,7 @@ b.suite(
     });
   }),
 
-  b.add("with immer", () => {
+  b.add("IMMER", () => {
     immer(getMyObj(), (draft) => {
       draft["prop111"].prop = 2;
       draft["prop1111"].prop = 2;
@@ -101,7 +101,7 @@ b.suite(
     });
   }),
 
-  b.add("with immutable", () => {
+  b.add("IMMUTABLE", () => {
     const map = immutable(getMyObj());
 
     map.setIn(["prop111", "prop"], 2);

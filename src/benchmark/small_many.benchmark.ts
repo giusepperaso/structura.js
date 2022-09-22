@@ -8,7 +8,7 @@ setAutoFreeze(false);
 b.suite(
   "Produce small object with many modifications",
 
-  b.add("with structura", () => {
+  b.add("STRUCTURA", () => {
     const myObj = { test: 1 };
     structura(myObj, (draft) => {
       draft.test = 2;
@@ -50,7 +50,7 @@ b.suite(
     });
   }),
 
-  b.add("with immer", () => {
+  b.add("IMMER", () => {
     const myObj = { test: 1 };
     immer(myObj, (draft) => {
       draft.test = 2;
@@ -92,7 +92,7 @@ b.suite(
     });
   }),
 
-  b.add("with immutable", () => {
+  b.add("IMMUTABLE", () => {
     const myObj = { test: 1 };
     const map = immutable(myObj);
     map.set("test", 2);
