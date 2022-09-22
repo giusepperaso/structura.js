@@ -29,6 +29,7 @@ const state = { test: 1 }
 
 type T = { test: number }
 
+// ERROR!
 // this will not be accepted because we were more explicit with our types
 const result = produce<T, T>(state, (draft) => draft.test = 2)
 ```
@@ -38,6 +39,7 @@ Structura also exports a helper function which only allows the same type for the
 ```typescript
 const state = { test: 1 }
 
+// ERROR!
 // this will not be accepted because safeProduce does not allow it
 // with the use of the helper, we don't have to explicity define types
 const result = safeProduce(state, (draft) => draft.test = 2)
