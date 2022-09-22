@@ -246,15 +246,16 @@ export type Data = WeakMap<Target, TargetData>;
 
 export type Link = Prop | Target;
 
-export type LinkSet = Set<Link>;
+export type Traversed = Boolean;
 
-export type ParentMap = Map<Target, LinkSet>;
+export type LinkMap = Map<Link, Traversed>;
+
+export type ParentMap = Map<Target, LinkMap>;
 
 export type TargetData = {
   proxy: Target;
   shallow: Target | null;
   parents: ParentMap;
-  children: WeakSet<Object>;
 };
 
 export type CreateProxyArgs = [Target, Data, ProxyHandler<Target>];
@@ -275,17 +276,18 @@ export const createProxy: CreateProxy = function (
     if (parent && link) {
       const parents = currData.parents;
       if (parents.has(parent)) {
-        (parents.get(parent) as LinkSet).add(link);
+        (parents.get(parent) as LinkMap).set(link, false);
       } else {
-        parents.set(parent, new Set([link]));
+        parents.set(parent, new Map([[link, false]]));
       }
     }
   } else {
     currData = {
       proxy: new Proxy(obj, handler),
       shallow: null,
-      parents: parent ? new Map([[parent, new Set([link])]]) : new Map(),
-      children: new WeakSet(),
+      parents: parent
+        ? new Map([[parent, new Map([[link, false]])]])
+        : new Map(),
     };
     data.set(obj, currData);
   }
@@ -298,7 +300,7 @@ function walkParents(
   t: Target,
   p?: Prop,
   v?: unknown,
-  links?: LinkSet,
+  links?: LinkMap,
   child?: Target
 ) {
   const currData = data.get(t);
@@ -329,9 +331,13 @@ function walkParents(
     if (childData) {
       const childParents = childData.parents;
       if (childParents && childParents.has(t)) {
-        const linkSet = childParents.get(t) as LinkSet;
-        linkSet[linkAction](link);
-        if (!linkSet.size) childParents.delete(t);
+        const linkMap = childParents.get(t) as LinkMap;
+        if (linkAction === "add") {
+          linkMap.set(link, false);
+        } else {
+          linkMap.delete(link);
+          if (!linkMap.size) childParents.delete(t);
+        }
       }
     }
   }
@@ -371,27 +377,36 @@ function walkParents(
     }
     (shallow as UnknownSet).clear();
   } else if (action === Actions.append) {
-    const children = currData.children;
-    if (children.has(child as Target)) return;
-    // alternative: may look at children
-    // traversed links?
-    children.add(child as Target);
     if (links) {
+      let someTraversed = false;
       type = type || getTypeString(t);
       if (type === Types.Map) {
-        for (const link of links.values()) {
-          (shallow as UnknownMap).set(link, child);
+        for (const [link, traversed] of links.entries()) {
+          if (!traversed) {
+            someTraversed = true;
+            links.set(link, true);
+            (shallow as UnknownMap).set(link, child);
+          }
         }
       } else if (type === Types.Set) {
-        for (const link of links.values()) {
-          (shallow as UnknownSet).delete(link);
-          (shallow as UnknownSet).add(child);
+        for (const [link, traversed] of links.entries()) {
+          if (!traversed) {
+            someTraversed = true;
+            links.set(link, true);
+            (shallow as UnknownSet).delete(link);
+            (shallow as UnknownSet).add(child);
+          }
         }
       } else {
-        for (const link of links.values()) {
-          (shallow as UnknownObj)[link as Prop] = child;
+        for (const [link, traversed] of links.entries()) {
+          if (!traversed) {
+            someTraversed = true;
+            links.set(link, true);
+            (shallow as UnknownObj)[link as Prop] = child;
+          }
         }
       }
+      if (!someTraversed) return;
     }
   }
   for (const [parent, links] of currData.parents.entries()) {
