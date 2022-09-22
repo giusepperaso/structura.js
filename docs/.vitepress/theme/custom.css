@@ -1,12 +1,6 @@
 a.title {
   color: var(--vp-c-brand) !important;
-  font-size: 25px !important;
-  /* text-shadow: 1px 1px 1px #008000b8; */
-  font-style: italic;
-  font-weight: bold !important;
-  /* border-bottom: 1px solid var(--vp-c-brand); */
-  letter-spacing: 4px;
-  /* transform: scaleY(0.9); */
+  font-size: 18px !important;
 }
 
 a.title img {
