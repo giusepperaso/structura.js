@@ -3,6 +3,7 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
   lang: "en-US",
   title: "Structura.js",
+  base: "/structura/",
   description:
     "Fast typescript library for creating immutable states with structural sharing by using a mutable syntax",
   themeConfig: {
