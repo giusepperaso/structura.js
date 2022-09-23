@@ -1,12 +1,12 @@
 # Getting Started
 
-First, install the library via NPM in ES mode:
+First, install the library via NPM:
 
 ```bash
 npm i structurajs
 ```
 
-or, if you prefer, via a CDN in UDM mode:
+or, if you prefer, via a CDN with a script tag:
 
 ```html
 <script src="https://unpkg.com/structurajs"></script>
