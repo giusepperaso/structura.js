@@ -1,6 +1,17 @@
 {
-  "name": "structura",
-  "version": "0.1.0",
+  "name": "structurajs",
+  "description": "A very fast and lightweight Typescript library to create immutable states with a mutable syntax",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GiuseppeRaso/structura.js"
+  },
+  "keywords": [
+    "immutability",
+    "structural-sharing",
+    "state"
+  ],
+  "author": "Giuseppe Raso",
+  "license": "MIT",
   "main": "./dist/index.js",
   "type": "module",
   "scripts": {

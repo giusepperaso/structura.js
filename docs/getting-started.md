@@ -3,13 +3,13 @@
 First, install the library via NPM in ES mode:
 
 ```bash
-npm i structura
+npm i structurajs
 ```
 
 or, if you prefer, via a CDN in UDM mode:
 
 ```html
-<script src="https://unpkg.dev"></script>
+<script src="https://unpkg.com/structurajs"></script>
 ```
 
 Now you can write something like this:
