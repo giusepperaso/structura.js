@@ -53,8 +53,6 @@ todo
 
 todo
 
-todo
-
 ## Sets could be unordered
 
 If you do any modification to a child of a set, the new object will be appended at the end of the set, even if the original element wasn't at the end.
