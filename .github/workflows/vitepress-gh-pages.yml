@@ -1,4 +1,4 @@
-name: Deploy Vitepress to Github Pages
+name: Deploy Vitepress to Github Pages with npm
 
 on:
   push:
@@ -14,11 +14,11 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: yarn
-      - run: yarn install --frozen-lockfile
+          cache: npm
+      - run: npm ci
 
       - name: Build
-        run: yarn docs:build
+        run: npm run docs:build
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
