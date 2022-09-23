@@ -9,3 +9,5 @@ The library is very similar to [Immer.js](https://immerjs.github.io/immer/), but
 - circular and multiple references are supported
 - does support traspositions and moves of portions of the draft
 - can return and modify the draft at the same time
+
+The library is actually in alpha state. It is probably already usable (many complex scenarios are already covered by tests), but expect the APIs and the types to change in the future.
