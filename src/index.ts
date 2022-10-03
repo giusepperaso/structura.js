@@ -85,7 +85,7 @@ export type UnFreeze<T> = T extends Primitive<T>
 export function produce<T, Q>(
   state: T,
   producer: Producer<T, Q>,
-  patchCallback?: Function,
+  patchCallback?: PatchCallback,
   { proxify = createProxy }: ProduceOptions = {}
 ): ProduceReturn<T, Q> {
   type R = ProduceReturn<T, Q>;

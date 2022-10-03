@@ -63,16 +63,22 @@ describe.concurrent("tests all(most) of the basic types", () => {
       {},
       [],
     ];
-    const result = produce(myObj, (draft) => {
-      (draft[0] as Obj2).prop.sub = "test";
-      (draft[1] as Obj2).prop.sub = null;
-      (draft[2] as Obj2<number>[])[0].prop.sub++;
-      (draft[2] as Obj2<number>[])[0].prop.sub++;
-      (draft[2] as Obj2<number>[])[0].prop.sub *= 2;
-      (draft[4] as number[]).push(0);
-      (draft[4] as number[]).push(1);
-      (draft[4] as number[]).push(2);
-    });
+    const result = produce(
+      myObj,
+      (draft) => {
+        (draft[0] as Obj2).prop.sub = "test";
+        (draft[1] as Obj2).prop.sub = null;
+        (draft[2] as Obj2<number>[])[0].prop.sub++;
+        (draft[2] as Obj2<number>[])[0].prop.sub++;
+        (draft[2] as Obj2<number>[])[0].prop.sub *= 2;
+        (draft[4] as number[]).push(0);
+        (draft[4] as number[]).push(1);
+        (draft[4] as number[]).push(2);
+      },
+      (patches) => {
+        console.log(JSON.stringify(patches));
+      }
+    );
     expect(myObj).not.toBe(result);
     expect(result[0]).not.toBe(myObj[0]);
     expect(result[1]).not.toBe(myObj[1]);
