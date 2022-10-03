@@ -34,28 +34,27 @@ const enum Actions {
   clear_map,
   clear_set,
   append,
+  append_map,
+  append_set,
 }
 
 const Traps_self = Symbol();
-const Traps_shallow = Symbol();
 const Traps_target = Symbol();
-const Traps_data = Symbol();
 
-export type Primitive = null | undefined | string | number | boolean | symbol;
-export type Target = UnknownArray | UnknownMap | UnknownSet | Object;
+export type Primitive<T> = T extends object ? T : never;
 export type Prop = string | number | symbol;
 export type UnknownObj = Record<Prop, unknown>;
 export type UnknownMap = Map<unknown, unknown>;
 export type UnknownSet = Set<unknown>;
-export type UnknownArray = Array<unknown>;
 
 export type Producer<T, Q> = (draft: UnFreeze<T>) => Q | void;
 export type ProduceOptions = { proxify?: typeof createProxy };
 export type ProduceReturn<T, Q> = FreezeOnce<Q extends void ? T : Q>;
+export type PatchCallback = (patches: Patch[], inversePatches: Patch[]) => void;
 
 export type FreezeOnce<T> = T extends Freeze<infer Q> ? Freeze<Q> : Freeze<T>;
 
-export type Freeze<T> = T extends Primitive
+export type Freeze<T> = T extends Primitive<T>
   ? T
   : T extends Array<infer U>
   ? ReadonlyArray<Freeze<U>>
@@ -69,7 +68,7 @@ export type Freeze<T> = T extends Primitive
   ? ReadonlySet<Freeze<M>>
   : { readonly [K in keyof T]: Freeze<T[K]> };
 
-export type UnFreeze<T> = T extends Primitive
+export type UnFreeze<T> = T extends Primitive<T>
   ? T
   : T extends Array<infer Q>
   ? Array<UnFreeze<Q>>
@@ -86,18 +85,17 @@ export type UnFreeze<T> = T extends Primitive
 export function produce<T, Q>(
   state: T,
   producer: Producer<T, Q>,
+  patchCallback?: Function,
   { proxify = createProxy }: ProduceOptions = {}
 ): ProduceReturn<T, Q> {
   type R = ProduceReturn<T, Q>;
   if (isPrimitive(state)) return producer(state as UnFreeze<T>) as R;
   const data = new WeakMap();
+  const pStore: PatchStore = { patches: [], inversePatches: [] };
   const handler = {
-    get(t: Target, p: Prop, r: Target) {
+    get(t: object, p: Prop, r: object) {
       if (p === Traps_self) return t;
-      if (p === Traps_data) return data.get(t);
-      const shallowTarget = data.get(t)?.shallow;
-      const actualTarget = shallowTarget || t;
-      if (p === Traps_shallow) return shallowTarget;
+      const actualTarget = data.get(t)?.shallow || t;
       if (p === Traps_target) return actualTarget;
       const v = Reflect.get(actualTarget, p, r);
       if (isPrimitive(v)) return v;
@@ -105,27 +103,27 @@ export function produce<T, Q>(
       if (type === Types.Map) {
         if (typeof v === Types.function) {
           if (p === Methods.set) {
-            return function (k: Prop, _v: unknown) {
-              if (actualTarget.get(k) !== _v)
-                walkParents(Actions.set_map, data, t, k, _v);
+            return function (k: Prop, x: unknown) {
+              if (actualTarget.get(k) !== x)
+                walkParents(Actions.set_map, data, pStore, t, k, x);
               return r;
             };
           } else if (p === Methods.delete) {
             return function (k: Prop) {
               const result = actualTarget.has(k);
-              if (result) walkParents(Actions.delete_map, data, t, k);
+              if (result) walkParents(Actions.delete_map, data, pStore, t, k);
               return result;
             };
           } else if (p === Methods.clear) {
             return function () {
-              walkParents(Actions.clear_map, data, t);
+              walkParents(Actions.clear_map, data, pStore, t);
             };
           } else if (p === Methods.get) {
             return function (k: Prop) {
-              const _v = actualTarget.get(k);
-              return !isPrimitive(_v)
-                ? proxify(_v, data, handler, t, k).proxy
-                : _v;
+              const x = actualTarget.get(k);
+              return !isPrimitive(x)
+                ? proxify(x, data, handler, t, k).proxy
+                : x;
             };
           } else if (p === Methods.values || p === Methods.entries) {
             return function* iterator() {
@@ -141,8 +139,8 @@ export function produce<T, Q>(
             };
           } else if (p === Methods.forEach) {
             return function forEach(fn: Function) {
-              actualTarget.forEach(function (_v: Target, k: Prop) {
-                fn(proxify(_v, data, handler, t, k).proxy);
+              actualTarget.forEach(function (x: object, k: Prop) {
+                fn(proxify(x, data, handler, t, k).proxy);
               });
             };
           } else {
@@ -152,21 +150,21 @@ export function produce<T, Q>(
       } else if (type === Types.Set) {
         if (typeof v === Types.function) {
           if (p === Methods.add) {
-            return function (_v: unknown) {
-              if (!actualTarget.has(_v))
-                walkParents(Actions.add_set, data, t, undefined, _v);
+            return function (x: unknown) {
+              if (!actualTarget.has(x))
+                walkParents(Actions.add_set, data, pStore, t, undefined, x);
               return r;
             };
           } else if (p === Methods.delete) {
-            return function (_v: unknown) {
-              const result = actualTarget.has(_v);
+            return function (x: unknown) {
+              const result = actualTarget.has(x);
               if (result)
-                walkParents(Actions.delete_set, data, t, undefined, _v);
+                walkParents(Actions.delete_set, data, pStore, t, undefined, x);
               return result;
             };
           } else if (p === Methods.clear) {
             return function () {
-              walkParents(Actions.clear_set, data, t);
+              walkParents(Actions.clear_set, data, pStore, t);
             };
           } else if (p === Methods.values || p === Methods.entries) {
             return function* iterator() {
@@ -181,8 +179,8 @@ export function produce<T, Q>(
             };
           } else if (p === Methods.forEach) {
             return function forEach(fn: Function) {
-              actualTarget.forEach(function (_v: Target) {
-                fn(proxify(_v, data, handler, t, _v).proxy);
+              actualTarget.forEach(function (x: object) {
+                fn(proxify(x, data, handler, t, x).proxy);
               });
             };
           } else {
@@ -195,19 +193,22 @@ export function produce<T, Q>(
         return proxify(v, data, handler, t, p).proxy;
       }
     },
-    set(t: Target, p: Prop, v: unknown, r: Target) {
-      if (Reflect.get(t, p, r) !== v) walkParents(Actions.set, data, t, p, v);
+    set(t: object, p: Prop, v: unknown, r: object) {
+      if (Reflect.get(t, p, r) !== v)
+        walkParents(Actions.set, data, pStore, t, p, v);
       return true;
     },
-    deleteProperty(t: Target, p: Prop) {
-      walkParents(Actions.delete, data, t, p);
+    deleteProperty(t: object, p: Prop) {
+      walkParents(Actions.delete, data, pStore, t, p);
       return true;
     },
   };
 
-  const currData = proxify(state as Target, data, handler);
+  const currData = proxify(state as unknown as object, data, handler);
 
   const result = producer(currData.proxy as UnFreeze<T>);
+
+  if (patchCallback) patchCallback(pStore.patches, pStore.inversePatches);
 
   if (typeof result !== "undefined") {
     return target(result) as R;
@@ -227,40 +228,29 @@ export function target<T>(obj: T) {
   return (obj as T & { [Traps_target]: T })[Traps_target] || obj;
 }
 
-export function getShallow<T>(obj: T) {
-  if (!obj) return;
-  return (obj as T & { [Traps_shallow]: T })[Traps_shallow];
-}
-
 export function original<T>(obj: T) {
   if (typeof obj === "undefined" || obj === null) return obj;
   return (obj as T & { [Traps_self]: T })[Traps_self] || obj;
 }
 
-export function data<T>(obj: T) {
-  if (typeof obj === "undefined" || obj === null) return obj;
-  return (obj as T & { [Traps_data]: T })[Traps_data] || obj;
-}
+export type Patch = { v?: unknown; p?: Link; action: Actions; next?: Patch[] };
+export type PatchPair = { patch: Patch; inverse: Patch };
+export type PatchStore = { patches: Patch[]; inversePatches: Patch[] };
 
-export type Data = WeakMap<Target, TargetData>;
+export type Link = Prop | object;
+export type LinkMap = Map<Link, PatchPair | null>;
+export type ParentMap = Map<object, LinkMap>;
 
-export type Link = Prop | Target;
-
-export type Traversed = Boolean;
-
-export type LinkMap = Map<Link, Traversed>;
-
-export type ParentMap = Map<Target, LinkMap>;
-
+export type Data = WeakMap<object, TargetData>;
 export type TargetData = {
-  proxy: Target;
-  shallow: Target | null;
+  proxy: object;
+  shallow: object | null;
   parents: ParentMap;
 };
 
-export type CreateProxyArgs = [Target, Data, ProxyHandler<Target>];
+export type CreateProxyArgs = [object, Data, ProxyHandler<object>];
 export type CreateProxy =
-  | ((...args: [...CreateProxyArgs, Target?, Link?]) => TargetData)
+  | ((...args: [...CreateProxyArgs, object?, Link?]) => TargetData)
   | ((...args: CreateProxyArgs) => TargetData);
 
 export const createProxy: CreateProxy = function (
@@ -276,9 +266,9 @@ export const createProxy: CreateProxy = function (
     if (parent && link) {
       const parents = currData.parents;
       if (parents.has(parent)) {
-        (parents.get(parent) as LinkMap).set(link, false);
+        (parents.get(parent) as LinkMap).set(link, null);
       } else {
-        parents.set(parent, new Map([[link, false]]));
+        parents.set(parent, new Map([[link, null]]));
       }
     }
   } else {
@@ -286,7 +276,7 @@ export const createProxy: CreateProxy = function (
       proxy: new Proxy(obj, handler),
       shallow: null,
       parents: parent
-        ? new Map([[parent, new Map([[link, false]])]])
+        ? new Map([[parent, new Map([[link, null]])]])
         : new Map(),
     };
     data.set(obj, currData);
@@ -297,43 +287,66 @@ export const createProxy: CreateProxy = function (
 function walkParents(
   action: Actions,
   data: Data,
-  t: Target,
+  patchStore: PatchStore,
+  t: object,
   p?: Prop,
   v?: unknown,
   links?: LinkMap,
-  child?: Target
+  prevPatches?: PatchPair[]
 ) {
-  const currData = data.get(t);
-  if (!currData) throw new Error("Missing data from current object");
+  const currPatches: PatchPair[] = [];
+  const currData = data.get(t) as TargetData;
   let shallow = currData.shallow;
   let type = "";
   if (shallow === null) {
     type = getTypeString(t);
     shallow = currData.shallow = shallowClone(t, type as Types);
   }
-  function actionLink(linkAction: "add" | "delete", link: Link, v: unknown) {
-    if (linkAction === "add") {
-      let prevChildAtLink;
-      if (action === Actions.set) {
-        prevChildAtLink = (shallow as UnknownObj)[link as Prop];
-      } else if (action === Actions.set_map) {
-        prevChildAtLink = (shallow as UnknownMap).get(link as Prop);
-      }
-      if (data.has(prevChildAtLink as Target)) {
-        const prevChildData = data.get(prevChildAtLink as Target) as TargetData;
+  function actionLink(inverseAction: Actions, link: Link, v: unknown) {
+    let prevChildAtLink = null;
+    let thereWasPrevChild = false;
+    if (action === Actions.set || action === Actions.delete) {
+      prevChildAtLink = (shallow as UnknownObj)[link as Prop];
+      thereWasPrevChild = true;
+    } else if (
+      action === Actions.set_map ||
+      action === Actions.delete_map ||
+      action === Actions.clear_map
+    ) {
+      prevChildAtLink = (shallow as UnknownMap).get(link as Prop);
+      thereWasPrevChild = true;
+    }
+    const isAddOperation =
+      action === Actions.set ||
+      action === Actions.set_map ||
+      action === Actions.add_set;
+    if (isAddOperation) {
+      if (data.has(prevChildAtLink as object)) {
+        const prevChildData = data.get(prevChildAtLink as object) as TargetData;
         const parentData = prevChildData.parents.get(t);
         if (parentData) {
           parentData.delete(link);
         }
       }
     }
-    const childData = data.get(v as Target);
+    let patchAction = action;
+    if (action === Actions.clear_map) patchAction = Actions.delete_map;
+    if (action === Actions.clear_set) patchAction = Actions.delete_set;
+    currPatches.push({
+      patch: { v, p, action: patchAction },
+      inverse: {
+        v: prevChildAtLink,
+        p,
+        action: thereWasPrevChild ? patchAction : inverseAction,
+      },
+    });
+    const childData = data.get(v as object);
     if (childData) {
       const childParents = childData.parents;
       if (childParents && childParents.has(t)) {
         const linkMap = childParents.get(t) as LinkMap;
-        if (linkAction === "add") {
-          linkMap.set(link, false);
+        if (isAddOperation) {
+          linkMap.set(link, null);
         } else {
           linkMap.delete(link);
           if (!linkMap.size) childParents.delete(t);
@@ -343,78 +356,129 @@ function walkParents(
   }
   if (action === Actions.set) {
     const actualValue = target(v);
-    actionLink("add", p as Prop, actualValue);
+    actionLink(Actions.delete, p as Prop, actualValue);
     (shallow as UnknownObj)[p as Prop] = actualValue;
+    currPatches[0].inverse = { v, p, action };
   } else if (action === Actions.delete) {
     const actualValue = (shallow as UnknownObj)[p as Prop];
-    actionLink("delete", p as Prop, actualValue);
+    actionLink(Actions.set, p as Prop, actualValue);
     delete (shallow as UnknownObj)[p as Prop];
   } else if (action === Actions.set_map) {
     const actualValue = target(v);
-    actionLink("add", p as Prop, actualValue);
+    actionLink(Actions.delete_map, p as Prop, actualValue);
     (shallow as UnknownMap).set(p, actualValue);
   } else if (action === Actions.delete_map) {
     const actualValue = (shallow as UnknownMap).get(p);
-    actionLink("delete", p as Prop, actualValue);
+    actionLink(Actions.set_map, p as Prop, actualValue);
     (shallow as UnknownMap).delete(p);
   } else if (action === Actions.clear_map) {
     for (const entry of (shallow as UnknownMap).entries()) {
-      actionLink("delete", entry[0] as Link, target(entry[1]));
+      actionLink(Actions.set_map, entry[0] as Link, target(entry[1]));
     }
     (shallow as UnknownMap).clear();
   } else if (action === Actions.add_set) {
     const actualValue = target(v) as Link;
-    actionLink("add", actualValue, actualValue);
+    actionLink(Actions.delete_set, actualValue, actualValue);
     (shallow as UnknownSet).add(actualValue);
   } else if (action === Actions.delete_set) {
     const actualValue = target(v) as Link;
-    actionLink("delete", actualValue, actualValue);
+    actionLink(Actions.add_set, actualValue, actualValue);
     (shallow as UnknownSet).delete(actualValue);
   } else if (action === Actions.clear_set) {
     for (const value of (shallow as UnknownSet).values()) {
       const actualValue = target(value) as Link;
-      actionLink("delete", actualValue, actualValue);
+      actionLink(Actions.add_set, actualValue, actualValue);
     }
     (shallow as UnknownSet).clear();
   } else if (action === Actions.append) {
     if (links) {
-      let someTraversed = false;
       type = type || getTypeString(t);
+      let someTraversed = false;
+      function actionAppend(
+        links: LinkMap,
+        link: Link,
+        traversedPatches: PatchPair | null,
+        patchAction: Actions
+      ) {
+        let wasTraversed = false;
+        if (!traversedPatches) {
+          someTraversed = true;
+          const patch: Patch = { p: link, action: patchAction, next: [] };
+          const inverse: Patch = { p: link, action: patchAction, next: [] };
+          traversedPatches = { patch, inverse };
+          links.set(link, traversedPatches);
+          wasTraversed = true;
+        }
+        currPatches.push(traversedPatches);
+        for (let i = 0; i !== (prevPatches as PatchPair[]).length; i++) {
+          const prevPatch = (prevPatches as PatchPair[])[i];
+          (traversedPatches.patch.next as Patch[]).push(prevPatch.patch);
+          (traversedPatches.inverse.next as Patch[]).push(prevPatch.inverse);
+        }
+        return wasTraversed;
+      }
       if (type === Types.Map) {
-        for (const [link, traversed] of links.entries()) {
-          if (!traversed) {
-            someTraversed = true;
-            links.set(link, true);
-            (shallow as UnknownMap).set(link, child);
+        for (const [link, traversedPatches] of links.entries()) {
+          if (actionAppend(links, link, traversedPatches, Actions.append_map)) {
+            (shallow as UnknownMap).set(link, v);
           }
         }
       } else if (type === Types.Set) {
-        for (const [link, traversed] of links.entries()) {
-          if (!traversed) {
-            someTraversed = true;
-            links.set(link, true);
+        for (const [link, traversedPatches] of links.entries()) {
+          if (actionAppend(links, link, traversedPatches, Actions.append_set)) {
             (shallow as UnknownSet).delete(link);
-            (shallow as UnknownSet).add(child);
+            (shallow as UnknownSet).add(v);
           }
         }
       } else {
-        for (const [link, traversed] of links.entries()) {
-          if (!traversed) {
-            someTraversed = true;
-            links.set(link, true);
-            (shallow as UnknownObj)[link as Prop] = child;
+        for (let [link, traversedPatches] of links.entries()) {
+          if (actionAppend(links, link, traversedPatches, Actions.append)) {
+            (shallow as UnknownObj)[link as Prop] = v;
           }
         }
       }
       if (!someTraversed) return;
     }
   }
-  for (const [parent, links] of currData.parents.entries()) {
-    walkParents(Actions.append, data, parent, p, v, links, shallow);
+  const currParents = currData.parents;
+  if (currParents.size) {
+    for (const [parent, links] of currParents.entries()) {
+      walkParents(
+        Actions.append,
+        data,
+        patchStore,
+        parent,
+        undefined,
+        shallow,
+        links,
+        currPatches
+      );
+    }
+  } else {
+    for (let i = 0; i != currPatches.length; i++) {
+      patchStore.patches.push(currPatches[i].patch);
+      patchStore.inversePatches.push(currPatches[i].inverse);
+    }
   }
 }
 
-function isPrimitive(x: unknown): x is Primitive {
+export function applyPatches(patches: Patch[]) {
+  for (let i = 0; i !== patches.length; i++) {
+    applyPatch(patches[i]);
+  }
+}
+
+export function applyPatch(patch: Patch) {
+  patch;
+}
+
+// consumo patches: parto da patches poi per ognuna => for n of next
+
+// PATCH NEL CASO DI RETURN DIRETTO?
+//  caso 1) porzione draft che riesco a trovare con original => torno patches e infine patch con azione Actions.producer_return
+//  caso 2) oggetto del tutto differente => torno solo la patch con azione Actions.producer_return
+
+function isPrimitive<T>(x: unknown): x is Primitive<T> {
   if (x === null) return true;
   const type = typeof x;
   if (type !== Types.function && type !== Types.object) return true;
@@ -443,15 +507,12 @@ function copyProps(from: Object, to: Object) {
   return to;
 }
 
-function shallowClone(
-  x: Target | Exclude<Primitive, null | undefined>,
-  type?: Types
-): Target {
-  return (cloneTypes[(type || Types.Object) as Types] as Function)(x);
+function shallowClone(x: unknown, type?: Types): object {
+  return (cloneTypes[type || Types.Object] as Function)(x);
 }
 
 const cloneTypes: Partial<Record<Types, Function>> = {
-  [Types.primitive](x: Primitive) {
+  [Types.primitive]<T>(x: Primitive<T>) {
     return x;
   },
   [Types.Object](x: Object) {

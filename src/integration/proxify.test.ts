@@ -11,6 +11,7 @@ describe.concurrent("proxify tests", async () => {
       (draft) => {
         draft.push(0);
       },
+      undefined,
       { proxify }
     );
     expect(proxify).not.toHaveBeenCalledWith(myObj.push);
