@@ -1,9 +1,40 @@
+:root {
+  --vp-c-text-1: lavenderblush;
+}
+
+body {
+  text-align: justify;
+}
+
+h1 {
+  font-size: 38px !important;
+  margin-bottom: 60px;
+  text-align: center;
+}
+
 a.title {
   color: var(--vp-c-brand) !important;
   font-size: 18px !important;
 }
 
 a.title img {
-  width: 100% !important;
-  height: 40px !important;
+  width: 45px !important;
+  height: 45px !important;
+  border-radius: 50%;
+  margin-right: 50px;
+}
+
+img[alt="Structura"] {
+  width: 400px;
+  border-radius: 50%;
+  margin: -30px auto 30px auto;
+}
+
+@media (min-width: 768px) {
+  h1 {
+    font-size: 52px !important;
+  }
+  img[alt="Structura"] {
+    margin: -10px auto 40px auto;
+  }
 }
