@@ -9,7 +9,8 @@ export default defineConfig({
   themeConfig: {
     //siteTitle: false,
     //logo: "/pics/logo.png",
-    logo: "/pics/structural-sharing-1.jfif",
+    //logo: "/pics/structural-sharing-1.jfif",
+    logo: "https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/structural-sharing-1.jfif",
     siteTitle: "Structura.js",
     nav: [
       { text: "GitHub", link: "https://github.com/GiuseppeRaso/structura.js" },
