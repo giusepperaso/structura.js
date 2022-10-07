@@ -7,11 +7,8 @@ export default defineConfig({
   description:
     "Fast typescript library for creating immutable states with structural sharing by using a mutable syntax",
   themeConfig: {
-    //siteTitle: false,
-    //logo: "/pics/logo.png",
-    //logo: "/pics/structural-sharing-1.jfif",
     logo: "https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/structural-sharing-1.jfif",
-    siteTitle: "Structura.js",
+    siteTitle: "Structura.js", //siteTitle: false,
     nav: [
       { text: "GitHub", link: "https://github.com/GiuseppeRaso/structura.js" },
     ],
