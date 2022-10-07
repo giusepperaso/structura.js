@@ -7,7 +7,7 @@
 The library is very similar to [Immer.js](https://immerjs.github.io/immer/), but it has some advantages over it:
 
 - up to ~22x more performant, even faster than [Immutable](https://github.com/immutable-js/immutable-js) most of the time
-- freezes the object only at compile time by leveraging Typescript, while most libraries freeze the object at runtime with Object.freeze, which may be slow expecially for nested objects
+- freezes the object only at compile time by leveraging Typescript, while other libraries freeze the object at runtime with Object.freeze, which may be slow expecially for nested objects
 - circular and multiple references are supported
 - can return and modify the draft at the same time
 - flexibility in the return type of the producer
