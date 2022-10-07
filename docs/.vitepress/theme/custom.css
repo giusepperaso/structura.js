@@ -33,6 +33,9 @@ img[alt="Structura"] {
 @media (min-width: 768px) {
   h1 {
     font-size: 52px !important;
+    line-height: 55px !important;
+    margin-bottom: 52px;
+    margin-top: -7px;
   }
   img[alt="Structura"] {
     margin: -10px auto 40px auto;
