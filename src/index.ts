@@ -91,7 +91,9 @@ export function produce<T, Q>(
   type R = ProduceReturn<T, Q>;
   if (isPrimitive(state)) return producer(state as UnFreeze<T>) as R;
   const data = new WeakMap();
-  const pStore: PatchStore = { patches: [], inversePatches: [] };
+  const pStore: PatchStore | null = patchCallback
+    ? { patches: [], inversePatches: [] }
+    : null;
   const handler = {
     get(t: object, p: Prop, r: object) {
       if (p === Traps_self) return t;
@@ -208,7 +210,12 @@ export function produce<T, Q>(
 
   const result = producer(currData.proxy as UnFreeze<T>);
 
-  if (patchCallback) patchCallback(pStore.patches, pStore.inversePatches);
+  if (patchCallback) {
+    patchCallback(
+      (pStore as PatchStore).patches,
+      (pStore as PatchStore).inversePatches
+    );
+  }
 
   if (typeof result !== "undefined") {
     return target(result) as R;
@@ -287,7 +294,7 @@ export const createProxy: CreateProxy = function (
 function walkParents(
   action: Actions,
   data: Data,
-  patchStore: PatchStore,
+  patchStore: PatchStore | null,
   t: object,
   p?: Prop,
   v?: unknown,
@@ -329,17 +336,19 @@ function walkParents(
         }
       }
     }
-    let patchAction = action;
-    if (action === Actions.clear_map) patchAction = Actions.delete_map;
-    if (action === Actions.clear_set) patchAction = Actions.delete_set;
-    currPatches.push({
-      patch: { v, p, action: patchAction },
-      inverse: {
-        v: prevChildAtLink,
-        p,
-        action: thereWasPrevChild ? patchAction : inverseAction,
-      },
-    });
+    if (patchStore) {
+      let patchAction = action;
+      if (action === Actions.clear_map) patchAction = Actions.delete_map;
+      if (action === Actions.clear_set) patchAction = Actions.delete_set;
+      currPatches.push({
+        patch: { v, p, action: patchAction },
+        inverse: {
+          v: prevChildAtLink,
+          p,
+          action: thereWasPrevChild ? patchAction : inverseAction,
+        },
+      });
+    }
     const childData = data.get(v as object);
     if (childData) {
       const childParents = childData.parents;
@@ -358,7 +367,6 @@ function walkParents(
     const actualValue = target(v);
     actionLink(Actions.delete, p as Prop, actualValue);
     (shallow as UnknownObj)[p as Prop] = actualValue;
-    currPatches[0].inverse = { v, p, action };
   } else if (action === Actions.delete) {
     const actualValue = (shallow as UnknownObj)[p as Prop];
     actionLink(Actions.set, p as Prop, actualValue);
@@ -403,17 +411,24 @@ function walkParents(
         let wasTraversed = false;
         if (!traversedPatches) {
           someTraversed = true;
-          const patch: Patch = { p: link, action: patchAction, next: [] };
-          const inverse: Patch = { p: link, action: patchAction, next: [] };
-          traversedPatches = { patch, inverse };
-          links.set(link, traversedPatches);
           wasTraversed = true;
+          if (patchStore) {
+            traversedPatches = {
+              patch: { p: link, action: patchAction, next: [] },
+              inverse: { p: link, action: patchAction, next: [] },
+            };
+          } else {
+            traversedPatches = dummyPatches;
+          }
+          links.set(link, traversedPatches);
         }
-        currPatches.push(traversedPatches);
-        for (let i = 0; i !== (prevPatches as PatchPair[]).length; i++) {
-          const prevPatch = (prevPatches as PatchPair[])[i];
-          (traversedPatches.patch.next as Patch[]).push(prevPatch.patch);
-          (traversedPatches.inverse.next as Patch[]).push(prevPatch.inverse);
+        if (patchStore) {
+          currPatches.push(traversedPatches);
+          for (let i = 0; i !== (prevPatches as PatchPair[]).length; i++) {
+            const prevPatch = (prevPatches as PatchPair[])[i];
+            (traversedPatches.patch.next as Patch[]).push(prevPatch.patch);
+            (traversedPatches.inverse.next as Patch[]).push(prevPatch.inverse);
+          }
         }
         return wasTraversed;
       }
@@ -455,12 +470,19 @@ function walkParents(
       );
     }
   } else {
-    for (let i = 0; i != currPatches.length; i++) {
-      patchStore.patches.push(currPatches[i].patch);
-      patchStore.inversePatches.push(currPatches[i].inverse);
+    if (patchStore) {
+      for (let i = 0; i != currPatches.length; i++) {
+        patchStore.patches.push(currPatches[i].patch);
+        patchStore.inversePatches.push(currPatches[i].inverse);
+      }
     }
   }
 }
+
+const dummyPatches = {
+  patch: { action: Actions.set },
+  inverse: { action: Actions.set },
+};
 
 export function applyPatches(patches: Patch[]) {
   for (let i = 0; i !== patches.length; i++) {
