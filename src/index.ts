@@ -308,6 +308,7 @@ function walkParents(
   if (shallow === null) {
     type = getTypeString(t);
     shallow = currData.shallow = shallowClone(t, type as Types);
+    data.set(shallow, currData);
   }
   function actionLink(inverseAction: Actions, link: Link, v: unknown) {
     let prevChildAtLink = null;
