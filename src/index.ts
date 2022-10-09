@@ -270,13 +270,13 @@ export const createProxy: CreateProxy = function (
   let currData: TargetData;
   if (data.has(obj)) {
     currData = data.get(obj) as TargetData;
-    if (parent && link) {
     if (parent) {
       const parents = currData.parents;
       if (parents.has(parent)) {
-        (parents.get(parent) as LinkMap).set(link, null);
+        // avoids reusing the same patch twice; also avoids multiple references problems
+        (parents.get(parent) as LinkMap).set(link as Link, null);
       } else {
-        parents.set(parent, new Map([[link, null]]));
+        parents.set(parent, new Map([[link as Link, null]]));
       }
     }
   } else {
@@ -410,10 +410,10 @@ function walkParents(
         traversedPatches: PatchPair | null,
         patchAction: Actions
       ) {
-        let wasTraversed = false;
+        let thisTraversed = false;
         if (!traversedPatches) {
           someTraversed = true;
-          wasTraversed = true;
+          thisTraversed = true;
           if (patchStore) {
             traversedPatches = {
               patch: { p: link, action: patchAction, next: [] },
@@ -432,7 +432,7 @@ function walkParents(
             (traversedPatches.inverse.next as Patch[]).push(prevPatch.inverse);
           }
         }
-        return wasTraversed;
+        return thisTraversed;
       }
       if (type === Types.Map) {
         for (const [link, traversedPatches] of links.entries()) {
