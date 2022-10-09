@@ -271,6 +271,7 @@ export const createProxy: CreateProxy = function (
   if (data.has(obj)) {
     currData = data.get(obj) as TargetData;
     if (parent && link) {
+    if (parent) {
       const parents = currData.parents;
       if (parents.has(parent)) {
         (parents.get(parent) as LinkMap).set(link, null);
