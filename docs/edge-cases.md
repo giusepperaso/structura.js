@@ -49,9 +49,21 @@ const newState2 = produce(state, (draft) => {
     draft.test2.push(1)
 })
 
+// this does not work well because test1 will not reflect the modifications...
+const newState3 = produce(state, (draft) => {
+    draft.test2.push(1)
+    draft.test1;
+})
+
+// ...but this works
+const newState4 = produce(state, (draft) => {
+    draft.test2.push(1)
+    draft.test1 = draft.test1;
+})
+
 // this does not work well because test2 is never accessed,
 // so test2 will remain the same as before
-const newState3 = produce(state, (draft) => {
+const newState5 = produce(state, (draft) => {
     draft.test1.push(1)
 })
 ```
