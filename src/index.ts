@@ -273,7 +273,9 @@ export const createProxy: CreateProxy = function (
     if (parent) {
       const parents = currData.parents;
       if (parents.has(parent)) {
-        // avoids reusing the same patch twice; also avoids multiple references problems
+        // avoids reusing the same patch twice in subsequent calls; also avoids multiple references problems;
+        // however the same patch can be reused on a single call, like in array.push() which also modifies the length,
+        // so we can't just store a boolean instead of a patch
         (parents.get(parent) as LinkMap).set(link as Link, null);
       } else {
         parents.set(parent, new Map([[link as Link, null]]));
@@ -443,6 +445,8 @@ function walkParents(
       } else if (type === Types.Set) {
         for (const [link, traversedPatches] of links.entries()) {
           if (actionAppend(links, link, traversedPatches, Actions.append_set)) {
+            // order in sets is not preserved;
+            // preserving the order would be too costly and does not matter
             (shallow as UnknownSet).delete(link);
             (shallow as UnknownSet).add(v);
           }
