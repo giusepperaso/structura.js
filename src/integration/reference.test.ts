@@ -90,7 +90,7 @@ describe.concurrent(
       const myObj = { sub1: sub, sub2: sub };
       const result = produce(myObj, (draft) => {
         draft.sub1.test.push(2);
-        draft.sub2.test.push(3);
+        draft.sub2.test.push(3); // OR: draft.sub1.test.push(3); draft.sub2 = draft.sub2;
       });
       expect(result.sub1.test).toEqual([1, 2, 3]);
       expect(result.sub2.test).toEqual([1, 2, 3]);
