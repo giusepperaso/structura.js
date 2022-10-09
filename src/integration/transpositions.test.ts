@@ -66,14 +66,12 @@ describe.concurrent("tests transpositions of element", () => {
   });
   it("does not create problems if we modify the object after transposition", async () => {
     const state = [[1], [2]];
-    (globalThis as any).__debug = true;
     const newState = produce(state, (draft) => {
       const first = draft[0];
       draft[0] = draft[1];
       draft[1] = first;
       first.push(999);
     });
-    (globalThis as any).__debug = false;
     expect(newState[0]).toEqual([2]);
     expect(newState[1]).toEqual([1, 999]);
   });
