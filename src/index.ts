@@ -34,8 +34,10 @@ const enum Actions {
   clear_map,
   clear_set,
   append,
+  // only found in patches:
   append_map,
   append_set,
+  producer_return,
 }
 
 const Traps_self = Symbol();
@@ -205,19 +207,18 @@ export function produce<T, Q>(
       return true;
     },
   };
-
   const currData = proxify(state as unknown as object, data, handler);
-
   const result = producer(currData.proxy as UnFreeze<T>);
-
-  if (patchCallback) {
-    patchCallback(
-      (pStore as PatchStore).patches,
-      (pStore as PatchStore).inversePatches
-    );
+  const hasReturn = typeof result !== "undefined";
+  if (patchCallback && pStore) {
+    if (hasReturn) {
+      if (!data.has(result as object)) pStore.patches = [];
+      pStore.patches.push({ v: result, action: Actions.producer_return });
+      pStore.inversePatches.push({ action: Actions.producer_return });
+    }
+    patchCallback(pStore.patches, pStore.inversePatches);
   }
-
-  if (typeof result !== "undefined") {
+  if (hasReturn) {
     return target(result) as R;
   } else if (currData.shallow === null) {
     return state as R;
@@ -497,14 +498,9 @@ export function applyPatches(patches: Patch[]) {
 }
 
 export function applyPatch(patch: Patch) {
+  // consumo patches: parto da patches poi per ognuna => for n of next
   patch;
 }
-
-// consumo patches: parto da patches poi per ognuna => for n of next
-
-// PATCH NEL CASO DI RETURN DIRETTO?
-//  caso 1) porzione draft che riesco a trovare con original => torno patches e infine patch con azione Actions.producer_return
-//  caso 2) oggetto del tutto differente => torno solo la patch con azione Actions.producer_return
 
 function isPrimitive<T>(x: unknown): x is Primitive<T> {
   if (x === null) return true;
