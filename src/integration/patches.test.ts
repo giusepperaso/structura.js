@@ -2,31 +2,90 @@ import { describe, expect, it } from "vitest";
 import { Patch, produce } from "..";
 
 describe.concurrent("test patch production", () => {
-  it("is the right number of patches", async () => {
+  it("should return the right patches on array push", async () => {
     const myObj: number[][] = [[], [], [], []];
-    //const myObj: { [k: string]: number }[] = [{ A: 1 }];
     let patches: Patch[];
     const result = produce(
       myObj,
       (draft) => {
-        /* draft[0].B = 2;
-        draft[0].C = 3;
-        draft[0].D = 4;
-        draft[0].E = 5; */
         draft[0].push(0);
         draft[0].push(1);
         draft[0].push(2);
-        /* draft[0][0] = 0;
-        draft[0][1] = 1;
-        draft[0][2] = 2; */
       },
       (_patches) => {
         patches = _patches;
-        console.log(JSON.stringify(patches));
       }
     );
     expect(result[0]).not.toBe(myObj[0]);
-    //expect(myObj[0].length).toBe(0);
-    //expect(patches![0]).toBe(patches![1]);
+    expect(patches!).toEqual([
+      {
+        p: "0",
+        action: 8,
+        next: [
+          { v: 0, p: "0", action: 0 },
+          { v: 1, p: "length", action: 0 },
+        ],
+      },
+      {
+        p: "0",
+        action: 8,
+        next: [
+          { v: 1, p: "1", action: 0 },
+          { v: 2, p: "length", action: 0 },
+        ],
+      },
+      {
+        p: "0",
+        action: 8,
+        next: [
+          { v: 2, p: "2", action: 0 },
+          { v: 3, p: "length", action: 0 },
+        ],
+      },
+    ]);
+  });
+  it("should return the right patches on array manual adding", async () => {
+    const myObj: number[][] = [[], [], [], []];
+    let patches: Patch[];
+    const result = produce(
+      myObj,
+      (draft) => {
+        draft[0][0] = 0;
+        draft[0][1] = 1;
+        draft[0][2] = 2;
+      },
+      (_patches) => {
+        patches = _patches;
+      }
+    );
+    expect(result[0]).not.toBe(myObj[0]);
+    expect(patches!).toEqual([
+      { p: "0", action: 8, next: [{ v: 0, p: "0", action: 0 }] },
+      { p: "0", action: 8, next: [{ v: 1, p: "1", action: 0 }] },
+      { p: "0", action: 8, next: [{ v: 2, p: "2", action: 0 }] },
+    ]);
+  });
+  it("should return the right patches on object set", async () => {
+    const myObj: { [k: string]: number }[] = [{ A: 1 }];
+    let patches: Patch[];
+    const result = produce(
+      myObj,
+      (draft) => {
+        draft[0].B = 2;
+        draft[0].C = 3;
+        draft[0].D = 4;
+        draft[0].E = 5;
+      },
+      (_patches) => {
+        patches = _patches;
+      }
+    );
+    expect(result[0]).not.toBe(myObj[0]);
+    expect(patches!).toEqual([
+      { p: "0", action: 8, next: [{ v: 2, p: "B", action: 0 }] },
+      { p: "0", action: 8, next: [{ v: 3, p: "C", action: 0 }] },
+      { p: "0", action: 8, next: [{ v: 4, p: "D", action: 0 }] },
+      { p: "0", action: 8, next: [{ v: 5, p: "E", action: 0 }] },
+    ]);
   });
 });
