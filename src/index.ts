@@ -491,15 +491,81 @@ const dummyPatches = {
   inverse: { action: Actions.set },
 };
 
-export function applyPatches(patches: Patch[]) {
+export function applyPatches<T>(state: T, patches: Patch[]) {
+  const newState = shallowClone(state);
+  const data: WeakMap<object, object> = new WeakMap();
   for (let i = 0; i !== patches.length; i++) {
-    applyPatch(patches[i]);
+    applyPatch(newState, patches[i], data);
   }
+  return newState;
 }
 
-export function applyPatch(patch: Patch) {
-  // consumo patches: parto da patches poi per ognuna => for n of next
-  patch;
+export function applyPatch<T extends object>(
+  current: T,
+  patch: Patch,
+  data: WeakMap<object, object>
+) {
+  let currShallow;
+  switch (patch.action) {
+    case Actions.set:
+      (current as UnknownObj)[patch.p as Prop] = patch.v;
+      break;
+    case Actions.set_map:
+      (current as UnknownMap).set(patch.p as Link, patch.v);
+      break;
+    case Actions.add_set:
+      (current as UnknownSet).add(patch.v);
+      break;
+    case Actions.delete:
+      delete (current as UnknownObj)[patch.p as Prop];
+      break;
+    case Actions.delete_map:
+    case Actions.delete_set:
+      (current as UnknownMap | UnknownSet).delete(patch.p as Link);
+      break;
+    case Actions.clear_map:
+    case Actions.clear_set:
+      (current as UnknownMap | UnknownSet).clear();
+      break;
+    case Actions.append:
+      if (!data.has(current)) {
+        currShallow = shallowClone(current) as T;
+        data.set(current, currShallow);
+        data.set(currShallow, currShallow);
+      } else {
+        currShallow = data.get(current) as T;
+      }
+      // ATTENZIONE: patch.v NON ESISTE
+      (currShallow as UnknownObj)[patch.p as Prop] = patch.v;
+      if (patch.next) {
+        for (let i = 0; i !== patch.next.length; i++) {
+          //applyPatch(patch.v, patch.next[i], data);
+        }
+      }
+      break;
+    case Actions.append_map:
+      if (!data.has(current)) {
+        currShallow = shallowClone(current, Types.Map) as T;
+        data.set(current, currShallow);
+        data.set(currShallow, currShallow);
+      } else {
+        currShallow = data.get(current) as T;
+      }
+      (currShallow as UnknownMap).set(patch.p as Prop, patch.v);
+      break;
+    case Actions.append_set:
+      if (!data.has(current)) {
+        currShallow = shallowClone(current, Types.Set) as T;
+        data.set(current, currShallow);
+        data.set(currShallow, currShallow);
+      } else {
+        currShallow = data.get(current) as T;
+      }
+      (currShallow as UnknownSet).add(patch.v);
+      break;
+    case Actions.producer_return:
+      break;
+  }
 }
 
 function isPrimitive<T>(x: unknown): x is Primitive<T> {
