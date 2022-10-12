@@ -511,11 +511,11 @@ function isPrimitive<T>(x: unknown): x is Primitive<T> {
 
 const toString = Object.prototype.toString;
 
-function getTypeString(x: Object) {
+function getTypeString<T>(x: T) {
   return toString.call(x);
 }
 
-function copyProps(from: Object, to: Object) {
+function copyProps<F extends object, T>(from: F, to: T) {
   const keys = Object.keys(from);
   const l = keys.length;
   let i = 0;
@@ -531,8 +531,8 @@ function copyProps(from: Object, to: Object) {
   return to;
 }
 
-function shallowClone(x: unknown, type?: Types): object {
-  return (cloneTypes[type || Types.Object] as Function)(x);
+function shallowClone<T>(x: T, type?: Types): object {
+  return (cloneTypes[type || (getTypeString(x) as Types)] as Function)(x);
 }
 
 const cloneTypes: Partial<Record<Types, Function>> = {
