@@ -46,6 +46,7 @@ const Traps_target = Symbol();
 export type Primitive<T> = T extends object ? T : never;
 export type Prop = string | number | symbol;
 export type UnknownObj = Record<Prop, unknown>;
+export type UnknownArr = Array<unknown>;
 export type UnknownMap = Map<unknown, unknown>;
 export type UnknownSet = Set<unknown>;
 
@@ -99,7 +100,8 @@ export function produce<T, Q>(
   const handler = {
     get(t: object, p: Prop, r: object) {
       if (p === Traps_self) return t;
-      const actualTarget = data.get(t)?.shallow || t;
+      const currData = data.get(t);
+      const actualTarget = currData && currData.shallow ? currData.shallow : t;
       if (p === Traps_target) return actualTarget;
       const v = Reflect.get(actualTarget, p, r);
       if (isPrimitive(v)) return v;
@@ -192,7 +194,11 @@ export function produce<T, Q>(
           }
         }
       } else if (typeof v === Types.function) {
-        return v.bind(proxify(t, data, handler).proxy);
+        const currData = proxify(t, data, handler);
+        if (type === Types.Array) {
+          currData.inverseLength = (t as UnknownArr).length;
+        }
+        return v.bind(currData.proxy);
       } else {
         return proxify(v, data, handler, t, p).proxy;
       }
@@ -216,7 +222,7 @@ export function produce<T, Q>(
       pStore.patches.push({ v: result, action: Actions.producer_return });
       pStore.inversePatches.push({ action: Actions.producer_return });
     }
-    patchCallback(pStore.patches, pStore.inversePatches);
+    patchCallback(pStore.patches, pStore.inversePatches.reverse());
   }
   if (hasReturn) {
     return target(result) as R;
@@ -254,6 +260,7 @@ export type TargetData = {
   proxy: object;
   shallow: object | null;
   parents: ParentMap;
+  inverseLength?: number;
 };
 
 export type CreateProxyArgs = [object, Data, ProxyHandler<object>];
@@ -314,19 +321,27 @@ function walkParents(
     shallow = currData.shallow = shallowClone(t, type as Types);
     data.set(shallow, currData);
   }
+  // - !! LINK can be removed from args
+  // - verify inverse action
   function actionLink(inverseAction: Actions, link: Link, v: unknown) {
     let prevChildAtLink = null;
-    let thereWasPrevChild = false;
-    if (action === Actions.set || action === Actions.delete) {
+    if (action === Actions.set) {
+      if (p === "length" && typeof currData.inverseLength !== "undefined") {
+        prevChildAtLink = currData.inverseLength;
+        delete currData.inverseLength;
+        inverseAction = action;
+      } else {
+        prevChildAtLink = (shallow as UnknownObj)[link as Prop];
+        if (typeof prevChildAtLink !== "undefined") inverseAction = action;
+      }
+    } else if (action === Actions.delete) {
       prevChildAtLink = (shallow as UnknownObj)[link as Prop];
-      thereWasPrevChild = true;
     } else if (
       action === Actions.set_map ||
       action === Actions.delete_map ||
       action === Actions.clear_map
     ) {
       prevChildAtLink = (shallow as UnknownMap).get(link as Prop);
-      thereWasPrevChild = true;
     }
     const isAddOperation =
       action === Actions.set ||
@@ -350,7 +365,7 @@ function walkParents(
         inverse: {
           v: prevChildAtLink,
           p,
-          action: thereWasPrevChild ? patchAction : inverseAction,
+          action: inverseAction,
         },
       });
     }
@@ -434,6 +449,7 @@ function walkParents(
             (traversedPatches.patch.next as Patch[]).push(prevPatch.patch);
             (traversedPatches.inverse.next as Patch[]).push(prevPatch.inverse);
           }
+          (traversedPatches.inverse.next as Patch[]).reverse();
         }
         return thisTraversed;
       }
@@ -491,11 +507,13 @@ const dummyPatches = {
   inverse: { action: Actions.set },
 };
 
-export function applyPatches<T>(state: T, patches: Patch[]) {
-  const newState = shallowClone(state);
-  const data: WeakMap<object, object> = new WeakMap();
+export function applyPatches<T extends object>(state: T, patches: Patch[]) {
+  const newState = shallowClone(state) as T;
+  const clones: WeakMap<object, object> = new WeakMap();
+  clones.set(state, newState);
+  clones.set(newState, newState);
   for (let i = 0; i !== patches.length; i++) {
-    applyPatch(newState, patches[i], data);
+    applyPatch(newState, patches[i], clones);
   }
   return newState;
 }
@@ -503,10 +521,12 @@ export function applyPatches<T>(state: T, patches: Patch[]) {
 export function applyPatch<T extends object>(
   current: T,
   patch: Patch,
-  data: WeakMap<object, object>
+  clones: WeakMap<object, object>
+  // appended: WeakSet => could be used to determine if the element was external to the tree, so we could avoid cloning it
 ) {
-  let currShallow;
-  switch (patch.action) {
+  const action = patch.action;
+  let childShallow, child, next;
+  switch (action) {
     case Actions.set:
       (current as UnknownObj)[patch.p as Prop] = patch.v;
       break;
@@ -528,42 +548,42 @@ export function applyPatch<T extends object>(
       (current as UnknownMap | UnknownSet).clear();
       break;
     case Actions.append:
-      if (!data.has(current)) {
-        currShallow = shallowClone(current) as T;
-        data.set(current, currShallow);
-        data.set(currShallow, currShallow);
+    case Actions.append_map:
+    case Actions.append_set:
+      if (action === Actions.append_map) {
+        child = (current as UnknownMap).get(patch.p as Prop) as object;
+      } else if (action === Actions.append_set) {
+        child = patch.p as object;
       } else {
-        currShallow = data.get(current) as T;
+        child = (current as UnknownObj)[patch.p as Prop] as object;
       }
-      // ATTENZIONE: patch.v NON ESISTE
-      (currShallow as UnknownObj)[patch.p as Prop] = patch.v;
-      if (patch.next) {
-        for (let i = 0; i !== patch.next.length; i++) {
-          //applyPatch(patch.v, patch.next[i], data);
+      if (!clones.has(child)) {
+        childShallow = shallowClone(child);
+        clones.set(child, childShallow);
+        clones.set(childShallow, childShallow);
+      } else {
+        childShallow = clones.get(child);
+      }
+      if (action === Actions.append_map) {
+        (current as UnknownMap).set(patch.p as Link, childShallow);
+      } else if (action === Actions.append_set) {
+        if (child !== childShallow) {
+          (current as UnknownSet).delete(child);
+          (current as UnknownSet).add(childShallow);
+        }
+      } else {
+        (current as UnknownObj)[patch.p as Prop] = childShallow;
+      }
+      next = patch.next;
+      if (next) {
+        for (let i = 0; i !== next.length; i++) {
+          applyPatch(childShallow as object, next[i], clones);
         }
       }
       break;
-    case Actions.append_map:
-      if (!data.has(current)) {
-        currShallow = shallowClone(current, Types.Map) as T;
-        data.set(current, currShallow);
-        data.set(currShallow, currShallow);
-      } else {
-        currShallow = data.get(current) as T;
-      }
-      (currShallow as UnknownMap).set(patch.p as Prop, patch.v);
-      break;
-    case Actions.append_set:
-      if (!data.has(current)) {
-        currShallow = shallowClone(current, Types.Set) as T;
-        data.set(current, currShallow);
-        data.set(currShallow, currShallow);
-      } else {
-        currShallow = data.get(current) as T;
-      }
-      (currShallow as UnknownSet).add(patch.v);
-      break;
     case Actions.producer_return:
+      // how do I handle this?
+      // how do I handle type change?
       break;
   }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Patch, produce } from "..";
+import { applyPatches, Patch, produce } from "..";
 
 describe.concurrent("test patch production", () => {
   it("should return the right patches on array push", async () => {
@@ -87,5 +87,102 @@ describe.concurrent("test patch production", () => {
       { p: "0", action: 8, next: [{ v: 4, p: "D", action: 0 }] },
       { p: "0", action: 8, next: [{ v: 5, p: "E", action: 0 }] },
     ]);
+  });
+  it("should apply the patches correctly with object/array", async () => {
+    const makeObj: () => { [k: string]: number }[] = () => [{ A: 1 }];
+    const myObj = makeObj();
+    let patches: Patch[], inverse: Patch[];
+    produce(
+      makeObj(),
+      (draft) => {
+        delete draft[0].A;
+        draft[0].B = 2;
+        draft.push({ C: 3 });
+      },
+      (_patches, _inverse) => {
+        patches = _patches;
+        inverse = _inverse;
+      }
+    );
+    const result = applyPatches(myObj, patches!);
+    expect(result).toEqual([{ B: 2 }, { C: 3 }]);
+    const undone = applyPatches(result, inverse!);
+    expect(undone).toEqual(makeObj());
+  });
+  it("should apply the patches correctly with array reverse", async () => {
+    const makeObj: () => { [k: string]: number }[] = () => [{ A: 1 }, { A: 2 }];
+    const myObj = makeObj();
+    let patches: Patch[], inverse: Patch[];
+    produce(
+      makeObj(),
+      (draft) => {
+        draft.reverse();
+      },
+      (_patches, _inverse) => {
+        patches = _patches;
+        inverse = _inverse;
+      }
+    );
+    const result = applyPatches(myObj, patches!);
+    expect(result).toEqual([{ A: 2 }, { A: 1 }]);
+    const undone = applyPatches(result, inverse!);
+    expect(undone).toEqual(makeObj());
+  });
+  it("should apply the patches correctly with array splice", async () => {
+    const makeObj: () => { [k: string]: number }[] = () => [{ A: 1 }, { A: 4 }];
+    const myObj = makeObj();
+    let patches: Patch[], inverse: Patch[];
+    produce(
+      makeObj(),
+      (draft) => {
+        draft.splice(1, 0, { A: 2 }, { A: 3 });
+      },
+      (_patches, _inverse) => {
+        patches = _patches;
+        inverse = _inverse;
+      }
+    );
+    const result = applyPatches(myObj, patches!);
+    expect(result).toEqual([{ A: 1 }, { A: 2 }, { A: 3 }, { A: 4 }]);
+    const undone = applyPatches(result, inverse!);
+    expect(undone).toEqual(makeObj());
+  });
+  it("should apply the patches correctly with map", async () => {
+    const makeObj: () => Map<string, number>[] = () => [new Map()];
+    const myObj = makeObj();
+    let patches: Patch[], inverse: Patch[];
+    produce(
+      makeObj(),
+      (draft) => {
+        draft[0].set("A", 1);
+      },
+      (_patches, _inverse) => {
+        patches = _patches;
+        inverse = _inverse;
+      }
+    );
+    const result = applyPatches(myObj, patches!);
+    expect(result).toEqual([new Map([["A", 1]])]);
+    const undone = applyPatches(result, inverse!);
+    expect(undone).toEqual(makeObj());
+  });
+  it("should apply the patches correctly with set", async () => {
+    const makeObj: () => Set<{ [k: string]: number }>[] = () => [new Set()];
+    const myObj = makeObj();
+    let patches: Patch[], inverse: Patch[];
+    produce(
+      makeObj(),
+      (draft) => {
+        draft[0].add({ A: 1 });
+      },
+      (_patches, _inverse) => {
+        patches = _patches;
+        inverse = _inverse;
+      }
+    );
+    const result = applyPatches(myObj, patches!);
+    expect(result).toEqual([new Set([{ A: 1 }])]);
+    const undone = applyPatches(result, inverse!);
+    expect(undone).toEqual(makeObj());
   });
 });
