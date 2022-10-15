@@ -1,1 +1,0 @@
-import{_ as e,c as t,o as r,a}from"./app.01a32e3c.js";const f=JSON.parse('{"title":"Structura.js","description":"","frontmatter":{},"headers":[],"relativePath":"index.md"}'),s={name:"index.md"},i=a("",6),o=[i];function l(n,c,h,u,p,m){return r(),t("div",null,o)}const b=e(s,[["render",l]]);export{f as __pageData,b as default};
