@@ -1,0 +1,1 @@
+import{_ as n,c as s,o as a,a as e}from"./app.01a32e3c.js";const b=JSON.parse('{"title":"Contributing","description":"","frontmatter":{},"headers":[],"relativePath":"contributing.md"}'),t={name:"contributing.md"},o=e("",9),r=[o];function p(c,i,l,d,u,h){return a(),s("div",null,r)}const g=n(t,[["render",p]]);export{b as __pageData,g as default};
