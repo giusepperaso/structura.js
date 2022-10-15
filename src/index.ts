@@ -85,6 +85,8 @@ export type UnFreeze<T> = T extends Primitive<T>
   ? Set<UnFreeze<M>>
   : { -readonly [K in keyof T]: UnFreeze<T[K]> };
 
+export type ProduceParams<T> = Parameters<typeof produce<T, T>>;
+
 export function produce<T, Q>(
   state: T,
   producer: Producer<T, Q>,
@@ -233,8 +235,27 @@ export function produce<T, Q>(
   }
 }
 
-export function safeProduce<T>(...args: Parameters<typeof produce<T, T>>) {
+export function produceWithPatches<T>(
+  ...args: [ProduceParams<T>[0], ProduceParams<T>[1]]
+) {
+  let patches: Patch[];
+  let inverse: Patch[];
+  function setPatches(_patches: Patch[], _inverse: Patch[]) {
+    patches = _patches;
+    inverse = _inverse;
+  }
+  const result = produce<T, T>(...args, setPatches);
+  return [result, patches!, inverse!] as const;
+}
+
+export function safeProduce<T>(...args: ProduceParams<T>) {
   return produce<T, T>(...args);
+}
+
+export function safeProduceWithPatches<T>(
+  ...args: Parameters<typeof produceWithPatches<T>>
+) {
+  return produceWithPatches<T>(...args);
 }
 
 export function target<T>(obj: T) {
@@ -321,12 +342,11 @@ function walkParents(
     shallow = currData.shallow = shallowClone(t, type as Types);
     data.set(shallow, currData);
   }
-  // - !! LINK can be removed from args
-  // - verify inverse action
+  // don't use p directly but use link because p may be different or undefined
   function actionLink(inverseAction: Actions, link: Link, v: unknown) {
     let prevChildAtLink = null;
     if (action === Actions.set) {
-      if (p === "length" && typeof currData.inverseLength !== "undefined") {
+      if (link === "length" && typeof currData.inverseLength !== "undefined") {
         prevChildAtLink = currData.inverseLength;
         delete currData.inverseLength;
         inverseAction = action;
@@ -336,12 +356,21 @@ function walkParents(
       }
     } else if (action === Actions.delete) {
       prevChildAtLink = (shallow as UnknownObj)[link as Prop];
+      // do I have to inverse action ?
     } else if (
       action === Actions.set_map ||
       action === Actions.delete_map ||
       action === Actions.clear_map
     ) {
       prevChildAtLink = (shallow as UnknownMap).get(link as Prop);
+      // do I have to inverse action ?
+    } else if (
+      action === Actions.add_set ||
+      action === Actions.delete_set ||
+      action === Actions.clear_set
+    ) {
+      prevChildAtLink = link;
+      // do I have to inverse action ?
     }
     const isAddOperation =
       action === Actions.set ||
@@ -361,10 +390,10 @@ function walkParents(
       if (action === Actions.clear_map) patchAction = Actions.delete_map;
       if (action === Actions.clear_set) patchAction = Actions.delete_set;
       currPatches.push({
-        patch: { v, p, action: patchAction },
+        patch: { v, p: link, action: patchAction },
         inverse: {
           v: prevChildAtLink,
-          p,
+          p: link,
           action: inverseAction,
         },
       });
