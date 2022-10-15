@@ -4,7 +4,7 @@
 - if you create a new object and you assign a portion of the draft to it, it keeps a reference to the proxy
 
 ## PERFORMANCE
-- the proxy handler shouldn't be generated every time by closure
+- remove some closures, expecially the proxy traps, the addLink and actionLink
 - getOwnPropertySymbols adds some overhead on copy: we could disable it with a flag if necessary. Is it worth?
 - store type somewhere for fast lookup
 - typeof v is taken two times, the second time for checking if it's a function; solve this
