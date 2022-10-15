@@ -103,7 +103,7 @@ export function produce<T, Q>(
     get(t: object, p: Prop, r: object) {
       if (p === Traps_self) return t;
       const currData = data.get(t);
-      const actualTarget = currData && currData.shallow ? currData.shallow : t;
+      const actualTarget = (currData && currData.shallow) || t;
       if (p === Traps_target) return actualTarget;
       const v = Reflect.get(actualTarget, p, r);
       if (isPrimitive(v)) return v;
@@ -558,7 +558,6 @@ export function applyPatch<T extends object>(
   current: T,
   patch: Patch,
   clones: WeakMap<object, object>
-  // appended: WeakSet => could be used to determine if the element was external to the tree, so we could avoid cloning it
 ) {
   const action = patch.action;
   let childShallow, child, next;
@@ -635,17 +634,19 @@ function getTypeString<T>(x: T) {
   return toString.call(x);
 }
 
-function copyProps<F extends object, T>(from: F, to: T) {
+function copyProps<F extends object, T extends object>(from: F, to: T) {
   const keys = Object.keys(from);
-  const l = keys.length;
+  let l = keys.length;
   let i = 0;
   let key;
-  for (; i < l; i++) {
+  for (; i !== l; i++) {
     key = keys[i];
     (to as UnknownObj)[key] = (from as UnknownObj)[key];
   }
   const symbols = Object.getOwnPropertySymbols(from);
-  for (key of symbols) {
+  l = symbols.length;
+  for (i = 0; i !== l; i++) {
+    key = symbols[i];
     (to as UnknownObj)[key] = (from as UnknownObj)[key];
   }
   return to;
