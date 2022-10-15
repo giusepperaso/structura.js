@@ -2,6 +2,7 @@
   "name": "structurajs",
   "version": "0.2.0",
   "description": "A very fast and lightweight Typescript library to create immutable states with a mutable syntax",
+  "homepage": "https://giusepperaso.github.io/structura.js/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/GiuseppeRaso/structura.js"
