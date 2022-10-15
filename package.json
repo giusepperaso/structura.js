@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.8.5",
+    "@vitest/coverage-c8": "^0.24.3",
     "benny": "^3.7.1",
     "c8": "^7.12.0",
     "immer": "^9.0.15",
