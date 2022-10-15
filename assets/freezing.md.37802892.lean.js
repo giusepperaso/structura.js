@@ -1,1 +1,0 @@
-import{_ as s,c as a,o as n,a as e}from"./app.f1a97f5b.js";const A=JSON.parse('{"title":"Freezing at compile time","description":"","frontmatter":{},"headers":[],"relativePath":"freezing.md"}'),p={name:"freezing.md"},o=e("",6),l=[o];function t(r,c,i,y,C,D){return n(),a("div",null,l)}const d=s(p,[["render",t]]);export{A as __pageData,d as default};
