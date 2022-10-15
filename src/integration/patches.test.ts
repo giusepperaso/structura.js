@@ -102,6 +102,17 @@ describe.concurrent("test patch production", () => {
     const undone = applyPatches(result, inverse);
     expect(undone).toEqual(makeObj());
   });
+  it("should apply the patches correctly with producer return", async () => {
+    const makeObj: () => number[] = () => [0];
+    const myObj = makeObj();
+    const [, patches, inverse] = produceWithPatches(makeObj(), (draft) => {
+      return [draft[0], 1];
+    });
+    const result = applyPatches(myObj, patches);
+    expect(result).toEqual([0, 1]);
+    const undone = applyPatches(result, inverse);
+    expect(undone).toEqual(makeObj());
+  });
   it("should apply the patches correctly with map", async () => {
     const makeObj: () => Map<string, number>[] = () => [new Map()];
     const myObj = makeObj();

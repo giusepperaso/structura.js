@@ -217,21 +217,22 @@ export function produce<T, Q>(
   };
   const currData = proxify(state as unknown as object, data, handler);
   const result = producer(currData.proxy as UnFreeze<T>);
+  let shallow = currData.shallow;
+  const produced = shallow === null ? state : shallow;
   const hasReturn = typeof result !== "undefined";
   if (patchCallback && pStore) {
     if (hasReturn) {
       if (!data.has(result as object)) pStore.patches = [];
-      pStore.patches.push({ v: result, action: Actions.producer_return });
-      pStore.inversePatches.push({ action: Actions.producer_return });
+      const action = Actions.producer_return;
+      pStore.patches.push({ v: result, action });
+      pStore.inversePatches.push({ v: produced, action });
     }
     patchCallback(pStore.patches, pStore.inversePatches.reverse());
   }
   if (hasReturn) {
     return target(result) as R;
-  } else if (currData.shallow === null) {
-    return state as R;
   } else {
-    return target(currData.shallow) as R;
+    return produced as R;
   }
 }
 
@@ -536,13 +537,19 @@ const dummyPatches = {
   inverse: { action: Actions.set },
 };
 
-export function applyPatches<T extends object>(state: T, patches: Patch[]) {
-  const newState = shallowClone(state) as T;
+export function applyPatches<T extends object>(
+  state: T,
+  patches: Patch[]
+): T | object {
+  let newState: T | object = shallowClone(state) as T;
+  let producerReturn;
   const clones: WeakMap<object, object> = new WeakMap();
   clones.set(state, newState);
   clones.set(newState, newState);
   for (let i = 0; i !== patches.length; i++) {
-    applyPatch(newState, patches[i], clones);
+    producerReturn = applyPatch(newState, patches[i], clones);
+    if (typeof producerReturn !== "undefined")
+      newState = producerReturn as object;
   }
   return newState;
 }
@@ -611,9 +618,7 @@ export function applyPatch<T extends object>(
       }
       break;
     case Actions.producer_return:
-      // how do I handle this?
-      // how do I handle type change?
-      break;
+      return patch.v;
   }
 }
 
