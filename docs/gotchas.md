@@ -6,7 +6,7 @@ Structura doesn't limit you in the return type of your producers: you can return
 
 ```typescript
 // this is totally valid
-produce({}, ()=>{
+produce({}, () => {
     return 1;
 })
 ```
