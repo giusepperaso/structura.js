@@ -23,6 +23,7 @@ export default defineConfig({
           { text: "Edge cases", link: "/edge-cases" },
           { text: "Gotchas", link: "/gotchas" },
           { text: "Benchmarks", link: "/benchmarks" },
+          { text: "Contributing", link: "/contributing" },
         ],
       },
     ],
