@@ -7,7 +7,7 @@
     <meta name="description" content="Fast typescript library for creating immutable states with structural sharing by using a mutable syntax">
     <link rel="stylesheet" href="/structura.js/assets/style.aaf0ff45.css">
     <link rel="modulepreload" href="/structura.js/assets/app.01a32e3c.js">
-    <link rel="modulepreload" href="/structura.js/assets/edge-cases.md.8879a7f2.lean.js">
+    <link rel="modulepreload" href="/structura.js/assets/edge-cases.md.fde3dcaa.lean.js">
     
     <script id="check-dark-light">(()=>{const e=localStorage.getItem("vitepress-theme-appearance"),a=window.matchMedia("(prefers-color-scheme: dark)").matches;(!e||e==="auto"?a:e==="dark")&&document.documentElement.classList.add("dark")})();</script>
   </head>
@@ -75,14 +75,14 @@
 <span class="line"><span style="color:#89DDFF;">}</span><span style="color:#A6ACCD;">)</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#676E95;">// this does not work well because the new object</span></span>
-<span class="line"><span style="color:#676E95;">// will remain with a proxy attached via its prop!</span></span>
+<span class="line"><span style="color:#676E95;">// will remain with a proxy attached via its prop</span></span>
 <span class="line"><span style="color:#C792EA;">const</span><span style="color:#A6ACCD;"> newState3 </span><span style="color:#89DDFF;">=</span><span style="color:#A6ACCD;"> </span><span style="color:#82AAFF;">produce</span><span style="color:#A6ACCD;">(state</span><span style="color:#89DDFF;">,</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">(</span><span style="color:#A6ACCD;">draft</span><span style="color:#89DDFF;">)</span><span style="color:#A6ACCD;"> </span><span style="color:#C792EA;">=&gt;</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">{</span></span>
 <span class="line"><span style="color:#F07178;">    </span><span style="color:#C792EA;">const</span><span style="color:#F07178;"> </span><span style="color:#A6ACCD;">first</span><span style="color:#F07178;"> </span><span style="color:#89DDFF;">=</span><span style="color:#F07178;"> </span><span style="color:#A6ACCD;">draft</span><span style="color:#F07178;">[</span><span style="color:#F78C6C;">0</span><span style="color:#F07178;">]</span></span>
 <span class="line"><span style="color:#F07178;">    </span><span style="color:#C792EA;">const</span><span style="color:#F07178;"> </span><span style="color:#A6ACCD;">newObj</span><span style="color:#F07178;"> </span><span style="color:#89DDFF;">=</span><span style="color:#F07178;"> </span><span style="color:#89DDFF;">{</span><span style="color:#F07178;"> prop</span><span style="color:#89DDFF;">:</span><span style="color:#F07178;"> </span><span style="color:#A6ACCD;">first</span><span style="color:#F07178;"> </span><span style="color:#89DDFF;">}</span></span>
 <span class="line"><span style="color:#F07178;">    </span><span style="color:#A6ACCD;">draft</span><span style="color:#89DDFF;">.</span><span style="color:#82AAFF;">push</span><span style="color:#F07178;">(</span><span style="color:#A6ACCD;">newObj</span><span style="color:#F07178;"> </span><span style="color:#89DDFF;">as</span><span style="color:#F07178;"> </span><span style="color:#FFCB6B;">any</span><span style="color:#F07178;">)</span></span>
 <span class="line"><span style="color:#89DDFF;">}</span><span style="color:#A6ACCD;">)</span></span>
 <span class="line"></span></code></pre></div></div></div></main><!--[--><!--]--><footer class="VPDocFooter" data-v-f0af2311 data-v-a54a85bd><!----><div class="prev-next" data-v-a54a85bd><div class="pager" data-v-a54a85bd><a class="pager-link prev" href="/structura.js/patches.html" data-v-a54a85bd><span class="desc" data-v-a54a85bd>Previous page</span><span class="title" data-v-a54a85bd>Patches</span></a></div><div class="has-prev pager" data-v-a54a85bd><a class="pager-link next" href="/structura.js/gotchas.html" data-v-a54a85bd><span class="desc" data-v-a54a85bd>Next page</span><span class="title" data-v-a54a85bd>Gotchas</span></a></div></div></footer><!--[--><!--]--></div></div></div></div></div><!----><!--[--><!--]--></div></div>
-    <script>__VP_HASH_MAP__ = JSON.parse("{\"benchmarks.md\":\"134bb484\",\"contributing.md\":\"69c30922\",\"edge-cases.md\":\"8879a7f2\",\"freezing.md\":\"87f92f33\",\"getting-started.md\":\"ce09f8dd\",\"gotchas.md\":\"a3d8fb03\",\"index.md\":\"8fa0bae0\",\"patches.md\":\"1577f22b\",\"why-structura.md\":\"dd08860d\"}")</script>
+    <script>__VP_HASH_MAP__ = JSON.parse("{\"benchmarks.md\":\"134bb484\",\"contributing.md\":\"69c30922\",\"edge-cases.md\":\"fde3dcaa\",\"freezing.md\":\"87f92f33\",\"getting-started.md\":\"ce09f8dd\",\"gotchas.md\":\"a3d8fb03\",\"index.md\":\"8fa0bae0\",\"patches.md\":\"1577f22b\",\"why-structura.md\":\"dd08860d\"}")</script>
     <script type="module" async src="/structura.js/assets/app.01a32e3c.js"></script>
     
   </body>
