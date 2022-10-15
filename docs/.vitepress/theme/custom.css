@@ -24,10 +24,10 @@ a.title img {
   margin-right: 50px;
 }
 
-img[alt="Structura"] {
-  width: 400px;
+img#structura {
+  width: 400px !important;
   border-radius: 50%;
-  margin: -30px auto 30px auto;
+  margin: -30px auto 30px auto !important;
 }
 
 @media (min-width: 768px) {
@@ -37,7 +37,7 @@ img[alt="Structura"] {
     margin-bottom: 52px;
     margin-top: -7px;
   }
-  img[alt="Structura"] {
-    margin: -10px auto 40px auto;
+  img#structura {
+    margin: -10px auto 40px auto !important;
   }
 }
