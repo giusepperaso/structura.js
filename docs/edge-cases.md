@@ -93,7 +93,7 @@ const newState2 = produce(state, (draft) => {
 })
 
 // this does not work well because the new object
-// will remain with a proxy attached via its prop!
+// will remain with a proxy attached via its prop
 const newState3 = produce(state, (draft) => {
     const first = draft[0]
     const newObj = { prop: first }
