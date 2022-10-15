@@ -115,4 +115,14 @@ describe.concurrent("verify that Maps work correctly", async () => {
     expect(Array.from(myObj.entries())).toEqual(entries);
     expect(Array.from(result.entries())).toEqual(entriesAltered);
   });
+  it("can't modify the keys in maps", async () => {
+    const obj = { A: 1 };
+    const myObj = new Map([[obj, obj]]);
+    const result = produce(myObj, (draft) => {
+      (draft.get(obj) as typeof obj).A = 2;
+    });
+    expect(myObj).not.toBe(result);
+    expect(myObj.get(obj)).not.toBe(result.get(obj));
+    expect(obj.A).toBe(1);
+  });
 });
