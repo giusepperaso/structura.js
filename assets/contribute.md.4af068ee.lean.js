@@ -1,0 +1,1 @@
+import{_ as e,c as s,o as a,a as n}from"./app.24d1a071.js";const b=JSON.parse('{"title":"Contributing","description":"","frontmatter":{},"headers":[],"relativePath":"contribute.md"}'),t={name:"contribute.md"},o=n("",9),r=[o];function p(c,l,i,d,u,h){return a(),s("div",null,r)}const g=e(t,[["render",p]]);export{b as __pageData,g as default};
