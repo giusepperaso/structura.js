@@ -18,39 +18,38 @@ The benchmarks were performed on a machine with these specs:
 
 >OS: Windows 10
 
-## Complex object, few modifications
-
-<a href="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/benchmarks/wide_few.png" target="_blank">
-<img src="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/benchmarks/wide_few.png" style="background:white;" />
-</a>
-
 ## Complex object, many modifications
 
-<a href="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/benchmarks/wide_many.png" target="_blank">
-<img src="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/benchmarks/wide_many.png" style="background:white;" />
+<a href="./benchmark/wide_many.chart.html" target="_blank">
+<img src="/benchmark/wide_many.jpg" style="background:white;" />
 </a>
 
-## Nested object, few modifications
+## Complex object, few modifications
 
-<a href="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/benchmarks/nested_few.png" target="_blank">
-<img src="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/benchmarks/nested_few.png" style="background:white;" />
+<a href="./benchmark/wide_few.chart.html" target="_blank">
+<img src="/benchmark/wide_few.jpg" style="background:white;" />
 </a>
 
 ## Nested object, many modifications
 
-<a href="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/benchmarks/nested_many.png" target="_blank">
-<img src="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/benchmarks/nested_many.png" style="background:white;" />
+<a href="./benchmark/nested_many.chart.html" target="_blank">
+<img src="/benchmark/nested_many.jpg" style="background:white;" />
 </a>
 
-## Simple object, few modifications
+## Nested object, few modifications
 
-<a href="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/benchmarks/small_few.png" target="_blank">
-<img src="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/benchmarks/small_few.png" style="background:white;" />
+<a href="./benchmark/nested_few.chart.chart.html" target="_blank">
+<img src="/benchmark/nested_few.jpg" style="background:white;" />
 </a>
 
 ## Simple object, many modifications
 
-<a href="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/benchmarks/small_many.png" target="_blank">
-<img src="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/pics/benchmarks/small_many.png" style="background:white;" />
+<a href="./benchmark/small_many.chart.html" target="_blank">
+<img src="/benchmark/small_many.jpg" style="background:white;" />
 </a>
 
+## Simple object, few modifications
+
+<a href="./benchmark/small_few.chart.html" target="_blank">
+<img src="/benchmark/small_few.jpg" style="background:white;" />
+</a>

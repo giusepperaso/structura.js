@@ -12,7 +12,7 @@ dist
 dist-ssr
 coverage
 benchmark
-!*/benchmark
+!*/**/benchmark
 *.local
 
 # Editor directories and files
