@@ -1,16 +1,22 @@
 # Getting Started
 
-First, install the library via NPM:
+## via NPM
+
+First, install the library via npm:
 
 ```bash
 npm i structurajs
 ```
 
-or, if you prefer, via a CDN with a script tag:
+## alternative: via a cdn
+
+or, if you prefer, via a cdn with a script tag:
 
 ```html
 <script src="https://unpkg.com/structurajs"></script>
 ```
+
+## Example
 
 Now you can write something like this:
 

@@ -2,17 +2,33 @@
 
 Before creating a pull request, be sure that tests are not failing, and that the performance did not degrade (unless there is a very good reason for the slow down).
 
-To run tests:
+## Node version
+
+If you want to be sure that you have the necessary node version installed, use *Volta*:
+
+```bash
+curl https://get.volta.sh | bash
+```
+
+More details here: [https://volta.sh/](https://volta.sh/)
+
+## To run tests:
 
 ```bash
 npm run test
 ```
 
-To run benchmarks:
+This will also create coverage
+
+## To run benchmarks:
 
 ```bash
 npm run benchmark
 ```
+
+This will also create screenshots of the benchmarks
+
+## To run it into the browser
 
 If you want to try the library into the browser, create a copy of *src/dev.example.ts* and rename it *src/dev.ts* (this file will be gitignored)
 

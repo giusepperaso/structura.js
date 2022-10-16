@@ -6,6 +6,8 @@ Patches and inverse patches are useful for example if you want to send them over
 
 **Patches do not comply with RFC 6902**, so if you want to use them in another language you should create your own parser.
 
+## Example with callback
+
 ```typescript
 type Make = () => Record<string, number>[]
 const makeObj: Make = () => [{ A: 1 }];
@@ -33,6 +35,8 @@ const undone = applyPatches(newResult, inverse);
 expect(undone).toEqual(makeObj());
 ```
 
+## Example with produceWithPatches
+
 The same example can be written more concisely by using *produceWithPatches*:
 
 ```typescript
@@ -52,6 +56,8 @@ expect(newResult).toEqual(result);
 const undone = applyPatches(newResult, inverse);
 expect(undone).toEqual(makeObj());
 ```
+
+## Example with safeProduceWithPatches
 
 You can also use the safe version, *safeProduceWithPatches*:
 

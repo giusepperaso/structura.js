@@ -1,5 +1,7 @@
 # Freezing at compile time
 
+## Freezing
+
 With libraries like Immer, if you want to freeze an object you have to do it at runtime with a nested Object.freeze, which may be very costly for deeply nested objects (the library does it for you but the performance hit is still there).
 
 Instead, with Structura the freezing is done at compile time via Typescript by adding a nested readonly flag to the produced state. So the performance cost of freezing becomes zero.
@@ -18,6 +20,8 @@ const newState = produce(state, (draft) => {
 
 // newState.push(5) would fail
 ```
+
+## Unfreezing
 
 If you want to unfreeze the object, just use the reverse type:
 
