@@ -44,6 +44,5 @@ b.suite(
 
   b.cycle(),
   b.complete(),
-  b.save({ file: "wide_few", version: "1.0.0" }),
   b.save({ file: "wide_few", format: "chart.html" })
 );
