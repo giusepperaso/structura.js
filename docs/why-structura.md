@@ -66,7 +66,7 @@ const newState = produce(state, (draft) => {
 
 ## *Structura.js* to the rescue
 
-Structura aims to be a library with a syntax identical (more or less) to Immer but with a much higher performance ([up to ~22x, even faster than Immutable in most cases](./benchmarks.md)), and also with a lower size
+Structura aims to be a library with a syntax identical (more or less) to Immer but with a much higher performance ([up to ~22x, even faster than Immutable in some cases](./benchmarks.md)), and also with a lower size
 
 ```javascript
 const state = {
@@ -76,7 +76,7 @@ const state = {
 }
 
 // this example, despite being indistinguishable from the immer one,
-// is ~24x more performant!
+// is ~18x more performant!
 const newState = produce(state, (draft) => {
     draft.sub.prop2 = 2
 })
