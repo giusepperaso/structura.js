@@ -26,7 +26,13 @@ This will also create coverage
 npm run benchmark
 ```
 
-This will also create screenshots of the benchmarks
+**This will also create screenshots of the benchmarks and will copy the same files into the docs folder.**
+
+If you want to only run benchmarks and nothing else:
+
+```bash
+npm run benchmark:only
+```
 
 ## To run it into the browser
 
