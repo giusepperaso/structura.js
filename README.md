@@ -4,7 +4,7 @@
 <img id="structura" alt="structura" style="width:420px;" src="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/public/structural-sharing-1.jfif">
 </p>
 
-<h2 style="display:none;">You can find complete docs at <a href="https://giusepperaso.github.io/structura.js/">https://giusepperaso.github.io/structura.js/</a></h2>
+<h2 style="display:none;" align="center">You can find complete docs at <a href="https://giusepperaso.github.io/structura.js/">https://giusepperaso.github.io/structura.js/</a></h2>
 
 **Structura.js** is a very fast and lightweight Typescript library which allows to create immutable states with a mutable syntax. It is based on the idea of [structural sharing](https://blog.klipse.tech/javascript/2021/02/26/structural-sharing-in-javascript.html#what-is-structural-sharing).
 
