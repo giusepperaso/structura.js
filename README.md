@@ -4,6 +4,8 @@
 <img id="structura" alt="structura" style="width:420px;" src="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/public/structural-sharing-1.jfif">
 </p>
 
+<h2 style="display:none;">You can find complete docs at <a href="https://giusepperaso.github.io/structura.js/">https://giusepperaso.github.io/structura.js/</a></h2>
+
 **Structura.js** is a very fast and lightweight Typescript library which allows to create immutable states with a mutable syntax. It is based on the idea of [structural sharing](https://blog.klipse.tech/javascript/2021/02/26/structural-sharing-in-javascript.html#what-is-structural-sharing).
 
 The library is very similar to [Immer.js](https://immerjs.github.io/immer/), but it has some advantages over it:
@@ -17,5 +19,3 @@ The library is very similar to [Immer.js](https://immerjs.github.io/immer/), but
 - does support transpositions and moves of portions of the draft
 
 The library is actually in alpha state. It is probably already usable (many complex scenarios are already covered by tests), but expect the APIs and the types to change in the future.
-
-<span style="display:none;">You can find complete docs at <a href="https://giusepperaso.github.io/structura.js/">https://giusepperaso.github.io/structura.js/</a></span>
