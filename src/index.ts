@@ -274,7 +274,7 @@ export type PatchPair = { patch: Patch; inverse: Patch };
 export type PatchStore = { patches: Patch[]; inversePatches: Patch[] };
 
 export type Link = Prop | object;
-export type LinkMap = Map<Link, PatchPair | null>;
+export type LinkMap = Map<Link, PatchPair | null | true>;
 export type ParentMap = Map<object, LinkMap>;
 
 export type Data = WeakMap<object, TargetData>;
@@ -455,7 +455,7 @@ function walkParents(
       function actionAppend(
         links: LinkMap,
         link: Link,
-        traversedPatches: PatchPair | null,
+        traversedPatches: PatchPair | null | true,
         patchAction: Actions
       ) {
         let thisTraversed = false;
@@ -468,18 +468,22 @@ function walkParents(
               inverse: { p: link, action: patchAction, next: [] },
             };
           } else {
-            traversedPatches = dummyPatches;
+            traversedPatches = true;
           }
           links.set(link, traversedPatches);
         }
         if (patchStore) {
-          currPatches.push(traversedPatches);
+          currPatches.push(traversedPatches as PatchPair);
           for (let i = 0; i !== (prevPatches as PatchPair[]).length; i++) {
             const prevPatch = (prevPatches as PatchPair[])[i];
-            (traversedPatches.patch.next as Patch[]).push(prevPatch.patch);
-            (traversedPatches.inverse.next as Patch[]).push(prevPatch.inverse);
+            ((traversedPatches as PatchPair).patch.next as Patch[]).push(
+              prevPatch.patch
+            );
+            ((traversedPatches as PatchPair).inverse.next as Patch[]).push(
+              prevPatch.inverse
+            );
           }
-          (traversedPatches.inverse.next as Patch[]).reverse();
+          ((traversedPatches as PatchPair).inverse.next as Patch[]).reverse();
         }
         return thisTraversed;
       }
@@ -531,11 +535,6 @@ function walkParents(
     }
   }
 }
-
-const dummyPatches = {
-  patch: { action: Actions.set },
-  inverse: { action: Actions.set },
-};
 
 export function applyPatches<T extends object>(
   state: T,
