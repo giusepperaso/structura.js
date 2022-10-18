@@ -13,7 +13,7 @@ npm i structurajs
 or, if you prefer, via a cdn with a script tag:
 
 ```html
-<script src="https://unpkg.com/structurajs"></script>
+<script src="https://unpkg.com/structurajs/dist/umd.js"></script>
 ```
 
 ## Example
