@@ -2,7 +2,9 @@
 
 Before creating a pull request, be sure that tests are not failing, and that the performance did not degrade (unless there is a very good reason for the slow down).
 
-## Node version
+## Basics
+
+Git clone the repo and run npm install (the install will be heavier than that of the published package because of dev dependencies)
 
 If you want to be sure that you have the necessary node version installed, use *Volta*:
 
