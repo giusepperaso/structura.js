@@ -1,7 +1,7 @@
 <h1 align="center">Structura.js</h1>
 
 <p align="center">
-<img id="structura" alt="structura" style="width:420px;" src="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/public/structural-sharing-1.jfif">
+<img id="structura" alt="structura" width="420" src="https://github.com/GiuseppeRaso/structura.js/raw/master/docs/public/structural-sharing-1.jfif">
 </p>
 
 <h2 style="display:none;" align="center">You can find complete docs at <a href="https://giusepperaso.github.io/structura.js/">https://giusepperaso.github.io/structura.js/</a></h2>
