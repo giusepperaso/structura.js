@@ -660,7 +660,10 @@ const cloneTypes: Partial<Record<Types, Function>> = {
     return x;
   },
   [Types.Object](x: Object) {
-    return copyProps(x, Object.create(Object.getPrototypeOf(x)));
+    const constructor = x.constructor;
+    if (!constructor || constructor.name === "Object") return copyProps(x, {});
+    const proto = Object.getPrototypeOf(x);
+    return copyProps(x, Object.create(proto));
   },
   [Types.Array](x: Array<unknown>) {
     return x.slice(0);
