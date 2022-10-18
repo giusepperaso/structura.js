@@ -9,26 +9,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: npm ci
-      - run: npm run test:prod
-
-  publish-npm:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
           registry-url: https://registry.npmjs.org/
       - run: npm ci
+      - run: npm run test:prod
       - run: npm run build
       - run: npm pkg delete devDependencies
       - run: npm publish
