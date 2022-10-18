@@ -27,7 +27,7 @@ console.log(newState);
 
 ### 2) using Immutable
 
-Immutable locks you in with its proprietary syntax which is hard to learn for beginners and difficult to abandon if you have to; the base performance is good, but it is usually much worse in real scenarios if you have to do conversions from or to plain javascript objects 
+Immutable locks you in with its proprietary syntax which is hard to learn for beginners and forces lock in; the base performance is good, but it is usually much worse in real scenarios if you have to do conversions from or to plain javascript objects 
 
 ```javascript
 const state = {

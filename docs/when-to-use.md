@@ -2,12 +2,12 @@
 
 ## Use Sructura over Immer in those cases:
 - performance is important to you and immutable states are becoming a bottleneck in your application
-- potentially you have to deal with huge or complex objects
-- server side or serverless functions, because you'd want to cut used resources as much as possible
+- the state you have to deal with is possibly very huge and complex
+- in serverless functions or in the cloud, because you'd want to cut used resources as much as possible
 - circular and multiple references may be present in your state
-- avoiding being limited in the return type of the producer
-- modifying the draft and return a portion of it in the same producer
-- you don't want to think about enabling/disabling features
+- you prefer not being limited in the return type of the producer
+- modifying the draft and return a portion of it in the same producer is needed
+- you don't want to think about enabling/disabling features for performance reasons
 - forking the library to adapt it to your use case, because the code is small and easy enough to reason about
 
 ## Disadvantages compared to Immer:
