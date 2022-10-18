@@ -35,5 +35,5 @@ src
 !dist
 index.html
 vite.config.ts
-tsconfig.json
-tsconfig.build.json
+tsconfig**.json
+.github
