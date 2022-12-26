@@ -39,6 +39,27 @@ describe.concurrent(
       expect(result.prop2).toBe(result.prop2);
       expect(result.prop2.sub).toBe(result.prop2.sub);
     });
+    it("should create new shallow copies if the object is further modified", async () => {
+      const myObj = {
+        prop: {
+          sub: { counter: 0 },
+        },
+      };
+      const result1 = produce(myObj, (draft) => {
+        draft.prop.sub.counter++;
+      });
+      expect(myObj).not.toBe(result1);
+      expect(myObj.prop).not.toBe(result1.prop);
+      expect(myObj.prop.sub).not.toBe(result1.prop.sub);
+      expect(myObj.prop.sub.counter).not.toBe(result1.prop.sub.counter);
+      const result2 = produce(result1, (draft) => {
+        draft.prop.sub.counter++;
+      });
+      expect(result2).not.toBe(result1);
+      expect(result2.prop).not.toBe(result1.prop);
+      expect(result2.prop.sub).not.toBe(result1.prop.sub);
+      expect(result2.prop.sub.counter).not.toBe(result1.prop.sub.counter);
+    });
     it("should allow reassign of objects", async () => {
       const myObj = {
         prop: {
