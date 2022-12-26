@@ -15,7 +15,7 @@ The library is very similar to [Immer.js](https://immerjs.github.io/immer/), but
 - circular and multiple references are supported
 - can return and modify the draft at the same time
 - flexibility in the return type of the producer
-- no need to toggle on/off features, everything is enabled by default
+- no need to toggle on/off features (with some [exceptions](https://giusepperaso.github.io/structura.js/settings.html))
 - does support transpositions and moves of portions of the draft
 
-The library is actually in alpha state. It is probably already usable (many complex scenarios are already covered by tests), but expect the APIs and the types to change in the future.
+The library is actually in alpha state. It is probably already usable (many complex scenarios are already covered by tests), but  the APIs and the types could change in the future.

@@ -1,6 +1,6 @@
 # Edge cases
 
-Structura supports some edge cases that are not well handled by other libraries. But beware that some edge cases are not solvable.
+Structura supports some edge cases that are not always well handled by other libraries.
 
 ## Returning and modifying in the same producer
 
