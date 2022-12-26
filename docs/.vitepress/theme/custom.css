@@ -1,4 +1,8 @@
 :root {
+  --vp-c-text-1: darkslategrey;
+}
+
+:root.dark {
   --vp-c-text-1: lavenderblush;
 }
 
