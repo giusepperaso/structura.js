@@ -40,6 +40,10 @@ const enum Actions {
   producer_return,
 }
 
+const Settings = {
+  strictCopy: false,
+};
+
 const Traps_self = Symbol();
 const Traps_target = Symbol();
 
@@ -303,9 +307,10 @@ export const createProxy: CreateProxy = function (
     if (parent) {
       const parents = currData.parents;
       if (parents.has(parent)) {
-        // avoids reusing the same patch twice in subsequent calls; also avoids multiple references problems;
-        // however the same patch can be reused on a single call, like in array.push() which also modifies the length,
-        // so we can't just store a boolean instead of a patch
+        // the parents reference is useful in two ways:
+        // avoids reusing the same patch twice in subsequent calls and also avoids multiple references problems;
+        // the initial idea was to store a boolean, but we can't do it because the same patch can be reused on a single call,
+        // like in array.push() which also modifies the length
         (parents.get(parent) as LinkMap).set(link as Link, null);
       } else {
         parents.set(parent, new Map([[link as Link, null]]));
@@ -357,21 +362,18 @@ function walkParents(
       }
     } else if (action === Actions.delete) {
       prevChildAtLink = (shallow as UnknownObj)[link as Prop];
-      // do I have to inverse action ?
     } else if (
       action === Actions.set_map ||
       action === Actions.delete_map ||
       action === Actions.clear_map
     ) {
       prevChildAtLink = (shallow as UnknownMap).get(link as Prop);
-      // do I have to inverse action ?
     } else if (
       action === Actions.add_set ||
       action === Actions.delete_set ||
       action === Actions.clear_set
     ) {
       prevChildAtLink = link;
-      // do I have to inverse action ?
     }
     const isAddOperation =
       action === Actions.set ||
@@ -634,21 +636,34 @@ function getTypeString<T>(x: T) {
 }
 
 function copyProps<F extends object, T extends object>(from: F, to: T) {
+  const symbols = Object.getOwnPropertySymbols(from);
+  let key,
+    i = 0,
+    l = symbols.length;
+  for (; i !== l; i++) {
+    key = symbols[i];
+    (to as UnknownObj)[key] = (from as UnknownObj)[key];
+  }
   const keys = Object.keys(from);
-  let l = keys.length;
-  let i = 0;
-  let key;
+  l = keys.length;
+  i = 0;
   for (; i !== l; i++) {
     key = keys[i];
     (to as UnknownObj)[key] = (from as UnknownObj)[key];
   }
-  const symbols = Object.getOwnPropertySymbols(from);
-  l = symbols.length;
-  for (i = 0; i !== l; i++) {
-    key = symbols[i];
-    (to as UnknownObj)[key] = (from as UnknownObj)[key];
-  }
   return to;
+}
+
+export const enableStrictCopy = (v = true) => (Settings.strictCopy = v);
+
+function strictCopyProps<F>(from: F) {
+  const descriptors = Object.getOwnPropertyDescriptors(from);
+  for (const key in descriptors) {
+    const d = descriptors[key];
+    d.writable = true;
+    d.configurable = true;
+  }
+  return Object.create(Object.getPrototypeOf(from), descriptors);
 }
 
 function shallowClone<T>(x: T, type?: Types): object {
@@ -660,10 +675,15 @@ const cloneTypes: Partial<Record<Types, Function>> = {
     return x;
   },
   [Types.Object](x: Object) {
-    const constructor = x.constructor;
-    if (!constructor || constructor.name === "Object") return copyProps(x, {});
-    const proto = Object.getPrototypeOf(x);
-    return copyProps(x, Object.create(proto));
+    if (!Settings.strictCopy) {
+      const constructor = x.constructor;
+      if (!constructor || constructor.name === "Object") {
+        return copyProps(x, {});
+      }
+      return copyProps(x, Object.create(Object.getPrototypeOf(x)));
+    } else {
+      return strictCopyProps(x);
+    }
   },
   [Types.Array](x: Array<unknown>) {
     return x.slice(0);

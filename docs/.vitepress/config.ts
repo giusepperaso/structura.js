@@ -21,6 +21,7 @@ export default defineConfig({
           { text: "When to use", link: "/when-to-use" },
           { text: "Freezing", link: "/freezing" },
           { text: "Patches", link: "/patches" },
+          { text: "Settings", link: "/settings" },
           { text: "Edge cases", link: "/edge-cases" },
           { text: "Gotchas", link: "/gotchas" },
           { text: "Benchmarks", link: "/benchmarks" },
