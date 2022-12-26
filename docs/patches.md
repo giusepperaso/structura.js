@@ -4,7 +4,7 @@ Structura can create a serializable list of patches with all the modifications t
 
 Patches and inverse patches are useful for example if you want to send them over a network or to implement undo/redo functionality.
 
-**Patches do not comply with RFC 6902**, so if you want to use them in another language you should create your own parser.
+**Patches do not comply with RFC 6902**, so if you want to use them in another language/library you should create your own parser.
 
 ## Example with callback
 
