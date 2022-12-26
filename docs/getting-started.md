@@ -21,7 +21,7 @@ or, if you prefer, via a cdn with a script tag:
 Now you can write something like this:
 
 ```typescript
-import { produce } from "structura"
+import { produce } from "structurajs"
 
 const ciao = { ciao: "mondo", test: { test: 1 } }
 
