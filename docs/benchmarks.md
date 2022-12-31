@@ -1,10 +1,10 @@
 # Benchmarks
 
-Click on any image to zoom it in a new tab.
+Click on any image to see the respective chart in a new tab.
 
 The bars are referred respectively to those libraries:
 
-1) *Structura* - no optimizations
+1) *Structura* - optimizations: without strict copy
 2) *Immer* - optimizations: without autofreeze, maps, sets and patches
 3) *Immutable* - optimizations: without calling toJS/fromJS, which are slow
 
