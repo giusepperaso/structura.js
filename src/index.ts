@@ -47,8 +47,8 @@ const Settings = {
 const Traps_self = Symbol();
 const Traps_target = Symbol();
 
-export type Primitive<T> = T extends object ? T : never;
-export type Prop = string | number | symbol;
+export type Primitive = null | undefined | boolean | number | string | symbol;
+export type Prop = number | string | symbol;
 export type UnknownObj = Record<Prop, unknown>;
 export type UnknownArr = Array<unknown>;
 export type UnknownMap = Map<unknown, unknown>;
@@ -61,7 +61,7 @@ export type PatchCallback = (patches: Patch[], inversePatches: Patch[]) => void;
 
 export type FreezeOnce<T> = T extends Freeze<infer Q> ? Freeze<Q> : Freeze<T>;
 
-export type Freeze<T> = T extends Primitive<T>
+export type Freeze<T> = T extends Primitive
   ? T
   : T extends Array<infer U>
   ? ReadonlyArray<Freeze<U>>
@@ -75,7 +75,7 @@ export type Freeze<T> = T extends Primitive<T>
   ? ReadonlySet<Freeze<M>>
   : { readonly [K in keyof T]: Freeze<T[K]> };
 
-export type UnFreeze<T> = T extends Primitive<T>
+export type UnFreeze<T> = T extends Primitive
   ? T
   : T extends Array<infer Q>
   ? Array<UnFreeze<Q>>
@@ -622,7 +622,7 @@ export function applyPatch<T extends object>(
   }
 }
 
-function isPrimitive<T>(x: unknown): x is Primitive<T> {
+function isPrimitive(x: unknown): x is Primitive {
   if (x === null) return true;
   const type = typeof x;
   if (type !== Types.function && type !== Types.object) return true;
@@ -671,7 +671,7 @@ function shallowClone<T>(x: T, type?: Types): object {
 }
 
 const cloneTypes: Partial<Record<Types, Function>> = {
-  [Types.primitive]<T>(x: Primitive<T>) {
+  [Types.primitive](x: Primitive) {
     return x;
   },
   [Types.Object](x: Object) {
