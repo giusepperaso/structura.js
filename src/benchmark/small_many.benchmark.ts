@@ -1,9 +1,11 @@
 import b from "benny";
-import { produce as structura } from "../index";
+import { enableStrictCopy, produce as structura } from "../index";
 import { produce as immer, setAutoFreeze } from "immer";
 import { Map as immutable } from "immutable";
 
 setAutoFreeze(false);
+
+enableStrictCopy(false);
 
 b.suite(
   "Produce small object with many modifications",

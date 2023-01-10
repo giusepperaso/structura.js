@@ -1,10 +1,12 @@
 import b from "benny";
-import { produce as structura } from "../index";
+import { enableStrictCopy, produce as structura } from "../index";
 import { produce as immer, setAutoFreeze } from "immer";
 import { Map as immutable } from "immutable";
 import { Obj2 } from "../integration/utils";
 
 setAutoFreeze(false);
+
+enableStrictCopy(false);
 
 function getMyObj() {
   const myObj: Obj2<number> = {};
