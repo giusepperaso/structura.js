@@ -273,6 +273,10 @@ export function original<T>(obj: T) {
   return (obj as T & { [Traps_self]: T })[Traps_self] || obj;
 }
 
+export function unfreeze<T>(obj: T) {
+  return obj as UnFreeze<T>;
+}
+
 export type Patch = { v?: unknown; p?: Link; action: Actions; next?: Patch[] };
 export type PatchPair = { patch: Patch; inverse: Patch };
 export type PatchStore = { patches: Patch[]; inversePatches: Patch[] };

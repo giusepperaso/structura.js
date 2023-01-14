@@ -30,3 +30,11 @@ const newStateUnfrozen = newState as UnFreeze<number[]>
 
 newState.push(5) // it works now
 ```
+
+Or if you prefer you can use the unfreeze utility:
+
+```typescript
+import { unfreeze } from "structurajs";
+
+unfreeze(newState).push(5); // it works now
+```
