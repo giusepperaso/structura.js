@@ -1,6 +1,6 @@
 {
   "name": "structurajs",
-  "version": "0.3.4",
+  "version": "0.3.6",
   "description": "A very fast and lightweight Typescript library to create immutable states with a mutable syntax",
   "homepage": "https://giusepperaso.github.io/structura.js/",
   "repository": {
