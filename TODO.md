@@ -20,6 +20,6 @@
 
 ## DONE
 - [x] (🟩FEAT) added patches
-- [x] (🟥BUGS) if I have multiple link to a child for the same parent, the append action is only done once
+- [x] (🟧BUGS) if I have multiple link to a child for the same parent, the append action is only done once
 
 
