@@ -2,6 +2,7 @@
 
 ## TODO
 
+- [ ] (BENC) add benchmarks for patches
 - [ ] (PERF) appended: WeakSet => could be used to determine if the element was external to the tree, so we could avoid cloning it
 - [ ] (PERF) remove some closures, expecially the proxy traps, the addLink and actionLink
 - [ ] (PERF) getOwnPropertySymbols adds some overhead on copy: we could disable it with a flag if necessary. Is it worth?
@@ -14,6 +15,8 @@
 - [ ] (TYPE) applyPatches should have a conditional return type
 
 ## IN PROGRESS
+
+- [ ] (BENC) add benchmarks for different setups
 
 ## DONE
 - [x] (FEAT) added patches
