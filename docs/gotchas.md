@@ -45,13 +45,40 @@ const state = { test: 1 }
 const result = safeProduce(state, (draft) => draft.test = 2)
 ```
 
-## Can't do transpositions on unproxied objects
+## Potential dangling proxy references if you assign unproxied objects into the draft
 
-todo
+If you create a new object "A", then you assign a portion "B" of the draft to it and later you assign "A" back into the draft, you will get stuck with a dangling proxy reference inside the result:
 
-todo
+```typescript
+const result = produce({ example: { test: 2 } }, (draft) => {
+    const newObj = {};
+    newObj.sub = draft.example;
+    // result.newObj.sub will be a dangling proxy reference!
+    // This may lead to unpredictable behaviour, expecially if you try to write later into it
+    draft.newObj = newObj; 
+})
+```
 
-todo
+Structura won't cycle through the values of newObj because this would be expensive. Instead, use the "original" helper to unproxy the portion of the draft that you want to append into the new object:
+
+```typescript
+const result = produce({ example: { test: 2 } }, (draft) => {
+    const newObj = {};
+    newObj.sub = original(draft.example);
+    // result.newObj.sub is now safe to read/write because it's not a proxy
+    draft.newObj = newObj; 
+})
+```
+
+Note that this only happens if there is an unproxied object "in the middle"; this code for example gives no problem:
+
+```typescript
+const result = produce({ example: { test: 2 } }, (draft) => {
+    // appending newObj immediately to the draft allows to have the correct behaviour later on
+    draft.newObj = {};
+    newObj.sub = draft.example;
+})
+```
 
 ## Sets could be unordered
 

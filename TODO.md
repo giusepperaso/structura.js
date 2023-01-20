@@ -1,8 +1,5 @@
 # TODO
 
-## BUG
-- if you create a new object and you assign a portion of the draft to it, it keeps a reference to the proxy
-
 ## PERFORMANCE
 - appended: WeakSet => could be used to determine if the element was external to the tree, so we could avoid cloning it
 - remove some closures, expecially the proxy traps, the addLink and actionLink
