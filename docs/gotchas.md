@@ -59,12 +59,12 @@ const result = produce({ example: { test: 2 } }, (draft) => {
 })
 ```
 
-Structura won't cycle through the values of newObj because this would be expensive. Instead, use the "original" helper to unproxy the portion of the draft that you want to append into the new object:
+Structura won't cycle through the values of newObj because this would be expensive. Instead, use the "target" helper to unproxy the portion of the draft that you want to append into the new object:
 
 ```typescript
 const result = produce({ example: { test: 2 } }, (draft) => {
     const newObj = {};
-    newObj.sub = original(draft.example);
+    newObj.sub = target(draft.example);
     // result.newObj.sub is now safe to read/write because it's not a proxy
     draft.newObj = newObj; 
 })

@@ -2,6 +2,7 @@
 
 ## TODO
 
+- [ ] (🟪DOCS) documentate helpers like original and target
 - [ ] (🟫BENC) add benchmarks for patches
 - [ ] (🟨PERF) appended: WeakSet => could be used to determine if the element was external to the tree, so we could avoid cloning it
 - [ ] (🟨PERF) remove some closures, expecially the proxy traps, the addLink and actionLink
