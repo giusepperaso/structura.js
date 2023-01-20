@@ -3,10 +3,6 @@ import { enableStrictCopy, produce as structura } from "../index";
 import { produce as immer, setAutoFreeze } from "immer";
 import { Map as immutable } from "immutable";
 
-setAutoFreeze(false);
-
-enableStrictCopy(false);
-
 function getMyObj() {
   const myObj: any = {};
   let curr = myObj;
@@ -19,7 +15,8 @@ function getMyObj() {
 b.suite(
   "Produce nested object with many modifications",
 
-  b.add("STRUCTURA", () => {
+  b.add("STRUCTURA (no strict copy)", () => {
+    enableStrictCopy(false);
     structura(getMyObj(), (draft) => {
       let curr = draft.prop;
       for (let i = 0; i != 35; i++) {
@@ -29,7 +26,19 @@ b.suite(
     });
   }),
 
-  b.add("IMMER", () => {
+  b.add("STRUCTURA (with strict copy)", () => {
+    enableStrictCopy(true);
+    structura(getMyObj(), (draft) => {
+      let curr = draft.prop;
+      for (let i = 0; i != 35; i++) {
+        curr = curr.prop;
+        curr.test = 2;
+      }
+    });
+  }),
+
+  b.add("IMMER (no auto freeze)", () => {
+    setAutoFreeze(false);
     immer(getMyObj(), (draft: any) => {
       let curr = draft.prop;
       for (let i = 0; i != 35; i++) {
@@ -39,7 +48,7 @@ b.suite(
     });
   }),
 
-  b.add("IMMUTABLE", () => {
+  b.add("IMMUTABLE (no toJS)", () => {
     const map = immutable(getMyObj());
     let curr = [];
     for (let i = 0; i != 35; i++) {
