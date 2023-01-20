@@ -667,6 +667,14 @@ function strictCopyProps<F>(from: F) {
     d.writable = true;
     d.configurable = true;
   }
+  const symbols = Object.getOwnPropertySymbols(descriptors);
+  const l = symbols.length;
+  let i = 0;
+  for (; i !== l; i++) {
+    const d = descriptors[symbols[i] as keyof typeof descriptors];
+    d.writable = true;
+    d.configurable = true;
+  }
   return Object.create(Object.getPrototypeOf(from), descriptors);
 }
 
