@@ -22,6 +22,7 @@
 
 ## DONE
 
+- [x] (🟧BUGS) assign the descriptor value during strict copy, because the descriptor could be a getter or setter
 - [x] (🟦TYPE) patches should not be callable for primitive types
 - [x] (🟩TEST) add test for symbols in strict mode 
 - [x] (🟧BUGS) symbols were not copied on strict copy
