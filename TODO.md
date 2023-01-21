@@ -2,6 +2,7 @@
 
 ## TODO
 
+- [ ] (⬛CODE) organize the code better in multiple files
 - [ ] (🟪DOCS) documentate helpers like original and target
 - [ ] (🟫BENC) add benchmarks for patches
 - [ ] (🟨PERF) appended: WeakSet => could be used to determine if the element was external to the tree, so we could avoid cloning it
@@ -21,6 +22,7 @@
 
 ## DONE
 
+- [x] (🟦TYPE) patches should not be callable for primitive types
 - [x] (🟩TEST) add test for symbols in strict mode 
 - [x] (🟧BUGS) symbols were not copied on strict copy
 - [x] (🟫BENC) add benchmarks for different setups

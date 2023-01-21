@@ -57,7 +57,9 @@ export type UnknownSet = Set<unknown>;
 export type Producer<T, Q> = (draft: UnFreeze<T>) => Q | void;
 export type ProduceOptions = { proxify?: typeof createProxy };
 export type ProduceReturn<T, Q> = FreezeOnce<Q extends void ? T : Q>;
-export type PatchCallback = (patches: Patch[], inversePatches: Patch[]) => void;
+export type PatchCallback<T> = T extends Primitive
+  ? never
+  : (patches: Patch[], inversePatches: Patch[]) => void;
 
 export type FreezeOnce<T> = T extends Freeze<infer Q> ? Freeze<Q> : Freeze<T>;
 
@@ -94,7 +96,7 @@ export type ProduceParams<T> = Parameters<typeof produce<T, T>>;
 export function produce<T, Q>(
   state: T,
   producer: Producer<T, Q>,
-  patchCallback?: PatchCallback,
+  patchCallback?: PatchCallback<T>,
   { proxify = createProxy }: ProduceOptions = {}
 ): ProduceReturn<T, Q> {
   type R = ProduceReturn<T, Q>;
@@ -249,7 +251,7 @@ export function produceWithPatches<T>(
     patches = _patches;
     inverse = _inverse;
   }
-  const result = produce<T, T>(...args, setPatches);
+  const result = produce<T, T>(...args, setPatches as PatchCallback<T>);
   return [result, patches!, inverse!] as const;
 }
 
