@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Obj } from "./utils";
-import { produce } from "..";
+import { produceTest as produce } from "./utils";
 
 describe.concurrent(
   "verify that object references change (or remain the same) accordingly with shallow cloning rules",
