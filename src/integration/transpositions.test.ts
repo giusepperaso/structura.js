@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { produce } from "..";
+import { produceTest as produce } from "./utils";
 
 describe.concurrent("tests transpositions of element", () => {
   it("works with arrays traspositions via reverse", async () => {
