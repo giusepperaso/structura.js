@@ -360,11 +360,9 @@ function walkParents(
     if (action === Actions.set) {
       if (link === "length" && typeof currData.inverseLength !== "undefined") {
         prevChildAtLink = currData.inverseLength;
-        delete currData.inverseLength;
-        inverseAction = action;
+        delete currData.inverseLength; // is this really necessary?
       } else {
         prevChildAtLink = (shallow as UnknownObj)[link as Prop];
-        if (typeof prevChildAtLink !== "undefined") inverseAction = action;
       }
     } else if (action === Actions.delete) {
       prevChildAtLink = (shallow as UnknownObj)[link as Prop];
@@ -380,6 +378,13 @@ function walkParents(
       action === Actions.clear_set
     ) {
       prevChildAtLink = link;
+    }
+    if (
+      action === Actions.set ||
+      action === Actions.set_map /* ||
+      action === Actions.add_set */
+    ) {
+      if (typeof prevChildAtLink !== "undefined") inverseAction = action;
     }
     const isAddOperation =
       action === Actions.set ||
@@ -504,8 +509,8 @@ function walkParents(
       } else if (type === Types.Set) {
         for (const [link, traversedPatches] of links.entries()) {
           if (actionAppend(links, link, traversedPatches, Actions.append_set)) {
-            // order in sets is not preserved;
-            // preserving the order would be too costly and does not matter
+            // order in sets is not preserved, because preserving it would be too costly;
+            // however in general, you should never rely on sets order in javascript
             (shallow as UnknownSet).delete(link);
             (shallow as UnknownSet).add(v);
           }

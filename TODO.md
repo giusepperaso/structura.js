@@ -2,6 +2,7 @@
 
 ## TODO
 
+- [ ] (🟩TEST) better % test coverage (mostly some helpers are not unit tested)
 - [ ] (⬛CODE) organize the code better in multiple files
 - [ ] (🟪DOCS) documentate helpers like original and target
 - [ ] (🟫BENC) add benchmarks for patches
@@ -18,10 +19,14 @@
 
 ## IN PROGRESS
 
+- [ ] (🟧BUGS) patches don't work with circular references
+- [ ] (🟧BUGS) reverse patches may create inconsistencies in maps
 - [ ] (🟩TEST) generate and try patches in every test
 
-## DONE
+## SOLVED
 
+- [x] (🟦TYPE) produceWithPatches didn't allow a return type different from the draft
+- [x] (🟧BUGS) patches could delete an element wrongly with maps
 - [x] (🟧BUGS) assign the descriptor value during strict copy, because the descriptor could be a getter or setter
 - [x] (🟦TYPE) patches should not be callable for primitive types
 - [x] (🟩TEST) add test for symbols in strict mode 
