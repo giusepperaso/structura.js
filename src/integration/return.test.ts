@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Obj2, isProxy } from "./utils";
-import { produce } from "..";
+import { produceTest as produce } from "./utils";
 
 describe.concurrent("try returning directly from the producer", async () => {
   it("can return the same type", async () => {
@@ -24,7 +24,7 @@ describe.concurrent("try returning directly from the producer", async () => {
     expect(result[0].prop.sub).toBe(2);
   });
   it("can return a different type", async () => {
-    const myObj: Obj2<number>[] = [
+    const myObj: Obj2<number | string>[] = [
       {
         prop: {
           sub: 1,

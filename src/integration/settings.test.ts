@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { enableStrictCopy /* , produce */ } from "..";
+import { enableStrictCopy } from "..";
 import { produceTest as produce } from "./utils";
 
 describe.concurrent(
