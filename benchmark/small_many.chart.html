@@ -28,7 +28,7 @@
   </head>
   <body>
     <div class="container">
-      <canvas id="chart1674242500563" width="16" height="9"></canvas>
+      <canvas id="chart1674500911582" width="16" height="9"></canvas>
     </div>
     <script>
       const format = (num) => {
@@ -51,18 +51,18 @@
           chunked.map((chunk) => chunk.join('')).join(' ') + fractionStr
         )
       }
-      const ctx1674242500563 = document
-        .getElementById('chart1674242500563')
+      const ctx1674500911582 = document
+        .getElementById('chart1674500911582')
         .getContext('2d')
-      const chart1674242500563 = new Chart(ctx1674242500563, {
+      const chart1674500911582 = new Chart(ctx1674500911582, {
         type: 'bar',
         data: {
-          labels: ["STRUCTURA","IMMER","mutative","IMMUTABLE"],
+          labels: ["STRUCTURA (no strict copy)","STRUCTURA (with strict copy)","IMMER (no auto freeze)","IMMER (with auto freeze)","IMMUTABLE (no toJS)","IMMUTABLE (with toJS)"],
           datasets: [
             {
-              data: [223310,106373,113068,526891],
-              backgroundColor: ["hsl(50.856, 85%, 55%)","hsl(24.227999999999994, 85%, 55%)","hsl(25.751999999999992, 85%, 55%)","hsl(120, 85%, 55%)"],
-              borderColor: ["hsl(50.856, 85%, 55%)","hsl(24.227999999999994, 85%, 55%)","hsl(25.751999999999992, 85%, 55%)","hsl(120, 85%, 55%)"],
+              data: [217162,160767,112527,108238,527133,512760],
+              backgroundColor: ["hsl(49.440000000000005, 85%, 55%)","hsl(36.6, 85%, 55%)","hsl(25.619999999999994, 85%, 55%)","hsl(24.636000000000003, 85%, 55%)","hsl(120, 85%, 55%)","hsl(116.724, 85%, 55%)"],
+              borderColor: ["hsl(49.440000000000005, 85%, 55%)","hsl(36.6, 85%, 55%)","hsl(25.619999999999994, 85%, 55%)","hsl(24.636000000000003, 85%, 55%)","hsl(120, 85%, 55%)","hsl(116.724, 85%, 55%)"],
               borderWidth: 2,
             },
           ],
