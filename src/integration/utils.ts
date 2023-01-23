@@ -9,9 +9,16 @@ export function isProxy(obj: unknown) {
   return original(obj) !== obj;
 }
 
-export function produceTest<T extends object, Q>(...args: [T, Producer<T, Q>]) {
-  const [result, patches, reverse] = produceWithPatches(...args);
-  expect(result).toEqual(applyPatches(args[0], patches));
-  expect(args[0]).toEqual(applyPatches(result as object, reverse));
+export function produceTest<T extends object, Q>(
+  state: T,
+  producer: Producer<T, Q>
+) {
+  const [result, patches, reverse] = produceWithPatches(state, producer);
+  expect(result).toEqual(applyPatches(state, patches));
+  expect(state).toEqual(applyPatches(result as object, reverse));
   return result;
+}
+
+declare global {
+  var DEBUG: boolean;
 }
