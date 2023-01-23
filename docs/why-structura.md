@@ -83,6 +83,6 @@ const newState = produce(state, (draft) => {
 ```
 ## There are other advantages
 
-One of them is that the object is [frozen at compile time instead that at runtime](./freezing.md)
+One of them is that the object is [frozen at compile-time instead that at runtime](./freezing.md)
 
 Besides, Structura is good at handling [edge cases that other libraries struggle in](./edge-cases.md)
