@@ -19,3 +19,8 @@ The library is very similar to [Immer.js](https://immerjs.github.io/immer/), but
 - does support transpositions and moves of portions of the draft
 
 The library is actually in alpha state. It is probably already usable (many complex scenarios are already covered by tests), but  the APIs and the types could change in the future.
+
+## BREAKING CHANGES
+
+- v.0.5.0-alpha: don't accept primitive types at runtime
+- v.0.4.0-alpha: primitive types are not accepted anymore in the produce (this could create confusion without being really useful)

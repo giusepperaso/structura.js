@@ -98,7 +98,9 @@ export function produce<T extends object, Q>(
   { proxify = createProxy }: ProduceOptions = {}
 ): ProduceReturn<T, Q> {
   type R = ProduceReturn<T, Q>;
-  if (isPrimitive(state)) return producer(state as UnFreeze<T>) as R;
+  if (!isDraftable(state)) {
+    throw new Error(`Object of type ${typeof state} is not draftable`);
+  }
   const data = new WeakMap();
   const pStore: PatchStore | null = patchCallback
     ? { patches: [], inversePatches: [] }
