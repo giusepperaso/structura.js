@@ -279,6 +279,14 @@ export function unfreeze<T>(obj: T) {
   return obj as UnFreeze<T>;
 }
 
+export function isDraft<T>(obj: T) {
+  return typeof (obj as T & { [Traps_self]: T })[Traps_self] !== "undefined";
+}
+
+export function isDraftable(obj: unknown) {
+  return !isPrimitive(obj);
+}
+
 export type Patch = { v?: unknown; p?: Link; action: Actions; next?: Patch[] };
 export type PatchPair = { patch: Patch; inverse: Patch };
 export type PatchStore = { patches: Patch[]; inversePatches: Patch[] };
