@@ -91,7 +91,7 @@ export type UnFreeze<T> = T extends Primitive
   ? Set<UnFreeze<M>>
   : { -readonly [K in keyof T]: UnFreeze<T[K]> };
 
-export function produce<T, Q>(
+export function produce<T extends object, Q>(
   state: T,
   producer: Producer<T, Q>,
   patchCallback?: PatchCallback<T>,
@@ -240,7 +240,9 @@ export function produce<T, Q>(
   }
 }
 
-export function produceWithPatches<T, Q>(...args: [T, Producer<T, Q>]) {
+export function produceWithPatches<T extends object, Q>(
+  ...args: [T, Producer<T, Q>]
+) {
   let patches: Patch[];
   let inverse: Patch[];
   function setPatches(_patches: Patch[], _inverse: Patch[]) {
@@ -251,11 +253,13 @@ export function produceWithPatches<T, Q>(...args: [T, Producer<T, Q>]) {
   return [result, patches!, inverse!] as const;
 }
 
-export function safeProduce<T>(...args: Parameters<typeof produce<T, T>>) {
+export function safeProduce<T extends object>(
+  ...args: Parameters<typeof produce<T, T>>
+) {
   return produce<T, T>(...args);
 }
 
-export function safeProduceWithPatches<T>(
+export function safeProduceWithPatches<T extends object>(
   ...args: Parameters<typeof produceWithPatches<T, T>>
 ) {
   return produceWithPatches<T, T>(...args);
