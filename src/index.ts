@@ -75,7 +75,11 @@ export type Freeze<T> = T extends Primitive
   ? ReadonlySet<Freeze<M>>
   : T extends ReadonlySet<infer M>
   ? ReadonlySet<Freeze<M>>
-  : { readonly [K in keyof T]: Freeze<T[K]> };
+  : T extends object
+  ? FreezedObject<T>
+  : T;
+
+export type FreezedObject<T> = { readonly [K in keyof T]: Freeze<T[K]> };
 
 export type UnFreeze<T> = T extends Primitive
   ? T
@@ -89,7 +93,11 @@ export type UnFreeze<T> = T extends Primitive
   ? Set<UnFreeze<M>>
   : T extends ReadonlySet<infer M>
   ? Set<UnFreeze<M>>
-  : { -readonly [K in keyof T]: UnFreeze<T[K]> };
+  : T extends object
+  ? UnFreezedObject<T>
+  : T;
+
+export type UnFreezedObject<T> = { -readonly [K in keyof T]: UnFreeze<T[K]> };
 
 export function produce<T extends object, Q>(
   state: T,
