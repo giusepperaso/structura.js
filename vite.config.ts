@@ -8,8 +8,9 @@ export default defineConfig({
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),
-      name: "deep-merge-and-equal",
+      name: "structurajs",
       fileName: (format) => `${format === "es" ? "index" : format}.js`,
+      formats: ["es", "cjs", "umd"],
     },
   },
 });
