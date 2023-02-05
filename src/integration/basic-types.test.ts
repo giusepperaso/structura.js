@@ -101,5 +101,14 @@ describe.concurrent("tests all(most) of the basic types", () => {
     });
     expect(result.test1).not.toBe(myObj.test1);
   });
+  it("works with null", async () => {
+    const result = plainProduce(null, (state) => {
+      if (typeof state === "number") {
+        return state - 2;
+      }
+      return undefined;
+    });
+    expect(result).toBe(undefined);
+  });
   // regexp, date etc...
 });
