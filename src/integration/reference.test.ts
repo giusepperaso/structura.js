@@ -118,5 +118,14 @@ describe.concurrent(
       expect(result.sub1).toBe(result.sub2);
       expect(result.sub1).not.toBe(myObj.sub1);
     });
+    it("should accept drafts", async () => {
+      const myObj = { test: [1] };
+      const result = produce(myObj, (draft) => {
+        produce(draft, (d2) => {
+          d2.test.push(2);
+        });
+      });
+      expect(result.test).toEqual([1, 2]);
+    });
   }
 );
