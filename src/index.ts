@@ -284,7 +284,9 @@ export function unfreeze<T>(obj: T) {
 }
 
 export function isDraft<T>(obj: T) {
-  return typeof (obj as T & { [Traps_self]: T })[Traps_self] !== "undefined";
+  return (
+    !!obj && typeof (obj as T & { [Traps_self]: T })[Traps_self] !== "undefined"
+  );
 }
 
 export function isDraftable(obj: unknown) {
