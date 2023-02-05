@@ -20,7 +20,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --project tsconfig.build.json && vite build && tsc --project tsconfig.build.declarations.json",
+    "build": "tsc --project tsconfig.build.json && vite build && tsc --project tsconfig.build.declarations.json && cp ./dist/index.d.ts ./dist/cjs.d.ts",
     "preview": "vite preview",
     "test": "vitest --coverage",
     "test:prod": "vitest run",
