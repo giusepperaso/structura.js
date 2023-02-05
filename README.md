@@ -22,5 +22,6 @@ The library is actually in alpha state. It is probably already usable (many comp
 
 ## BREAKING CHANGES
 
-- v.0.5.0-alpha: don't accept primitive types at runtime
-- v.0.4.0-alpha: primitive types are not accepted anymore in the produce (this could create confusion without being really useful)
+- v.0.6.0-alpha: revert back to accept primitives, just don't draft them
+- ~~v.0.5.0-alpha: don't accept primitive types at runtime~~
+- ~~v.0.4.0-alpha: primitive types are not accepted anymore in the produce (this could create confusion without being really useful)~~
