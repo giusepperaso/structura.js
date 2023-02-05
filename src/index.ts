@@ -99,16 +99,14 @@ export type UnFreeze<T> = T extends Primitive
 
 export type UnFreezedObject<T> = { -readonly [K in keyof T]: UnFreeze<T[K]> };
 
-export function produce<T extends object, Q>(
+export function produce<T, Q>(
   state: T,
   producer: Producer<T, Q>,
   patchCallback?: PatchCallback<T>,
   { proxify = createProxy }: ProduceOptions = {}
 ): ProduceReturn<T, Q> {
   type R = ProduceReturn<T, Q>;
-  if (!isDraftable(state)) {
-    throw new Error(`Object of type ${typeof state} is not draftable`);
-  }
+  if (isDraftable(state)) return producer(state as UnFreeze<T>) as R;
   const data = new WeakMap();
   const pStore: PatchStore | null = patchCallback
     ? { patches: [], inversePatches: [] }
@@ -250,9 +248,7 @@ export function produce<T extends object, Q>(
   }
 }
 
-export function produceWithPatches<T extends object, Q>(
-  ...args: [T, Producer<T, Q>]
-) {
+export function produceWithPatches<T, Q>(...args: [T, Producer<T, Q>]) {
   let patches: Patch[];
   let inverse: Patch[];
   function setPatches(_patches: Patch[], _inverse: Patch[]) {
@@ -263,13 +259,11 @@ export function produceWithPatches<T extends object, Q>(
   return [result, patches!, inverse!] as const;
 }
 
-export function safeProduce<T extends object>(
-  ...args: Parameters<typeof produce<T, T>>
-) {
+export function safeProduce<T>(...args: Parameters<typeof produce<T, T>>) {
   return produce<T, T>(...args);
 }
 
-export function safeProduceWithPatches<T extends object>(
+export function safeProduceWithPatches<T>(
   ...args: Parameters<typeof produceWithPatches<T, T>>
 ) {
   return produceWithPatches<T, T>(...args);
@@ -584,7 +578,7 @@ export function applyPatches<T extends object>(
   return newState;
 }
 
-export function applyPatch<T extends object>(
+export function applyPatch<T>(
   current: T,
   patch: Patch,
   clones: WeakMap<object, object>

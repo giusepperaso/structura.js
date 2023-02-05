@@ -1,8 +1,19 @@
 import { describe, expect, it } from "vitest";
+import { produce as plainProduce } from "..";
 import { produceTest as produce } from "./utils";
 import { Obj, Obj2 } from "./utils";
 
 describe.concurrent("tests all(most) of the basic types", () => {
+  it("works with primitives as root", async () => {
+    const myObj = 1;
+    const result = plainProduce(myObj, (draft) => {
+      draft *= 2;
+      draft++;
+      return draft; // it can only work by returning the draft!
+    });
+    expect(myObj).toBe(1);
+    expect(result).toBe(3);
+  });
   it("works with json-like objects", async () => {
     const myObj = {
       prop: {
