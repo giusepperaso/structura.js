@@ -106,7 +106,7 @@ export function produce<T, Q>(
   { proxify = createProxy }: ProduceOptions = {}
 ): ProduceReturn<T, Q> {
   type R = ProduceReturn<T, Q>;
-  if (isDraftable(state)) return producer(state as UnFreeze<T>) as R;
+  if (!isDraftable(state)) return producer(state as UnFreeze<T>) as R;
   const data = new WeakMap();
   const pStore: PatchStore | null = patchCallback
     ? { patches: [], inversePatches: [] }
