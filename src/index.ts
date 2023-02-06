@@ -226,6 +226,11 @@ export function produce<T, Q>(
       walkParents(Actions.delete, data, pStore, t, p);
       return true;
     },
+    has(t: object, p: Prop) {
+      const currData = data.get(t);
+      const actualTarget = (currData && currData.shallow) || t;
+      return p in actualTarget;
+    },
   };
   const currData = proxify(state as unknown as object, data, handler);
   const result = producer(currData.proxy as UnFreeze<T>);
