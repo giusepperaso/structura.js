@@ -118,7 +118,7 @@ describe.concurrent(
       expect(result.sub1).toBe(result.sub2);
       expect(result.sub1).not.toBe(myObj.sub1);
     });
-    it("should accept drafts", async () => {
+    it("nested produces should not create problems", async () => {
       const myObj = { test: [1] };
       const result = produce(myObj, (draft) => {
         produce(draft, (d2) => {
