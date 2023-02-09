@@ -231,6 +231,24 @@ export function produce<T, Q>(
       const actualTarget = (currData && currData.shallow) || t;
       return p in actualTarget;
     },
+    ownKeys(t: object) {
+      const currData = data.get(t);
+      const actualTarget = (currData && currData.shallow) || t;
+      return Reflect.ownKeys(actualTarget);
+    },
+    getOwnPropertyDescriptor(t: object, p: Prop) {
+      const currData = data.get(t);
+      const actualTarget = (currData && currData.shallow) || t;
+      const descriptor = Object.getOwnPropertyDescriptor(actualTarget, p);
+      if (!descriptor) return undefined;
+      const d = {
+        writable: descriptor.writable,
+        configurable: descriptor.configurable,
+        enumerable: descriptor.enumerable,
+        value: actualTarget[p],
+      };
+      return d;
+    },
   };
   const currData = proxify(state as unknown as object, data, handler);
   const result = producer(currData.proxy as UnFreeze<T>);
