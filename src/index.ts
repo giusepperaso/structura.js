@@ -108,6 +108,7 @@ export function produce<T, Q>(
   type R = ProduceReturn<T, Q>;
   if (!isDraftable(state)) return producer(state as UnFreeze<T>) as R;
   const data = new WeakMap();
+  const freezeReplaceTargets = new WeakMap();
   const pStore: PatchStore | null = patchCallback
     ? { patches: [], inversePatches: [] }
     : null;
@@ -213,6 +214,14 @@ export function produce<T, Q>(
           currData.inverseLength = (t as UnknownArr).length;
         }
         return v.bind(currData.proxy);
+      } else if (Object.isFrozen(v)) {
+        // getOwnPropertyDescriptor trap doesn't allow to return
+        // descriptors different from the target,
+        // so we can't proxy frozen objects, because we couldn't write their props;
+        // we create instead a "dummy" target that we could reuse
+        const newTarget = shallowClone(v);
+        freezeReplaceTargets.set(v, newTarget);
+        return proxify(newTarget, data, handler, t, p).proxy;
       } else {
         return proxify(v, data, handler, t, p).proxy;
       }
