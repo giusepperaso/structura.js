@@ -320,12 +320,10 @@ export function data<T>(obj: T) {
 
 export function snapshot<T>(obj: T): T {
   if (!isDraft(obj)) return obj;
-  const _data = data(obj);
   function deep<Q>(v: unknown, k: unknown, clone: Q) {
     if (clone !== null && typeof clone === "object") {
       const typeString = getTypeString(clone);
-      const cD = _data ? _data.get(v as object) : null;
-      const child = cD && cD.shallow ? shallowClone(v, undefined, deep) : v;
+      const child = cloneOrOriginal(v as object);
       if (typeString === Types.Map) {
         (clone as unknown as UnknownMap).set(k, child);
       } else if (typeString === Types.Set) {
@@ -335,8 +333,13 @@ export function snapshot<T>(obj: T): T {
       }
     }
   }
-  const cD = _data ? _data.get(obj as object) : null;
-  return cD && cD.shallow ? (shallowClone(obj, undefined, deep) as T) : obj;
+  function cloneOrOriginal(t: object) {
+    const _target = target(t);
+    return _target !== original(t)
+      ? (shallowClone(_target, undefined, deep) as T)
+      : (_target as T);
+  }
+  return cloneOrOriginal(obj as object);
 }
 
 export function unfreeze<T>(obj: T) {
