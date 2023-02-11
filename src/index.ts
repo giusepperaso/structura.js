@@ -335,7 +335,8 @@ export function snapshot<T>(obj: T): T {
       }
     }
   }
-  return shallowClone(obj, undefined, deep) as T;
+  const cD = _data ? _data.get(obj as object) : null;
+  return cD && cD.shallow ? (shallowClone(obj, undefined, deep) as T) : obj;
 }
 
 export function unfreeze<T>(obj: T) {
