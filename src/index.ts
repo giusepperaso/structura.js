@@ -46,6 +46,7 @@ const Settings = {
 
 const Traps_self = Symbol();
 const Traps_target = Symbol();
+const Traps_data = Symbol();
 
 export type Primitive = null | undefined | boolean | number | string | symbol;
 export type Prop = number | string | symbol;
@@ -114,6 +115,7 @@ export function produce<T, Q>(
     : null;
   const handler = {
     get(t: object, p: Prop, r: object) {
+      if (p === Traps_data) return data;
       if (p === Traps_self) return t;
       const currData = data.get(t);
       const actualTarget = (currData && currData.shallow) || t;
@@ -309,6 +311,11 @@ export function target<T>(obj: T) {
 export function original<T>(obj: T) {
   if (typeof obj === "undefined" || obj === null) return obj;
   return (obj as T & { [Traps_self]: T })[Traps_self] || obj;
+}
+
+export function data<T>(obj: T) {
+  if (typeof obj === "undefined" || obj === null) return;
+  return (obj as T & { [Traps_data]: WeakMap<object, TargetData> })[Traps_data];
 }
 
 export function unfreeze<T>(obj: T) {
