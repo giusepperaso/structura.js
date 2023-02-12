@@ -55,14 +55,18 @@ export type UnknownArr = Array<unknown>;
 export type UnknownMap = Map<unknown, unknown>;
 export type UnknownSet = Set<unknown>;
 
-export type Producer<T, Q> = (draft: UnFreeze<T>) => Q | void;
+export type Producer<T, Q> = (draft: UnFreeze<T>) => Q | void | UnFreeze<T>;
+
 export type ProduceOptions = { proxify?: typeof createProxy };
+
 export type ProduceReturn<T, Q> = FreezeOnce<Q extends void ? T : Q>;
+
 export type PatchCallback<T> = T extends Primitive
   ? never
   : (patches: Patch[], inversePatches: Patch[]) => void;
 
-export type FreezeOnce<T> = T extends Freeze<infer Q> ? Freeze<Q> : Freeze<T>;
+export type FreezeOnce<T> = T &
+  (T extends Freeze<infer Q> ? Freeze<Q> : Freeze<T>);
 
 export type Freeze<T> = T extends Primitive
   ? T
@@ -626,21 +630,18 @@ function walkParents(
   }
 }
 
-export function applyPatches<T extends object>(
-  state: T,
-  patches: Patch[]
-): T | object {
+export function applyPatches<T>(state: T, patches: Patch[]): UnFreeze<T> {
   let newState: T | object = shallowClone(state) as T;
   let producerReturn;
   const clones: WeakMap<object, object> = new WeakMap();
-  clones.set(state, newState);
-  clones.set(newState, newState);
+  clones.set(state as object, newState as object);
+  clones.set(newState as object, newState as object);
   for (let i = 0; i !== patches.length; i++) {
     producerReturn = applyPatch(newState, patches[i], clones);
     if (typeof producerReturn !== "undefined")
       newState = producerReturn as object;
   }
-  return newState;
+  return newState as UnFreeze<T>;
 }
 
 export function applyPatch<T>(
