@@ -24,7 +24,7 @@ describe.concurrent("try returning directly from the producer", async () => {
     expect(result[0].prop.sub).toBe(2);
   });
   it("can return a different type", async () => {
-    const myObj: Obj2<number | string>[] = [
+    const myObj: { prop: { sub: number } }[] = [
       {
         prop: {
           sub: 1,
@@ -32,16 +32,14 @@ describe.concurrent("try returning directly from the producer", async () => {
       },
     ];
     const result = produce(myObj, (draft) => {
-      return [
-        {
-          prop: {
-            sub: "test" + draft[0].prop.sub,
-          },
+      return {
+        prop: {
+          sub: "test" + draft[0].prop.sub,
         },
-      ];
+      };
     });
     expect(myObj).not.toBe(result);
-    expect(result[0].prop.sub).toBe("test1");
+    expect(result.prop.sub).toBe("test1");
   });
   it("can return and modify the draft in the same producer", async () => {
     const myObj: Obj2<number>[] = [
