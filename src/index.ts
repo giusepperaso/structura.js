@@ -111,7 +111,14 @@ export function produce<T, Q>(
   { proxify = createProxy }: ProduceOptions = {}
 ): ProduceReturn<T, Q> {
   type R = ProduceReturn<T, Q>;
-  if (!isDraftable(state)) return producer(state as UnFreeze<T>) as R;
+  if (!isDraftable(state)) {
+    const result = producer(state as UnFreeze<T>) as R;
+    if (patchCallback) {
+      const action = Actions.producer_return;
+      patchCallback([{ v: result, action }], [{ v: state, action }]);
+    }
+    return result;
+  }
   const data = new WeakMap();
   const freezeReplaceTargets = new WeakMap();
   const pStore: PatchStore | null = patchCallback

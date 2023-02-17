@@ -164,4 +164,12 @@ describe.concurrent("test patch production", () => {
     const undone = applyPatches(result, inverse);
     expect(undone).toEqual(makeObj());
   });
+  it("should return patches also with primitives", async () => {
+    const [result, patches, rev] = produceWithPatches(2, (draft) => draft + 2);
+    expect(result).toBe(4);
+    expect(!!patches).toBe(true);
+    expect(!!rev).toBe(true);
+    expect(patches[0].v).toBe(4);
+    expect(rev[0].v).toBe(2);
+  });
 });
