@@ -360,7 +360,14 @@ export function isDraftable(obj: unknown) {
   return !isPrimitive(obj);
 }
 
-export type Patch = { v?: unknown; p?: Link; action: Actions; next?: Patch[] };
+export type Patch = {
+  v?: unknown;
+  value?: unknown; // alias for v
+  p?: Link;
+  action: Actions;
+  next?: Patch[];
+};
+
 export type PatchPair = { patch: Patch; inverse: Patch };
 export type PatchStore = { patches: Patch[]; inversePatches: Patch[] };
 
@@ -653,20 +660,20 @@ export function applyPatch<T>(
   let childShallow, child, next;
   switch (action) {
     case Actions.set:
-      (current as UnknownObj)[patch.p as Prop] = patch.v;
+      (current as UnknownObj)[patch.p as Prop] = patch.value || patch.v;
       break;
     case Actions.set_map:
-      (current as UnknownMap).set(patch.p as Link, patch.v);
+      (current as UnknownMap).set(patch.p, patch.value || patch.v);
       break;
     case Actions.add_set:
-      (current as UnknownSet).add(patch.v);
+      (current as UnknownSet).add(patch.value || patch.v);
       break;
     case Actions.delete:
       delete (current as UnknownObj)[patch.p as Prop];
       break;
     case Actions.delete_map:
     case Actions.delete_set:
-      (current as UnknownMap | UnknownSet).delete(patch.p as Link);
+      (current as UnknownMap | UnknownSet).delete(patch.p);
       break;
     case Actions.clear_map:
     case Actions.clear_set:
@@ -707,7 +714,7 @@ export function applyPatch<T>(
       }
       break;
     case Actions.producer_return:
-      return patch.v;
+      return patch.value || patch.v;
   }
 }
 
