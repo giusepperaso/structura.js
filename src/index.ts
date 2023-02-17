@@ -740,6 +740,14 @@ function getTypeString<T>(x: T) {
   return toString.call(x);
 }
 
+function getType<T>(x: T) {
+  return isPrimitive(x)
+    ? "primitive"
+    : typeof x === "function"
+    ? "function"
+    : toString.call(x);
+}
+
 type ForEach = (v: unknown, k: unknown | undefined, c: unknown) => void;
 
 function copyProps<F extends object, T extends object>(
@@ -798,10 +806,7 @@ function strictCopyProps<F>(from: F, forEach?: ForEach) {
 }
 
 function shallowClone<T>(x: T, type?: Types, forEach?: ForEach): object {
-  return (cloneTypes[type || (getTypeString(x) as Types)] as Function)(
-    x,
-    forEach
-  );
+  return (cloneTypes[type || (getType(x) as Types)] as Function)(x, forEach);
 }
 
 const cloneTypes: Partial<Record<Types, Function>> = {
