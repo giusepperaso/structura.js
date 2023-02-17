@@ -813,6 +813,9 @@ const cloneTypes: Partial<Record<Types, Function>> = {
   [Types.primitive](x: Primitive, _?: ForEach) {
     return x;
   },
+  [Types.function](x: Function, forEach?: ForEach) {
+    return copyProps(x, x.bind(null), forEach);
+  },
   [Types.Object](x: Object, forEach?: ForEach) {
     if (!Settings.strictCopy) {
       const constructor = x.constructor;
