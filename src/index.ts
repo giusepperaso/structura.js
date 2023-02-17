@@ -337,6 +337,8 @@ export function snapshot<T>(obj: T): T {
       }
     }
   }
+  // if it already has a clone then clone it again,
+  // else return the original
   function cloneOrOriginal(t: object) {
     const _target = target(t);
     return _target !== original(t)
