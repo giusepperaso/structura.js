@@ -650,8 +650,10 @@ export function applyPatches<T>(state: T, patches: Patch[]): UnFreeze<T> {
   let newState: T | object = shallowClone(state) as T;
   let producerReturn;
   const clones: WeakMap<object, object> = new WeakMap();
-  clones.set(state as object, newState as object);
-  clones.set(newState as object, newState as object);
+  if (!isPrimitive(state)) {
+    clones.set(state as object, newState as object);
+    clones.set(newState as object, newState as object);
+  }
   for (let i = 0; i !== patches.length; i++) {
     producerReturn = applyPatch(newState, patches[i], clones);
     if (typeof producerReturn !== "undefined")
