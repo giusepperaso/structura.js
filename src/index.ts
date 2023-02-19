@@ -249,6 +249,8 @@ export function produce<T, Q>(
       return true;
     },
     has(t: object, p: Prop) {
+      if (p === Traps_self || p === Traps_target || p === Traps_data)
+        return true;
       const currData = data.get(t);
       const actualTarget = (currData && currData.shallow) || t;
       return p in actualTarget;
@@ -406,6 +408,7 @@ export function isDraft<T>(obj: T) {
   return (
     !!obj && typeof (obj as T & { [Traps_self]: T })[Traps_self] !== "undefined"
   );
+  return !isPrimitive(obj) && Traps_self in (obj as object);
 }
 
 export function isDraftable(obj: unknown) {
