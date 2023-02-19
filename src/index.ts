@@ -851,10 +851,11 @@ function strictCopyProps<F>(from: F, forEach?: ForEach) {
 }
 
 function shallowClone<T>(x: T, type?: Types, forEach?: ForEach): object {
-  return (cloneTypes[type || (getType(x) as Types)] as Function)(x, forEach);
+  const fn = cloneFns[type || (getType(x) as Types)] || cloneFns[Types.Object];
+  return (fn as Function)(x, forEach);
 }
 
-const cloneTypes: Partial<Record<Types, Function>> = {
+const cloneFns: Partial<Record<Types, Function>> = {
   [Types.primitive](x: Primitive, _?: ForEach) {
     return x;
   },
