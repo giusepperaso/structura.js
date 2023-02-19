@@ -5,26 +5,20 @@
 - [ ] (🟩TEST) each test should possibly also run on strict copy
 - [ ] (🟩TEST) better % test coverage (mostly some helpers are not unit tested)
 - [ ] (⬛CODE) organize the code better in multiple files and add comments
-- [ ] (🟪DOCS) documentate helpers like original and target
 - [ ] (🟫BENC) add benchmarks for patches
-- [ ] (🟨PERF) appended: WeakSet could be used to determine if the element was external to the tree, so we could avoid cloning it
-- [ ] (🟨PERF) remove some closures, expecially the proxy traps, the addLink and actionLink
-- [ ] (🟨PERF) getOwnPropertySymbols adds some overhead on copy: we could disable it with a flag if necessary. Is it worth?
-- [ ] (🟨PERF) store type somewhere for fast lookup
-- [ ] (🟨PERF) typeof v is taken two times, the second time for checking if it's a function. Is it worth solving?
 - [ ] (⬜FEAT) maybe implement those types? TypedArray, DataView, File, Blob, FileList, DomException
 - [ ] (⬜FEAT) maybe implement those proxy traps? defineProperty, setPrototypeOF, preventExtensions, apply
-- [ ] (⬜FEAT) allow switching implementations
 
 ## IN PROGRESS
 
-- [ ] (⬜FEAT) full compatibility with [this rfc of redux toolkit](https://github.com/reduxjs/redux-toolkit/pull/3074)
-- [ ] (🟧BUGS) patches don't work with circular references
-- [ ] (🟧BUGS) reverse patches may create inconsistencies in sets
-- [ ] (🟩TEST) generate and try patches in every test
+- [95%] (⬜FEAT) full compatibility with [this rfc of redux toolkit](https://github.com/reduxjs/redux-toolkit/pull/3074)
+- [10%] (🟧BUGS) patches don't work with circular references
+- [10%] (🟧BUGS) reverse patches may create inconsistencies in sets
+- [90%] (🟩TEST) generate and try patches in every test
 
 ## SOLVED
 
+- [x] (🟪DOCS) documentate helpers like original and target
 - [x] (⬜FEAT) possibility to convert patches in standard RFC JSON format
 - [x] (⬜FEAT) added support for the "in" operator and ownKeys trap
 - [x] (🟦TYPE) Passing a frozen object should never require explicit casting
@@ -37,5 +31,14 @@
 - [x] (🟫BENC) add benchmarks for different setups
 - [x] (⬜FEAT) added patches
 - [x] (🟧BUGS) if I have multiple link to a child for the same parent, the append action is only done once
+
+## DISCARDED
+
+- ~~[ ] (🟨PERF) appended: WeakSet could be used to see if an element was external to the tree, so we could avoid cloning it~~
+- ~~[ ] (🟨PERF) remove some closures, expecially the proxy traps, the addLink and actionLink~~
+- ~~[ ] (🟨PERF) getOwnPropertySymbols adds some overhead on copy: we could disable it with a flag if necessary. Is it worth?~~
+- ~~[ ] (🟨PERF) store type somewhere for fast lookup~~
+- ~~[ ] (🟨PERF) typeof v is taken two times, the second time for checking if it's a function. Is it worth solving?~~
+- ~~[ ] (⬜FEAT) allow switching implementations~~
 
 

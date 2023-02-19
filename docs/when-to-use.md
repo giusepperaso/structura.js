@@ -14,6 +14,6 @@
 - less mature, less stable (Structura is still in alpha)
 - test coverage is still not 100%
 - docs could be better
-- does not support browsers pre ES6 and will likely never do
-- does not yet support some proxy traps and some data structures that Immer supports, but this is very likely to change in the future
-- generated patches are not compliant to any RFC, but in the future this may change or there could be a converter
+- does not support IE and pre ES6 browsers and will never do
+- does not yet support ~~some proxy traps and~~ some data structures that Immer supports, but this is very likely to change in the future
+- generated patches are not compliant to any RFC, but ~~in the future this may change or there could be a converter~~ there is already a converter included in the library; besides applyPatches also accept standard JSON Patches
