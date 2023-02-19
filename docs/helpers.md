@@ -41,11 +41,11 @@ produce({ n: 1 }, (draft) => {
 
 ## freeze
 
-See the <a href="./freezing.html#Freezing">freezing page</a>
+See the <a href="./freezing.html#freezing">freezing page</a>
 
 ## unfreeze
 
-See the <a href="./freezing.html#Unfreezing">freezing page</a>
+See the <a href="./freezing.html#unfreezing">freezing page</a>
 
 ## convertPatchesToStandard
 
