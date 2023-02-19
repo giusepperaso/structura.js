@@ -355,7 +355,50 @@ export function snapshot<T>(obj: T): T {
   return cloneOrOriginal(obj as object);
 }
 
+export function freeze<T>(
+  obj: T,
+  runtime: boolean = false,
+  deep: boolean = false
+): T {
+  if (runtime && !Object.isFrozen(obj) && !isDraft(obj) && isDraftable(obj)) {
+    const err = () => {
+      throw Error("This object has been frozen and should not be mutated");
+    };
+    switch (getTypeString(obj)) {
+      case Types.Map:
+        const map = obj as UnknownMap;
+        map.set = map.clear = map.delete = err;
+        if (deep) {
+          map.forEach((v, k) => {
+            freeze(k, true, true);
+            freeze(v, true, true);
+          });
+        }
+        break;
+      case Types.Set:
+        const set = obj as UnknownSet;
+        set.add = set.clear = set.delete = err;
+        if (deep) set.forEach((v) => freeze(v, true, true));
+        break;
+      default:
+        if (deep) {
+          const keys = Reflect.ownKeys(obj as object);
+          for (let i = 0; i !== keys.length; i++) {
+            freeze(obj[keys[i] as keyof T], true, true);
+          }
+        }
+    }
+    Object.freeze(obj);
+  }
+  return obj as FreezeOnce<T>;
+}
+
 export function unfreeze<T>(obj: T) {
+  if (Object.isFrozen(obj)) {
+    throw new Error(
+      "This object has been frozen at runtime and can't be unfreezed"
+    );
+  }
   return obj as UnFreeze<T>;
 }
 
