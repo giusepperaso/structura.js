@@ -1,7 +1,7 @@
 import { expect } from "vitest";
 import {
   applyPatches,
-  convertPatchesToRFC as convert,
+  convertPatchesToStandard as convert,
   original,
   Producer,
   produceWithPatches,

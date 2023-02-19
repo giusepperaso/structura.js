@@ -842,11 +842,11 @@ export function applyPatch<T>(
   }
 }
 
-export function convertPatchesToRFC(
+export function convertPatchesToStandard(
   patches: Patch[],
   pathArray: boolean = true,
-  path: unknown[] = [],
-  converted: JSONPatch[] = []
+  path: unknown[] = [], // don't pass manually as argument
+  converted: JSONPatch[] = [] // don't pass manually as argument
 ): JSONPatch[] {
   patches.forEach(({ p: currPath, v: value, next, op: action }) => {
     const newPath = currPath ? [...path, currPath] : path;
@@ -865,7 +865,7 @@ export function convertPatchesToRFC(
         value,
       });
     }
-    if (next) convertPatchesToRFC(next, pathArray, newPath, converted);
+    if (next) convertPatchesToStandard(next, pathArray, newPath, converted);
   });
   return converted;
 }
