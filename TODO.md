@@ -2,7 +2,7 @@
 
 ## TODO
 
-- [ ] (🟦TYPE) Passing a frozen object should never require explicit casting
+- [ ] (🟩TEST) each test should possibly also run on strict copy
 - [ ] (🟩TEST) better % test coverage (mostly some helpers are not unit tested)
 - [ ] (⬛CODE) organize the code better in multiple files and add comments
 - [ ] (🟪DOCS) documentate helpers like original and target
@@ -12,11 +12,9 @@
 - [ ] (🟨PERF) getOwnPropertySymbols adds some overhead on copy: we could disable it with a flag if necessary. Is it worth?
 - [ ] (🟨PERF) store type somewhere for fast lookup
 - [ ] (🟨PERF) typeof v is taken two times, the second time for checking if it's a function. Is it worth solving?
-- [ ] (⬜FEAT) possibility to convert patches in standard RFC JSON format
-- [ ] (⬜FEAT) possibly implement those types: TypedArray, DataView(?), File(?), Blob(?), FileList(?), DomException(?)
-- [ ] (⬜FEAT) possibly implement those proxy traps: defineProperty, setPrototypeOF, preventExtensions, ownKeys, apply(?)
+- [ ] (⬜FEAT) maybe implement those types? TypedArray, DataView, File, Blob, FileList, DomException
+- [ ] (⬜FEAT) maybe implement those proxy traps? defineProperty, setPrototypeOF, preventExtensions, apply
 - [ ] (⬜FEAT) allow switching implementations
-- [ ] (🟦TYPE) applyPatches should have a conditional return type
 
 ## IN PROGRESS
 
@@ -27,7 +25,9 @@
 
 ## SOLVED
 
-- [x] (⬜FEAT) added support for the "in" operator
+- [x] (⬜FEAT) possibility to convert patches in standard RFC JSON format
+- [x] (⬜FEAT) added support for the "in" operator and ownKeys trap
+- [x] (🟦TYPE) Passing a frozen object should never require explicit casting
 - [x] (🟦TYPE) produceWithPatches didn't allow a return type different from the draft
 - [x] (🟧BUGS) patches could delete an element wrongly with maps
 - [x] (🟧BUGS) assign the descriptor value during strict copy, because the descriptor could be a getter or setter

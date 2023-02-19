@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyPatches, produceWithPatches } from "..";
+import { applyPatches, Patch, produceWithPatches } from "..";
 
 describe.concurrent("test patch production", () => {
   it("should return the right patches on array push", async () => {
@@ -13,29 +13,29 @@ describe.concurrent("test patch production", () => {
     expect(patches).toEqual([
       {
         p: "0",
-        action: 8,
+        op: 8,
         next: [
-          { v: 0, p: "0", action: 0 },
-          { v: 1, p: "length", action: 0 },
+          { v: 0, p: "0", op: 0 },
+          { v: 1, p: "length", op: 0 },
         ],
       },
       {
         p: "0",
-        action: 8,
+        op: 8,
         next: [
-          { v: 1, p: "1", action: 0 },
-          { v: 2, p: "length", action: 0 },
+          { v: 1, p: "1", op: 0 },
+          { v: 2, p: "length", op: 0 },
         ],
       },
       {
         p: "0",
-        action: 8,
+        op: 8,
         next: [
-          { v: 2, p: "2", action: 0 },
-          { v: 3, p: "length", action: 0 },
+          { v: 2, p: "2", op: 0 },
+          { v: 3, p: "length", op: 0 },
         ],
       },
-    ]);
+    ] as Patch[]);
   });
   it("should return the right patches on array manual adding", async () => {
     const myObj: number[][] = [[], [], [], []];
@@ -46,10 +46,10 @@ describe.concurrent("test patch production", () => {
     });
     expect(result[0]).not.toBe(myObj[0]);
     expect(patches).toEqual([
-      { p: "0", action: 8, next: [{ v: 0, p: "0", action: 0 }] },
-      { p: "0", action: 8, next: [{ v: 1, p: "1", action: 0 }] },
-      { p: "0", action: 8, next: [{ v: 2, p: "2", action: 0 }] },
-    ]);
+      { p: "0", op: 8, next: [{ v: 0, p: "0", op: 0 }] },
+      { p: "0", op: 8, next: [{ v: 1, p: "1", op: 0 }] },
+      { p: "0", op: 8, next: [{ v: 2, p: "2", op: 0 }] },
+    ] as Patch[]);
   });
   it("should return the right patches on object set", async () => {
     const myObj: { [k: string]: number }[] = [{ A: 1 }];
@@ -61,11 +61,11 @@ describe.concurrent("test patch production", () => {
     });
     expect(result[0]).not.toBe(myObj[0]);
     expect(patches).toEqual([
-      { p: "0", action: 8, next: [{ v: 2, p: "B", action: 0 }] },
-      { p: "0", action: 8, next: [{ v: 3, p: "C", action: 0 }] },
-      { p: "0", action: 8, next: [{ v: 4, p: "D", action: 0 }] },
-      { p: "0", action: 8, next: [{ v: 5, p: "E", action: 0 }] },
-    ]);
+      { p: "0", op: 8, next: [{ v: 2, p: "B", op: 0 }] },
+      { p: "0", op: 8, next: [{ v: 3, p: "C", op: 0 }] },
+      { p: "0", op: 8, next: [{ v: 4, p: "D", op: 0 }] },
+      { p: "0", op: 8, next: [{ v: 5, p: "E", op: 0 }] },
+    ] as Patch[]);
   });
   it("should apply the patches correctly with object/array", async () => {
     const makeObj: () => { [k: string]: number }[] = () => [{ A: 1 }];

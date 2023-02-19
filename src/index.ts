@@ -114,8 +114,8 @@ export function produce<T, Q>(
   if (!isDraftable(state)) {
     const result = producer(state as UnFreeze<T>) as R;
     if (patchCallback) {
-      const action = Actions.producer_return;
-      patchCallback([{ v: result, action }], [{ v: state, action }]);
+      const op = Actions.producer_return;
+      patchCallback([{ v: result, op }], [{ v: state, op }]);
     }
     return result;
   }
@@ -282,9 +282,9 @@ export function produce<T, Q>(
   if (patchCallback && pStore) {
     if (hasReturn) {
       if (!data.has(result as object)) pStore.patches = [];
-      const action = Actions.producer_return;
-      pStore.patches.push({ v: result, action });
-      pStore.inversePatches.push({ v: produced, action });
+      const op = Actions.producer_return;
+      pStore.patches.push({ v: result, op });
+      pStore.inversePatches.push({ v: produced, op });
     }
     patchCallback(pStore.patches, pStore.inversePatches.reverse());
   }
@@ -414,10 +414,15 @@ export function isDraftable(obj: unknown) {
 
 export type Patch = {
   v?: unknown;
-  value?: unknown; // alias for v
   p?: Link;
-  action: Actions;
+  op: Actions;
   next?: Patch[];
+};
+
+export type JSONPatch = {
+  op: "add" | "replace" | "remove";
+  path: unknown[] | string;
+  value?: unknown;
 };
 
 export type PatchPair = { patch: Patch; inverse: Patch };
@@ -544,11 +549,11 @@ function walkParents(
       if (action === Actions.clear_map) patchAction = Actions.delete_map;
       if (action === Actions.clear_set) patchAction = Actions.delete_set;
       currPatches.push({
-        patch: { v, p: link, action: patchAction },
+        patch: { v, p: link, op: patchAction },
         inverse: {
           v: prevChildAtLink,
           p: link,
-          action: inverseAction,
+          op: inverseAction,
         },
       });
     }
@@ -617,8 +622,8 @@ function walkParents(
           thisTraversed = true;
           if (patchStore) {
             traversedPatches = {
-              patch: { p: link, action: patchAction, next: [] },
-              inverse: { p: link, action: patchAction, next: [] },
+              patch: { p: link, op: patchAction, next: [] },
+              inverse: { p: link, op: patchAction, next: [] },
             };
           } else {
             traversedPatches = true;
@@ -689,7 +694,10 @@ function walkParents(
   }
 }
 
-export function applyPatches<T>(state: T, patches: Patch[]): UnFreeze<T> {
+export function applyPatches<T>(
+  state: T,
+  patches: Patch[] | JSONPatch[]
+): UnFreeze<T> {
   let newState: T | object = shallowClone(state) as T;
   let producerReturn;
   const clones: WeakMap<object, object> = new WeakMap();
@@ -707,20 +715,20 @@ export function applyPatches<T>(state: T, patches: Patch[]): UnFreeze<T> {
 
 export function applyPatch<T>(
   current: T,
-  patch: Patch,
+  patch: Patch | JSONPatch,
   clones: WeakMap<object, object>
 ) {
-  const action = patch.action;
+  const action = patch.op;
   let childShallow, child, next;
   switch (action) {
     case Actions.set:
-      (current as UnknownObj)[patch.p as Prop] = patch.value || patch.v;
+      (current as UnknownObj)[patch.p as Prop] = patch.v;
       break;
     case Actions.set_map:
-      (current as UnknownMap).set(patch.p, patch.value || patch.v);
+      (current as UnknownMap).set(patch.p, patch.v);
       break;
     case Actions.add_set:
-      (current as UnknownSet).add(patch.value || patch.v);
+      (current as UnknownSet).add(patch.v);
       break;
     case Actions.delete:
       delete (current as UnknownObj)[patch.p as Prop];
@@ -768,8 +776,98 @@ export function applyPatch<T>(
       }
       break;
     case Actions.producer_return:
-      return patch.value || patch.v;
+      return patch.v;
+    /* ------------- JSON Patch RFC compatibility ------------- */
+    case "add":
+    case "replace":
+    case "remove":
+      // if path is not an array, let's split it; also remove non truish portions
+      const p = patch.path;
+      const pathList = (Array.isArray(p) ? p : p.split("/")).filter((p) => !!p);
+      // if the path is empty, just return the value
+      if (!pathList.length) {
+        return (patch as JSONPatch & { op: "replace" }).value;
+      }
+      // helper to get the clone if it's already here or create it
+      function getClone(objAtKey: unknown) {
+        if (isPrimitive(objAtKey)) return objAtKey;
+        if (!clones.has(objAtKey as object)) {
+          const child = shallowClone(objAtKey);
+          clones.set(objAtKey as object, child);
+          clones.set(child, child);
+          return child;
+        }
+        return clones.get(objAtKey as object);
+      }
+      // we loop through the porions of the path, each time getting the new curr
+      let curr: unknown = current;
+      pathList.forEach((key: unknown, index) => {
+        const isLast = index === pathList.length - 1;
+        if (!isLast) {
+          // if it's not the last portion of the path, we just replace the child with a shallow clone
+          let clone: T;
+          switch (getTypeString(curr)) {
+            case Types.Map:
+              clone = getClone((curr as UnknownMap).get(key)) as T;
+              (curr as UnknownMap).set(key, clone);
+              break;
+            case Types.Set:
+              clone = getClone(key) as T;
+              (curr as UnknownSet).delete(key);
+              (curr as UnknownSet).add(clone);
+              break;
+            default:
+              clone = getClone((curr as UnknownObj)[key as Prop]) as T;
+              (curr as UnknownObj)[key as Prop] = clone;
+          }
+          curr = clone;
+        } else {
+          // if it's the last element, we do the action in "op"
+          switch (getTypeString(curr)) {
+            case Types.Map:
+              if (action === "remove") (curr as UnknownMap).delete(key);
+              else (curr as UnknownMap).set(key, patch.value);
+              break;
+            case Types.Set:
+              if (action === "remove") (curr as UnknownSet).delete(key);
+              else (curr as UnknownSet).add(key);
+              break;
+            default:
+              if (action === "remove") delete (curr as UnknownObj)[key as Prop];
+              else (curr as UnknownObj)[key as Prop] = patch.value;
+          }
+        }
+      });
+      break;
   }
+}
+
+export function convertPatchesToRFC(
+  patches: Patch[],
+  pathArray: boolean = true,
+  path: unknown[] = [],
+  converted: JSONPatch[] = []
+): JSONPatch[] {
+  patches.forEach(({ p: currPath, v: value, next, op: action }) => {
+    const newPath = currPath ? [...path, currPath] : path;
+    const isAppendOp =
+      action === Actions.append ||
+      action === Actions.append_map ||
+      action === Actions.append_set;
+    if (!isAppendOp) {
+      const isDeleteOp =
+        action === Actions.delete ||
+        action === Actions.delete_map ||
+        action === Actions.delete_set;
+      converted.push({
+        op: isDeleteOp ? "remove" : "replace",
+        path: pathArray ? newPath : "/" + newPath.join("/"),
+        value,
+      });
+    }
+    if (next) convertPatchesToRFC(next, pathArray, newPath, converted);
+  });
+  return converted;
 }
 
 function isPrimitive(x: unknown): x is Primitive {

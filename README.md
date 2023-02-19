@@ -22,6 +22,7 @@ The library is actually in alpha state. It is probably already usable (many comp
 
 ## BREAKING CHANGES
 
+- v.0.8.0-alpha: patches use 'op' instead of 'action' as key for the operation; they can also be passed in the JSON format
 - v.0.6.0-alpha: revert back to accept primitives, just don't draft them; also accept the in operator
 - ~~v.0.5.0-alpha: don't accept primitive types at runtime~~
-- ~~v.0.4.0-alpha: primitive types are not accepted anymore in the produce (this could create confusion without being really useful)~~
+- ~~v.0.4.0-alpha: primitive types are not accepted anymore in the produce function~~
