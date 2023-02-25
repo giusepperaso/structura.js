@@ -800,7 +800,9 @@ export function applyPatch<T>(
     case "remove":
       // if path is not an array, let's split it; also remove non truish portions
       const p = patch.path;
-      const pathList = (Array.isArray(p) ? p : p.split("/")).filter((p) => !!p);
+      const pathList = (Array.isArray(p) ? p : p.split("/")).filter(
+        (p) => !!p || p === 0 // can't use "" as index in string version
+      );
       // if the path is empty, just return the value
       if (!pathList.length) {
         return (patch as JSONPatch & { op: "replace" }).value;
@@ -865,8 +867,13 @@ export function convertPatchesToStandard(
   path: unknown[] = [], // don't pass manually as argument
   converted: JSONPatch[] = [] // don't pass manually as argument
 ): JSONPatch[] {
-  patches.forEach(({ p: currPath, v: value, next, op: action }) => {
-    const newPath = currPath ? [...path, currPath] : path;
+  let i = 0,
+    l = patches.length;
+  for (; i !== l; i++) {
+    const patch = patches[i];
+    const action = patch.op;
+    if (action === Actions.no_op) continue;
+    const newPath = "p" in patch ? [...path, patch.p] : path;
     const isAppendOp =
       action === Actions.append ||
       action === Actions.append_map ||
@@ -878,12 +885,13 @@ export function convertPatchesToStandard(
         action === Actions.delete_set;
       converted.push({
         op: isDeleteOp ? "remove" : "replace",
-        path: pathArray ? newPath : "/" + newPath.join("/"),
-        value,
+        path: pathArray ? newPath : "/" + newPath.join("/"), // can't use "" as index in string version
+        value: patch.v,
       });
     }
+    const next = patch.next;
     if (next) convertPatchesToStandard(next, pathArray, newPath, converted);
-  });
+  }
   return converted;
 }
 
