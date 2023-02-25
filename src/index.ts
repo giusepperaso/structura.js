@@ -887,7 +887,7 @@ export function convertPatchesToStandard(
   return converted;
 }
 
-function isPrimitive(x: unknown): x is Primitive {
+export function isPrimitive(x: unknown): x is Primitive {
   if (x === null) return true;
   const type = typeof x;
   if (type !== Types.function && type !== Types.object) return true;
