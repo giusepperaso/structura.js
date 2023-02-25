@@ -2,6 +2,9 @@
 
 ## TODO
 
+- [ ] (🟧BUGS) json patches don't support "" as key if the path is a string ( to solve this, use a placeholder like ___empty___)
+- [ ] (⬜FEAT) maybe use proxy revocable? maybe not necessary because they are already garbage collected
+- [ ] (⬜FEAT) "nothing" as return, so you can return undefined
 - [ ] (🟩TEST) each test should possibly also run on strict copy
 - [ ] (🟩TEST) better % test coverage (mostly some helpers are not unit tested)
 - [ ] (⬛CODE) organize the code better in multiple files and add comments
@@ -13,11 +16,11 @@
 
 - [95%] (⬜FEAT) full compatibility with [this rfc of redux toolkit](https://github.com/reduxjs/redux-toolkit/pull/3074)
 - [10%] (🟧BUGS) patches don't work with circular references
-- [10%] (🟧BUGS) reverse patches may create inconsistencies in sets
-- [90%] (🟩TEST) generate and try patches in every test
+- [95%] (🟩TEST) generate and try patches in every test
 
 ## SOLVED
 
+- [x] (🟧BUGS) reverse patches may create inconsistencies in sets
 - [x] (🟪DOCS) documentate helpers like original and target
 - [x] (⬜FEAT) possibility to convert patches in standard RFC JSON format
 - [x] (⬜FEAT) added support for the "in" operator and ownKeys trap
