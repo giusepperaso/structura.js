@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { produce } from "..";
+import { produceTest as produce } from "./utils";
 
 describe.concurrent("verify that Sets work correctly", () => {
   it("works with sets forEach and no nesting", async () => {
@@ -73,6 +73,15 @@ describe.concurrent("verify that Sets work correctly", () => {
     expect(myObj.size).toBe(2);
     expect(result.size).toBe(1);
     expect(Array.from(result.values())).toEqual([entries[1]]);
+  });
+  it("works with set delete with primitive", async () => {
+    const myObj = new Set([0]);
+    const result = produce(myObj, (draft) => {
+      draft.delete(0);
+    });
+    expect(myObj).not.toBe(result);
+    expect(myObj.size).toBe(1);
+    expect(result.size).toBe(0);
   });
   it("works with set clear", async () => {
     const myObj = new Set([0]);
