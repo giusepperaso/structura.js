@@ -306,6 +306,17 @@ export function produceWithPatches<T, Q>(...args: [T, Producer<T, Q>]) {
   return [result, patches!, inverse!] as const;
 }
 
+export function produceWithStandardPatches<T, Q>(
+  ...args: Parameters<typeof produceWithPatches<T, Q>>
+) {
+  const [result, patches, reverse] = produceWithPatches(...args);
+  return [
+    result,
+    convertPatchesToStandard(patches),
+    convertPatchesToStandard(reverse),
+  ];
+}
+
 export function safeProduce<T>(...args: Parameters<typeof produce<T, T>>) {
   return produce<T, T>(...args);
 }
@@ -314,6 +325,12 @@ export function safeProduceWithPatches<T>(
   ...args: Parameters<typeof produceWithPatches<T, T>>
 ) {
   return produceWithPatches<T, T>(...args);
+}
+
+export function safeProduceWithStandardPatches<T>(
+  ...args: Parameters<typeof produceWithStandardPatches<T, T>>
+) {
+  return produceWithStandardPatches<T, T>(...args);
 }
 
 export function target<T>(obj: T) {
