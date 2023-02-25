@@ -38,6 +38,7 @@ const enum Actions {
   append_map,
   append_set,
   producer_return,
+  no_op,
 }
 
 const Settings = {
@@ -640,7 +641,11 @@ function walkParents(
           if (patchStore) {
             traversedPatches = {
               patch: { p: link, op: patchAction, next: [] },
-              inverse: { p: link, op: patchAction, next: [] },
+              inverse: {
+                p: link,
+                op: patchAction,
+                next: [],
+              },
             };
           } else {
             traversedPatches = true;
@@ -649,6 +654,12 @@ function walkParents(
         }
         if (patchStore) {
           currPatches.push(traversedPatches as PatchPair);
+          if (patchAction === Actions.append_set) {
+            currPatches.push({
+              patch: { op: Actions.no_op },
+              inverse: { p: v as Link, op: Actions.delete_set },
+            });
+          }
           for (let i = 0; i !== (prevPatches as PatchPair[]).length; i++) {
             const prevPatch = (prevPatches as PatchPair[])[i];
             ((traversedPatches as PatchPair).patch.next as Patch[]).push(
@@ -735,6 +746,7 @@ export function applyPatch<T>(
   patch: Patch | JSONPatch,
   clones: WeakMap<object, object>
 ) {
+  if (!patch) return;
   const action = patch.op;
   let childShallow, child, next;
   switch (action) {
