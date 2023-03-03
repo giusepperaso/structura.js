@@ -49,6 +49,12 @@ const Traps_self = Symbol();
 const Traps_target = Symbol();
 const Traps_data = Symbol();
 
+export type WithTraps<T = object> = {
+  [Traps_self]: T;
+  [Traps_target]: T;
+  [Traps_data]: TargetData;
+};
+
 export type Primitive = null | undefined | boolean | number | string | symbol;
 export type Prop = number | string | symbol;
 export type UnknownObj = Record<Prop, unknown>;
@@ -121,15 +127,15 @@ export function produce<T, Q>(
     return result;
   }
   const data = new WeakMap();
-  const freezeReplaceTargets = new WeakMap();
   const pStore: PatchStore | null = patchCallback
     ? { patches: [], inversePatches: [] }
     : null;
   const handler = {
-    get(t: object, p: Prop, r: object) {
-      if (p === Traps_data) return data;
+    get(wrap: { obj: object }, p: Prop, r: object) {
+      const t = wrap.obj;
       if (p === Traps_self) return t;
       const currData = data.get(t);
+      if (p === Traps_data) return currData;
       const actualTarget = (currData && currData.shallow) || t;
       if (p === Traps_target) return actualTarget;
       const v = Reflect.get(actualTarget, p, r);
@@ -228,40 +234,37 @@ export function produce<T, Q>(
           currData.inverseLength = (t as UnknownArr).length;
         }
         return v.bind(currData.proxy);
-      } else if (Object.isFrozen(v)) {
-        // getOwnPropertyDescriptor trap doesn't allow to return
-        // descriptors different from the target,
-        // so we can't proxy frozen objects, because we couldn't write their props;
-        // we create instead a "dummy" target that we could reuse
-        const newTarget = shallowClone(v);
-        freezeReplaceTargets.set(v, newTarget);
-        return proxify(newTarget, data, handler, t, p).proxy;
       } else {
         return proxify(v, data, handler, t, p).proxy;
       }
     },
-    set(t: object, p: Prop, v: unknown, r: object) {
+    set(wrap: { obj: object }, p: Prop, v: unknown, r: object) {
+      const t = wrap.obj;
       if (Reflect.get(t, p, r) !== v)
         walkParents(Actions.set, data, pStore, t, p, v);
       return true;
     },
-    deleteProperty(t: object, p: Prop) {
+    deleteProperty(wrap: { obj: object }, p: Prop) {
+      const t = wrap.obj;
       walkParents(Actions.delete, data, pStore, t, p);
       return true;
     },
-    has(t: object, p: Prop) {
+    has(wrap: { obj: object }, p: Prop) {
+      const t = wrap.obj;
       if (p === Traps_self || p === Traps_target || p === Traps_data)
         return true;
       const currData = data.get(t);
       const actualTarget = (currData && currData.shallow) || t;
       return p in actualTarget;
     },
-    ownKeys(t: object) {
+    ownKeys(wrap: { obj: object }) {
+      const t = wrap.obj;
       const currData = data.get(t);
       const actualTarget = (currData && currData.shallow) || t;
       return Reflect.ownKeys(actualTarget);
     },
-    getOwnPropertyDescriptor(t: object, p: Prop) {
+    getOwnPropertyDescriptor(wrap: { obj: object }, p: Prop) {
+      const t = wrap.obj;
       const currData = data.get(t);
       const actualTarget = (currData && currData.shallow) || t;
       const descriptor = Object.getOwnPropertyDescriptor(actualTarget, p);
@@ -275,10 +278,17 @@ export function produce<T, Q>(
       return d;
     },
   };
-  const currData = proxify(state as unknown as object, data, handler);
+  let currData: TargetData, unwrapState;
+  if (Traps_data in (state as WithTraps)) {
+    currData = (state as WithTraps)[Traps_data];
+    unwrapState = (state as WithTraps)[Traps_target];
+  } else {
+    currData = proxify(state as object, data, handler);
+    unwrapState = state;
+  }
   const result = producer(currData.proxy as UnFreeze<T>);
   let shallow = currData.shallow;
-  const produced = shallow === null ? state : shallow;
+  const produced = shallow === null ? unwrapState : shallow;
   const hasReturn = typeof result !== "undefined";
   if (patchCallback && pStore) {
     if (hasReturn) {
@@ -294,6 +304,13 @@ export function produce<T, Q>(
   } else {
     return produced as R;
   }
+}
+
+export function produceFreeze<T, Q>(...args: Parameters<typeof produce<T, Q>>) {
+  const result = produce<T, Q>(...args);
+  freeze(args[0], true, true);
+  freeze(result, true, true);
+  return result;
 }
 
 export function produceWithPatches<T, Q>(...args: [T, Producer<T, Q>]) {
@@ -489,7 +506,7 @@ export const createProxy: CreateProxy = function (
     }
   } else {
     currData = {
-      proxy: new Proxy(obj, handler),
+      proxy: new Proxy({ obj }, handler),
       shallow: null,
       parents: parent
         ? new Map([[parent, new Map([[link, null]])]])
@@ -728,12 +745,18 @@ export function applyPatches<T>(
   state: T,
   patches: Patch[] | JSONPatch[]
 ): UnFreeze<T> {
-  let newState: T | object = shallowClone(state) as T;
+  let newState: T | object = state;
   let producerReturn;
   const clones: WeakMap<object, object> = new WeakMap();
   if (!isPrimitive(state)) {
-    clones.set(state as object, newState as object);
-    clones.set(newState as object, newState as object);
+    const unwrapState = (
+      Traps_target in (state as WithTraps)
+        ? (state as WithTraps)[Traps_target]
+        : state
+    ) as object;
+    newState = shallowClone(unwrapState) as object;
+    clones.set(unwrapState, newState);
+    clones.set(newState, newState);
   }
   for (let i = 0; i !== patches.length; i++) {
     producerReturn = applyPatch(newState, patches[i], clones);

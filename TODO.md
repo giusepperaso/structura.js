@@ -2,9 +2,9 @@
 
 ## TODO
 
-- [ ] (🟧BUGS) json patches don't support "" as key if the path is a string ( to solve this, use a placeholder like ___empty___)
+- [ ] (⬜FEAT) json patches don't support "" as key if the path is a string ( to solve this, use a placeholder like ___empty___)
 - [ ] (⬜FEAT) maybe use proxy revocable? maybe not necessary because they are already garbage collected
-- [ ] (⬜FEAT) "nothing" as return, so you can return undefined
+- [ ] (⬜FEAT) "NOTHING" as return, so you can return undefined
 - [ ] (🟩TEST) each test should possibly also run on strict copy
 - [ ] (🟩TEST) better % test coverage (mostly some helpers are not unit tested)
 - [ ] (⬛CODE) organize the code better in multiple files and add comments
@@ -20,6 +20,7 @@
 
 ## SOLVED
 
+- [x] (🟨PERF) use object like { [Symbol()]: target } as proxy target
 - [x] (🟧BUGS) reverse patches may create inconsistencies in sets
 - [x] (🟪DOCS) documentate helpers like original and target
 - [x] (⬜FEAT) possibility to convert patches in standard RFC JSON format
@@ -37,6 +38,7 @@
 
 ## DISCARDED
 
+- ~~[ ] (⬜FEAT) support async producers~~
 - ~~[ ] (🟨PERF) appended: WeakSet could be used to see if an element was external to the tree, so we could avoid cloning it~~
 - ~~[ ] (🟨PERF) remove some closures, expecially the proxy traps, the addLink and actionLink~~
 - ~~[ ] (🟨PERF) getOwnPropertySymbols adds some overhead on copy: we could disable it with a flag if necessary. Is it worth?~~

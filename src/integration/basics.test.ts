@@ -86,6 +86,8 @@ describe.concurrent("tests all(most) of the basic types", () => {
     expect((result[2] as Obj2[])[0].prop.sub).toBe(10);
     expect(result[4]).toEqual([0, 1, 2]);
     expect((result[4] as number[]).length).toBe(3);
+    expect(Array.isArray(result[4])).toBe(true);
+    expect(Array.isArray(result)).toBe(true);
 
     const result2 = produce(result, (draft) => {
       draft.push([]);

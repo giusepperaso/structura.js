@@ -5,6 +5,7 @@ import {
   original,
   Producer,
   produceWithPatches,
+  target,
 } from "..";
 
 export type Obj<T = unknown> = { [key: string]: T };
@@ -22,9 +23,9 @@ export function produceTest<T extends object, Q>(
 ) {
   const [result, patches, reverse] = produceWithPatches(state, producer);
   expect(result).toEqual(applyPatches(state, patches));
-  expect(state).toEqual(applyPatches(result as object, reverse));
+  expect(target(state)).toEqual(applyPatches(result, reverse));
   expect(result).toEqual(applyPatches(state, convert(patches)));
-  expect(state).toEqual(applyPatches(result as object, convert(reverse)));
+  expect(target(state)).toEqual(applyPatches(result, convert(reverse)));
   return result;
 }
 
