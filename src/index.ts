@@ -433,8 +433,10 @@ export function isDraftable(obj: unknown) {
 export type Patch = {
   v?: unknown;
   p?: Link;
-  op: Actions;
+  op: Actions | JSONPatch["op"]; // allow manual push of json patches
   next?: Patch[];
+  path?: unknown[] | string; // allow manual push of json patches
+  value?: unknown; // allow manual push of json patches
 };
 
 export type JSONPatch = {
@@ -811,7 +813,7 @@ export function applyPatch<T>(
     case "replace":
     case "remove":
       // if path is not an array, let's split it; also remove non truish portions
-      const p = patch.path;
+      const p = patch.path as JSONPatch["path"];
       const pathList = (Array.isArray(p) ? p : p.split("/")).filter(
         (p) => !!p || p === 0 // can't use "" as index in string version
       );
