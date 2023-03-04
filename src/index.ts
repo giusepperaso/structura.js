@@ -412,11 +412,11 @@ export function freeze<T>(
   deep: boolean = false
 ): T {
   if (runtime && !Object.isFrozen(obj) && !isDraft(obj) && isDraftable(obj)) {
-    Object.freeze(obj);
     switch (getTypeString(obj)) {
       case Types.Map:
         const map = obj as UnknownMap;
         map.set = map.clear = map.delete = errFrozen;
+        Object.freeze(obj);
         if (deep) {
           map.forEach((v, k) => {
             freeze(k, true, true);
@@ -427,9 +427,11 @@ export function freeze<T>(
       case Types.Set:
         const set = obj as UnknownSet;
         set.add = set.clear = set.delete = errFrozen;
+        Object.freeze(obj);
         if (deep) set.forEach((v) => freeze(v, true, true));
         break;
       default:
+        Object.freeze(obj);
         if (deep) {
           const keys = Reflect.ownKeys(obj as object);
           for (let i = 0; i !== keys.length; i++) {
