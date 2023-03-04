@@ -127,12 +127,12 @@ export function produce<T, Q>(
     return result;
   }
   const data = new WeakMap();
+  const freezeReplaceTargets = new WeakMap();
   const pStore: PatchStore | null = patchCallback
     ? { patches: [], inversePatches: [] }
     : null;
   const handler = {
-    get(wrap: { obj: object }, p: Prop, r: object) {
-      const t = wrap.obj;
+    get(t: object, p: Prop, r: object) {
       if (p === Traps_self) return t;
       const currData = data.get(t);
       if (p === Traps_data) return currData;
@@ -234,37 +234,45 @@ export function produce<T, Q>(
           currData.inverseLength = (t as UnknownArr).length;
         }
         return v.bind(currData.proxy);
+      } else if (Object.isFrozen(v)) {
+        // getOwnPropertyDescriptor trap doesn't allow to return
+        // descriptors different from the target,
+        // so we can't proxy frozen objects, because we couldn't write their props;
+        // we create instead a "dummy" target that we could reuse
+        let newTarget;
+        if (freezeReplaceTargets.has(v)) {
+          newTarget = freezeReplaceTargets.get(v);
+        } else {
+          newTarget = shallowClone(v);
+          freezeReplaceTargets.set(v, newTarget);
+        }
+        return proxify(newTarget, data, handler, t, p).proxy;
       } else {
         return proxify(v, data, handler, t, p).proxy;
       }
     },
-    set(wrap: { obj: object }, p: Prop, v: unknown, r: object) {
-      const t = wrap.obj;
+    set(t: object, p: Prop, v: unknown, r: object) {
       if (Reflect.get(t, p, r) !== v)
         walkParents(Actions.set, data, pStore, t, p, v);
       return true;
     },
-    deleteProperty(wrap: { obj: object }, p: Prop) {
-      const t = wrap.obj;
+    deleteProperty(t: object, p: Prop) {
       walkParents(Actions.delete, data, pStore, t, p);
       return true;
     },
-    has(wrap: { obj: object }, p: Prop) {
-      const t = wrap.obj;
+    has(t: object, p: Prop) {
       if (p === Traps_self || p === Traps_target || p === Traps_data)
         return true;
       const currData = data.get(t);
       const actualTarget = (currData && currData.shallow) || t;
       return p in actualTarget;
     },
-    ownKeys(wrap: { obj: object }) {
-      const t = wrap.obj;
+    ownKeys(t: object) {
       const currData = data.get(t);
       const actualTarget = (currData && currData.shallow) || t;
       return Reflect.ownKeys(actualTarget);
     },
-    getOwnPropertyDescriptor(wrap: { obj: object }, p: Prop) {
-      const t = wrap.obj;
+    getOwnPropertyDescriptor(t: object, p: Prop) {
       const currData = data.get(t);
       const actualTarget = (currData && currData.shallow) || t;
       const descriptor = Object.getOwnPropertyDescriptor(actualTarget, p);
@@ -283,8 +291,17 @@ export function produce<T, Q>(
     currData = (state as WithTraps)[Traps_data];
     unwrapState = (state as WithTraps)[Traps_target];
   } else {
-    currData = proxify(state as object, data, handler);
-    unwrapState = state;
+    let unfrozeenState = state;
+    if (Object.isFrozen(state)) {
+      if (freezeReplaceTargets.has(state as object)) {
+        unfrozeenState = freezeReplaceTargets.get(state as object);
+      } else {
+        unfrozeenState = shallowClone(state) as T;
+        freezeReplaceTargets.set(state as object, unfrozeenState);
+      }
+    }
+    currData = proxify(unfrozeenState as object, data, handler);
+    unwrapState = unfrozeenState;
   }
   const result = producer(currData.proxy as UnFreeze<T>);
   let shallow = currData.shallow;
@@ -306,7 +323,7 @@ export function produce<T, Q>(
   }
 }
 
-export function produceFreeze<T, Q>(...args: Parameters<typeof produce<T, Q>>) {
+export function produceFreeze<T, Q>(...args: [T, Producer<T, Q>]) {
   const result = produce<T, Q>(...args);
   freeze(args[0], true, true);
   freeze(result, true, true);
@@ -392,19 +409,21 @@ export function snapshot<T>(obj: T): T {
   return cloneOrOriginal(obj as object);
 }
 
+const errFrozen = () => {
+  throw Error("This object has been frozen and should not be mutated");
+};
+
 export function freeze<T>(
   obj: T,
   runtime: boolean = false,
   deep: boolean = false
 ): T {
   if (runtime && !Object.isFrozen(obj) && !isDraft(obj) && isDraftable(obj)) {
-    const err = () => {
-      throw Error("This object has been frozen and should not be mutated");
-    };
+    Object.freeze(obj);
     switch (getTypeString(obj)) {
       case Types.Map:
         const map = obj as UnknownMap;
-        map.set = map.clear = map.delete = err;
+        map.set = map.clear = map.delete = errFrozen;
         if (deep) {
           map.forEach((v, k) => {
             freeze(k, true, true);
@@ -414,7 +433,7 @@ export function freeze<T>(
         break;
       case Types.Set:
         const set = obj as UnknownSet;
-        set.add = set.clear = set.delete = err;
+        set.add = set.clear = set.delete = errFrozen;
         if (deep) set.forEach((v) => freeze(v, true, true));
         break;
       default:
@@ -425,7 +444,6 @@ export function freeze<T>(
           }
         }
     }
-    Object.freeze(obj);
   }
   return obj as FreezeOnce<T>;
 }
@@ -506,7 +524,7 @@ export const createProxy: CreateProxy = function (
     }
   } else {
     currData = {
-      proxy: new Proxy({ obj }, handler),
+      proxy: new Proxy(obj, handler),
       shallow: null,
       parents: parent
         ? new Map([[parent, new Map([[link, null]])]])
@@ -532,6 +550,8 @@ function walkParents(
   let shallow = currData.shallow;
   let type = "";
   if (shallow === null) {
+    // => diventa if !currData.changed, e qui dentro lo setto a true,
+    // sempre qui dentro shallow lo setto solo se non è null
     type = getTypeString(t);
     shallow = currData.shallow = shallowClone(t, type as Types);
     data.set(shallow, currData);

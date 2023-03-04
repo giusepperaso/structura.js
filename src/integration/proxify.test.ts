@@ -35,4 +35,15 @@ describe.concurrent("proxy and traps tests", async () => {
       expect(Object.keys(draft)).toEqual(["test2"]);
     });
   });
+  it("Object keys works after adding properties", async () => {
+    produce({ t1: 1 } as Record<string, number>, (draft) => {
+      expect(Object.keys(draft)).toEqual(["t1"]);
+      draft.t2 = 2;
+      expect(Object.keys(draft)).toEqual(["t1", "t2"]);
+      expect("t2" in draft).toBeTruthy();
+      draft.t3 = 3;
+      expect(Object.keys(draft)).toEqual(["t1", "t2", "t3"]);
+      expect("t3" in draft).toBeTruthy();
+    });
+  });
 });

@@ -2,6 +2,7 @@
 
 ## TODO
 
+- [ ] (🟨PERF) dummy objects in freeze should be reused as shallow targets
 - [ ] (⬜FEAT) json patches don't support "" as key if the path is a string ( to solve this, use a placeholder like ___empty___)
 - [ ] (⬜FEAT) maybe use proxy revocable? maybe not necessary because they are already garbage collected
 - [ ] (⬜FEAT) "NOTHING" as return, so you can return undefined
