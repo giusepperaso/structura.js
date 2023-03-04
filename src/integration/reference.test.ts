@@ -18,6 +18,22 @@ describe.concurrent(
       expect(myObj.prop).toBe(result.prop);
       expect(myObj.prop.sub).toBe(result.prop.sub);
     });
+    it("should not modify frozen objects if no modifications happen", async () => {
+      const myObj = {
+        prop: {
+          sub: {},
+        },
+      };
+      Object.freeze(myObj);
+      Object.freeze(myObj.prop);
+      Object.freeze(myObj.prop.sub);
+      const result = produce(myObj, (draft) => {
+        draft.prop.sub;
+      });
+      expect(myObj).toBe(result);
+      expect(myObj.prop).toBe(result.prop);
+      expect(myObj.prop.sub).toBe(result.prop.sub);
+    });
     it("should shallow copy only objects that were modified", async () => {
       const myObj = {
         prop: {
