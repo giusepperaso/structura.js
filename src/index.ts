@@ -127,7 +127,6 @@ export function produce<T, Q>(
     return result;
   }
   const data = new WeakMap();
-  const freezeReplaceTargets = new WeakMap();
   const pStore: PatchStore | null = patchCallback
     ? { patches: [], inversePatches: [] }
     : null;
@@ -238,15 +237,13 @@ export function produce<T, Q>(
         // getOwnPropertyDescriptor trap doesn't allow to return
         // descriptors different from the target,
         // so we can't proxy frozen objects, because we couldn't write their props;
-        // we create instead a "dummy" target that we could reuse
-        let newTarget;
-        if (freezeReplaceTargets.has(v)) {
-          newTarget = freezeReplaceTargets.get(v);
-        } else {
-          newTarget = shallowClone(v);
-          freezeReplaceTargets.set(v, newTarget);
-        }
-        return proxify(newTarget, data, handler, t, p).proxy;
+        // we create instead the shallow copy in advance
+        const newTarget = shallowClone(v);
+        const currData = proxify(newTarget, data, handler, t, p);
+        if (currData.shallow === null) currData.shallow = newTarget;
+        // the data link to the original value must be created manually
+        if (!data.has(v as object)) data.set(v as object, currData);
+        return currData.proxy;
       } else {
         return proxify(v, data, handler, t, p).proxy;
       }
@@ -286,26 +283,22 @@ export function produce<T, Q>(
       return d;
     },
   };
-  let currData: TargetData, unwrapState;
+  let currData: TargetData, unwrapState: T;
   if (Traps_data in (state as WithTraps)) {
+    unwrapState = (state as WithTraps<T>)[Traps_target];
     currData = (state as WithTraps)[Traps_data];
-    unwrapState = (state as WithTraps)[Traps_target];
+  } else if (Object.isFrozen(state)) {
+    // if frozen, crate the shallow clone in advance and use it as target (same reason above)
+    unwrapState = shallowClone(state) as T;
+    currData = proxify(unwrapState as object, data, handler);
+    if (!data.has(state as object)) data.set(state as object, currData);
+    if (currData.shallow === null) currData.shallow = unwrapState as object;
   } else {
-    let unfrozeenState = state;
-    if (Object.isFrozen(state)) {
-      if (freezeReplaceTargets.has(state as object)) {
-        unfrozeenState = freezeReplaceTargets.get(state as object);
-      } else {
-        unfrozeenState = shallowClone(state) as T;
-        freezeReplaceTargets.set(state as object, unfrozeenState);
-      }
-    }
-    currData = proxify(unfrozeenState as object, data, handler);
-    unwrapState = unfrozeenState;
+    unwrapState = state;
+    currData = proxify(state as object, data, handler);
   }
   const result = producer(currData.proxy as UnFreeze<T>);
-  let shallow = currData.shallow;
-  const produced = shallow === null ? unwrapState : shallow;
+  const produced = currData.modified ? currData.shallow : unwrapState;
   const hasReturn = typeof result !== "undefined";
   if (patchCallback && pStore) {
     if (hasReturn) {
@@ -493,6 +486,7 @@ export type TargetData = {
   shallow: object | null;
   parents: ParentMap;
   inverseLength?: number;
+  modified: boolean;
 };
 
 export type CreateProxyArgs = [object, Data, ProxyHandler<object>];
@@ -525,6 +519,7 @@ export const createProxy: CreateProxy = function (
   } else {
     currData = {
       proxy: new Proxy(obj, handler),
+      modified: false,
       shallow: null,
       parents: parent
         ? new Map([[parent, new Map([[link, null]])]])
@@ -549,12 +544,13 @@ function walkParents(
   const currData = data.get(t) as TargetData;
   let shallow = currData.shallow;
   let type = "";
-  if (shallow === null) {
-    // => diventa if !currData.changed, e qui dentro lo setto a true,
-    // sempre qui dentro shallow lo setto solo se non è null
-    type = getTypeString(t);
-    shallow = currData.shallow = shallowClone(t, type as Types);
-    data.set(shallow, currData);
+  if (!currData.modified) {
+    currData.modified = true;
+    if (shallow === null) {
+      type = getTypeString(t);
+      shallow = currData.shallow = shallowClone(t, type as Types);
+      data.set(shallow, currData);
+    }
   }
   // don't use p directly but use link because p may be different or undefined
   function actionLink(inverseAction: Actions, link: Link, v: unknown) {
