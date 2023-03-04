@@ -340,9 +340,7 @@ export function produceWithPatches<T, Q>(...args: [T, Producer<T, Q>]) {
   return [result, patches!, inverse!] as const;
 }
 
-export function produceWithStandardPatches<T, Q>(
-  ...args: Parameters<typeof produceWithPatches<T, Q>>
-) {
+export function produceWithStandardPatches<T, Q>(...args: [T, Producer<T, Q>]) {
   const [result, patches, reverse] = produceWithPatches(...args);
   return [
     result,
