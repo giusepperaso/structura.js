@@ -237,7 +237,7 @@ export function produce<T, Q>(
         // getOwnPropertyDescriptor trap doesn't allow to return
         // descriptors different from the target,
         // so we can't proxy frozen objects, because we couldn't write their props;
-        // we create instead the shallow copy in advance
+        // we create instead the shallow copy in advance, so we can use it as the target
         const newTarget = shallowClone(v);
         const currData = proxify(newTarget, data, handler, t, p);
         if (currData.shallow === null) currData.shallow = newTarget;
@@ -283,18 +283,24 @@ export function produce<T, Q>(
       return d;
     },
   };
-  let currData: TargetData, unwrapState: T;
+  let currData: TargetData,
+    unwrapState: T = state;
   if (Traps_data in (state as WithTraps)) {
+    // if the state is already a daft, just use it
     unwrapState = (state as WithTraps<T>)[Traps_target];
     currData = (state as WithTraps)[Traps_data];
   } else if (Object.isFrozen(state)) {
-    // if frozen, crate the shallow clone in advance and use it as target (same reason above)
-    unwrapState = shallowClone(state) as T;
-    currData = proxify(unwrapState as object, data, handler);
-    if (!data.has(state as object)) data.set(state as object, currData);
-    if (currData.shallow === null) currData.shallow = unwrapState as object;
+    if (!data.has(state as object)) {
+      // if frozen, crate the shallow clone in advance and use it as target (same reason above)
+      const newState = shallowClone(state) as T;
+      currData = proxify(newState as object, data, handler);
+      data.set(state as object, currData);
+      currData.shallow = newState as object;
+    } else {
+      // but if we already have data for the current frozen object, we just reuse the data
+      currData = data.get(state as object);
+    }
   } else {
-    unwrapState = state;
     currData = proxify(state as object, data, handler);
   }
   const result = producer(currData.proxy as UnFreeze<T>);
