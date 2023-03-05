@@ -238,12 +238,15 @@ export function produce<T, Q>(
         // descriptors different from the target,
         // so we can't proxy frozen objects, because we couldn't write their props;
         // we create instead the shallow copy in advance, so we can use it as the target
-        const newTarget = shallowClone(v);
-        const currData = proxify(newTarget, data, handler, t, p);
-        if (currData.shallow === null) currData.shallow = newTarget;
-        // the data link to the original value must be created manually
-        if (!data.has(v as object)) data.set(v as object, currData);
-        return currData.proxy;
+        if (!data.has(v as object)) {
+          const newTarget = shallowClone(v);
+          const currData = proxify(newTarget, data, handler, t, p);
+          currData.shallow = newTarget;
+          data.set(v as object, currData);
+          return currData.proxy;
+        }
+        // this will not work if you freeze the original object v in the producer after accessing it once
+        return data.get(v as object).proxy;
       } else {
         return proxify(v, data, handler, t, p).proxy;
       }
