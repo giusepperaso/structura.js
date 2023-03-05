@@ -282,6 +282,9 @@ export function produce<T, Q>(
       };
       return d;
     },
+    getPrototypeOf(t: object) {
+      return Object.getPrototypeOf(t);
+    },
   };
   let currData: TargetData,
     unwrapState: T = state;
