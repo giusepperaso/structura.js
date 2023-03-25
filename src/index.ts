@@ -162,18 +162,19 @@ export function produce<T, Q>(
           if (p === Methods.set) {
             return function (k: Prop, x: unknown) {
               if (actualTarget.get(k) !== x)
-                walkParents(Actions.set_map, data, pStore, t, k, x);
+                walkParents(state, Actions.set_map, data, pStore, t, k, x);
               return r;
             };
           } else if (p === Methods.delete) {
             return function (k: Prop) {
               const result = actualTarget.has(k);
-              if (result) walkParents(Actions.delete_map, data, pStore, t, k);
+              if (result)
+                walkParents(state, Actions.delete_map, data, pStore, t, k);
               return result;
             };
           } else if (p === Methods.clear) {
             return function () {
-              walkParents(Actions.clear_map, data, pStore, t);
+              walkParents(state, Actions.clear_map, data, pStore, t);
             };
           } else if (p === Methods.get) {
             return function (k: Prop) {
@@ -205,23 +206,24 @@ export function produce<T, Q>(
           }
         }
       } else if (type === Types.Set) {
+        const UND = undefined;
         if (typeof v === Types.function) {
           if (p === Methods.add) {
             return function (x: unknown) {
               if (!actualTarget.has(x))
-                walkParents(Actions.add_set, data, pStore, t, undefined, x);
+                walkParents(state, Actions.add_set, data, pStore, t, UND, x);
               return r;
             };
           } else if (p === Methods.delete) {
             return function (x: unknown) {
               const result = actualTarget.has(x);
               if (result)
-                walkParents(Actions.delete_set, data, pStore, t, undefined, x);
+                walkParents(state, Actions.delete_set, data, pStore, t, UND, x);
               return result;
             };
           } else if (p === Methods.clear) {
             return function () {
-              walkParents(Actions.clear_set, data, pStore, t);
+              walkParents(state, Actions.clear_set, data, pStore, t);
             };
           } else if (p === Methods.values || p === Methods.entries) {
             return function* iterator() {
@@ -270,11 +272,11 @@ export function produce<T, Q>(
     },
     set(t: object, p: Prop, v: unknown, r: object) {
       if (Reflect.get(t, p, r) !== v)
-        walkParents(Actions.set, data, pStore, t, p, v);
+        walkParents(state, Actions.set, data, pStore, t, p, v);
       return true;
     },
     deleteProperty(t: object, p: Prop) {
-      walkParents(Actions.delete, data, pStore, t, p);
+      walkParents(state, Actions.delete, data, pStore, t, p);
       return true;
     },
     has(t: object, p: Prop) {
@@ -541,6 +543,7 @@ export const createProxy: CreateProxy = function (
 };
 
 function walkParents(
+  mainState: unknown,
   action: Actions,
   data: Data,
   patchStore: PatchStore | null,
@@ -743,6 +746,7 @@ function walkParents(
   if (currParents.size) {
     for (const [parent, links] of currParents.entries()) {
       walkParents(
+        mainState,
         Actions.append,
         data,
         patchStore,
@@ -753,12 +757,11 @@ function walkParents(
         currPatches
       );
     }
-  } else {
-    if (patchStore) {
-      for (let i = 0; i != currPatches.length; i++) {
-        patchStore.patches.push(currPatches[i].patch);
-        patchStore.inversePatches.push(currPatches[i].inverse);
-      }
+  }
+  if (patchStore && mainState === t) {
+    for (let i = 0; i != currPatches.length; i++) {
+      patchStore.patches.push(currPatches[i].patch);
+      patchStore.inversePatches.push(currPatches[i].inverse);
     }
   }
 }
@@ -770,6 +773,8 @@ export function applyPatches<T>(
   let newState: T | object = state;
   let producerReturn;
   const clones: WeakMap<object, object> = new WeakMap();
+
+  const traversedPatches: WeakMap<Patch | JSONPatch, boolean> = new WeakMap();
   if (!isPrimitive(state)) {
     const unwrapState = (
       Traps_target in (state as WithTraps)
@@ -781,7 +786,7 @@ export function applyPatches<T>(
     clones.set(newState, newState);
   }
   for (let i = 0; i !== patches.length; i++) {
-    producerReturn = applyPatch(newState, patches[i], clones);
+    producerReturn = applyPatch(newState, patches[i], clones, traversedPatches);
     if (typeof producerReturn !== "undefined")
       newState = producerReturn as object;
   }
@@ -791,9 +796,11 @@ export function applyPatches<T>(
 export function applyPatch<T>(
   current: T,
   patch: Patch | JSONPatch,
-  clones: WeakMap<object, object>
+  clones: WeakMap<object, object>,
+  traversedPatches: WeakMap<Patch | JSONPatch, boolean>
 ) {
   if (!patch) return;
+  traversedPatches.set(patch, true);
   const action = patch.op;
   let childShallow, child, next;
   switch (action) {
@@ -847,7 +854,13 @@ export function applyPatch<T>(
       next = patch.next;
       if (next) {
         for (let i = 0; i !== next.length; i++) {
-          applyPatch(childShallow as object, next[i], clones);
+          if (!traversedPatches.has(next[i]))
+            applyPatch(
+              childShallow as object,
+              next[i],
+              clones,
+              traversedPatches
+            );
         }
       }
       break;
@@ -924,13 +937,21 @@ export function convertPatchesToStandard(
   patches: Patch[],
   pathArray: boolean = true,
   path: unknown[] = [], // don't pass manually as argument
-  converted: JSONPatch[] = [] // don't pass manually as argument
+  converted: JSONPatch[] = [], // don't pass manually as argument
+  traversedPatches: WeakSet<Patch> | null = null // don't pass manually as argument
 ): JSONPatch[] {
   let i = 0,
     l = patches.length;
   for (; i !== l; i++) {
     const patch = patches[i];
+    // we may have circular references in patches in the next array, and this could create infinite loops;
+    // to avoid that, we keep track of the already traversed patches for each child;
+    // note that each patch in the main array generates a new weakset
+    const traversed = traversedPatches || new WeakSet();
+    if (traversed.has(patch)) continue;
+    traversed.add(patch);
     const action = patch.op;
+    // no_op operation is not needed for standard patches
     if (action === Actions.no_op) continue;
     const newPath = "p" in patch ? [...path, patch.p] : path;
     const isAppendOp =
@@ -949,7 +970,9 @@ export function convertPatchesToStandard(
       });
     }
     const next = patch.next;
-    if (next) convertPatchesToStandard(next, pathArray, newPath, converted);
+    if (next) {
+      convertPatchesToStandard(next, pathArray, newPath, converted, traversed);
+    }
   }
   return converted;
 }
