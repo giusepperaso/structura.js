@@ -2,25 +2,28 @@
 
 ## TODO
 
-- [ ] (🟨PERF) dummy objects in freeze should be reused as shallow targets
+- [ ] (⬛CODE) enum also for op of json patches
+- [ ] (🟦TYPE) better types for json patches
+- [ ] (🟪DOCS) documentate new settings and remove docs for old helpers, write breaking changes
 - [ ] (⬜FEAT) json patches don't support "" as key if the path is a string ( to solve this, use a placeholder like ___empty___)
 - [ ] (⬜FEAT) maybe use proxy revocable? maybe not necessary because they are already garbage collected
 - [ ] (⬜FEAT) "NOTHING" as return, so you can return undefined
-- [ ] (🟩TEST) each test should possibly also run on strict copy
-- [ ] (🟩TEST) better % test coverage (mostly some helpers are not unit tested)
-- [ ] (⬛CODE) organize the code better in multiple files and add comments
+- [ ] (⬛CODE) add more comments in code
+- [ ] (⬛CODE) split the logic in multiple reusable functions
+- [ ] (⬛CODE) organize the code better in multiple files
+- [ ] (⬛CODE) give better names to variables and types
 - [ ] (🟫BENC) add benchmarks for patches
-- [ ] (⬜FEAT) maybe implement those types? TypedArray, DataView, File, Blob, FileList, DomException
-- [ ] (⬜FEAT) maybe implement those proxy traps? defineProperty, setPrototypeOF, preventExtensions, apply
 
 ## IN PROGRESS
 
-- [95%] (⬜FEAT) full compatibility with [this rfc of redux toolkit](https://github.com/reduxjs/redux-toolkit/pull/3074)
+- [75%] (🟩TEST) each test should possibly also run on strict copy and/or auto freeze
+- [80%] (⬜FEAT) full compatibility with [this rfc of redux toolkit](https://github.com/reduxjs/redux-toolkit/pull/3074)
 - [10%] (🟧BUGS) patches don't work with circular references
 - [95%] (🟩TEST) generate and try patches in every test
 
 ## SOLVED
 
+- [x] (🟨PERF) dummy objects in freeze should be reused as shallow targets
 - [x] (🟨PERF) use object like { [Symbol()]: target } as proxy target
 - [x] (🟧BUGS) reverse patches may create inconsistencies in sets
 - [x] (🟪DOCS) documentate helpers like original and target
@@ -39,6 +42,8 @@
 
 ## DISCARDED
 
+- ~~[ ] (⬜FEAT) maybe implement those types? TypedArray, DataView, File, Blob, FileList, DomException~~
+- ~~[ ] (⬜FEAT) maybe implement those proxy traps? defineProperty, setPrototypeOF, preventExtensions, apply~~
 - ~~[ ] (⬜FEAT) support async producers~~
 - ~~[ ] (🟨PERF) appended: WeakSet could be used to see if an element was external to the tree, so we could avoid cloning it~~
 - ~~[ ] (🟨PERF) remove some closures, expecially the proxy traps, the addLink and actionLink~~
