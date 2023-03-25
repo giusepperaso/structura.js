@@ -1,4 +1,6 @@
+import { vi, expect, it } from "vitest";
 import { produce, createProxy, CreateProxy } from "..";
+import { runMultiple } from "./utils";
 
 runMultiple("proxy and traps tests", async () => {
   it("should not proxify methods because it's useless", async () => {
@@ -36,13 +38,20 @@ runMultiple("proxy and traps tests", async () => {
   });
   it("Object keys works after adding properties", async () => {
     produce({ t1: 1 } as Record<string, number>, (draft) => {
-      expect(Object.keys(draft)).toEqual(["t1"]);
+      expect(Reflect.ownKeys(draft)).toEqual(["t1"]);
       draft.t2 = 2;
-      expect(Object.keys(draft)).toEqual(["t1", "t2"]);
+      expect(Reflect.ownKeys(draft)).toEqual(["t1", "t2"]);
       expect("t2" in draft).toBeTruthy();
       draft.t3 = 3;
-      expect(Object.keys(draft)).toEqual(["t1", "t2", "t3"]);
+      expect(Reflect.ownKeys(draft)).toEqual(["t1", "t2", "t3"]);
       expect("t3" in draft).toBeTruthy();
+      expect(Object.keys(Object.assign({}, draft))).toEqual(["t1", "t2", "t3"]);
+      expect(Object.keys(Object.assign(draft, { t4: 4 }))).toEqual([
+        "t1",
+        "t2",
+        "t3",
+        "t4",
+      ]);
     });
   });
 });
