@@ -16,13 +16,14 @@
 
 ## IN PROGRESS
 
-- [75%] (🟩TEST) each test should possibly also run on strict copy and/or auto freeze
+- [0%] (🟧BUGS) test fails with both standard patches and auto freeze enabled
 - [80%] (⬜FEAT) full compatibility with [this rfc of redux toolkit](https://github.com/reduxjs/redux-toolkit/pull/3074)
-- [10%] (🟧BUGS) patches don't work with circular references
-- [95%] (🟩TEST) generate and try patches in every test
 
 ## SOLVED
 
+- [x] (🟩TEST) each test should possibly also run on strict copy and/or auto freeze
+- [x] (🟧BUGS) patches don't work with circular references
+- [x] (🟩TEST) generate and try patches in every test
 - [x] (🟨PERF) dummy objects in freeze should be reused as shallow targets
 - [x] (🟨PERF) use object like { [Symbol()]: target } as proxy target
 - [x] (🟧BUGS) reverse patches may create inconsistencies in sets
