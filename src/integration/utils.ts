@@ -2,6 +2,8 @@ import { expect } from "vitest";
 import {
   applyPatches,
   convertPatchesToStandard as convert,
+  enableAutoFreeze,
+  enableStrictCopy,
   original,
   Producer,
   produceWithPatches,

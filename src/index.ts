@@ -43,7 +43,16 @@ const enum Actions {
 
 const Settings = {
   strictCopy: false,
+  autoFreeze: false,
+  standardPatches: false,
 };
+
+export const enableStrictCopy = (v = true) => (Settings.strictCopy = v);
+
+export const enableAutoFreeze = (v = true) => (Settings.autoFreeze = v);
+
+export const enableStandardPatches = (v = true) =>
+  (Settings.standardPatches = v);
 
 const Traps_self = Symbol();
 const Traps_target = Symbol();
@@ -121,8 +130,13 @@ export function produce<T, Q>(
   if (!isDraftable(state)) {
     const result = producer(state as UnFreeze<T>) as R;
     if (patchCallback) {
-      const op = Actions.producer_return;
-      patchCallback([{ v: result, op }], [{ v: state, op }]);
+      if (!Settings.standardPatches) {
+        const op = Actions.producer_return;
+        patchCallback([{ v: result, op }], [{ v: state, op }]);
+      } else {
+        const op = "replace";
+        patchCallback([{ value: result, op }], [{ value: state, op }]);
+      }
     }
     return result;
   }
@@ -319,20 +333,21 @@ export function produce<T, Q>(
       pStore.patches.push({ v: result, op });
       pStore.inversePatches.push({ v: produced, op });
     }
-    patchCallback(pStore.patches, pStore.inversePatches.reverse());
+    if (!Settings.standardPatches) {
+      patchCallback(pStore.patches, pStore.inversePatches.reverse());
+    } else {
+      patchCallback(
+        convertPatchesToStandard(pStore.patches),
+        convertPatchesToStandard(pStore.inversePatches.reverse())
+      );
+    }
   }
-  if (hasReturn) {
-    return target(result) as R;
-  } else {
-    return produced as R;
+  const final = (hasReturn ? target(result) : produced) as R;
+  if (Settings.autoFreeze) {
+    freeze(state, true, true);
+    freeze(final, true, true);
   }
-}
-
-export function produceFreeze<T, Q>(...args: [T, Producer<T, Q>]) {
-  const result = produce<T, Q>(...args);
-  freeze(args[0], true, true);
-  freeze(result, true, true);
-  return result;
+  return final;
 }
 
 export function produceWithPatches<T, Q>(...args: [T, Producer<T, Q>]) {
@@ -346,15 +361,6 @@ export function produceWithPatches<T, Q>(...args: [T, Producer<T, Q>]) {
   return [result, patches!, inverse!] as const;
 }
 
-export function produceWithStandardPatches<T, Q>(...args: [T, Producer<T, Q>]) {
-  const [result, patches, reverse] = produceWithPatches(...args);
-  return [
-    result,
-    convertPatchesToStandard(patches),
-    convertPatchesToStandard(reverse),
-  ];
-}
-
 export function safeProduce<T>(...args: Parameters<typeof produce<T, T>>) {
   return produce<T, T>(...args);
 }
@@ -363,12 +369,6 @@ export function safeProduceWithPatches<T>(
   ...args: Parameters<typeof produceWithPatches<T, T>>
 ) {
   return produceWithPatches<T, T>(...args);
-}
-
-export function safeProduceWithStandardPatches<T>(
-  ...args: Parameters<typeof produceWithStandardPatches<T, T>>
-) {
-  return produceWithStandardPatches<T, T>(...args);
 }
 
 export function target<T>(obj: T) {
