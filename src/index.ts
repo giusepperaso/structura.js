@@ -587,11 +587,7 @@ function walkParents(
     ) {
       prevChildAtLink = link;
     }
-    if (
-      action === Actions.set ||
-      action === Actions.set_map /* ||
-      action === Actions.add_set */
-    ) {
+    if (action === Actions.set || action === Actions.set_map) {
       if (typeof prevChildAtLink !== "undefined") inverseAction = action;
     }
     const isAddOperation =
