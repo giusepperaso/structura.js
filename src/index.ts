@@ -79,7 +79,10 @@ export type ProduceReturn<T, Q> = FreezeOnce<Q extends void ? T : Q>;
 
 export type PatchCallback<T> = T extends Primitive
   ? never
-  : (patches: Patch[], inversePatches: Patch[]) => void;
+  : (
+      patches: Patch[] | JSONPatch[],
+      inversePatches: Patch[] | JSONPatch[]
+    ) => void;
 
 export type FreezeOnce<T> = T &
   (T extends Freeze<infer Q> ? Freeze<Q> : Freeze<T>);
