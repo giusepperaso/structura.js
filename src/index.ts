@@ -1008,8 +1008,6 @@ function copyProps<F extends object, T extends object>(
   return to;
 }
 
-export const enableStrictCopy = (v = true) => (Settings.strictCopy = v);
-
 function strictCopyProps<F>(from: F, forEach?: ForEach) {
   const descriptors = Object.getOwnPropertyDescriptors(from);
   // first we loop string and number props
