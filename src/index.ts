@@ -309,7 +309,7 @@ export function produce<T, Q>(
   let currData: TargetData,
     unwrapState: T = state;
   if (Traps_data in (state as WithTraps)) {
-    // if the state is already a daft, just use it
+    // if the state is already a draft, just use it
     unwrapState = (state as WithTraps<T>)[Traps_target];
     currData = (state as WithTraps)[Traps_data];
   } else if (Object.isFrozen(state)) {
