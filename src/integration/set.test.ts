@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { produceTest as produce } from "./utils";
+import { expect, it } from "vitest";
+import { runMultiple, produceTest as produce } from "./utils";
 
-describe.concurrent("verify that Sets work correctly", () => {
+runMultiple("verify that Sets work correctly", () => {
   it("works with sets forEach and no nesting", async () => {
     const myObj: Set<number[]> = new Set();
     myObj.add([0]);

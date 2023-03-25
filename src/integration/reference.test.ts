@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { Obj } from "./utils";
+import { expect, it } from "vitest";
+import { runMultiple, Obj } from "./utils";
 import { produceTest as produce } from "./utils";
 
-describe.concurrent(
+runMultiple(
   "verify that object references change (or remain the same) accordingly with shallow cloning rules",
   () => {
     it("should not modify objects if no modifications happen", async () => {

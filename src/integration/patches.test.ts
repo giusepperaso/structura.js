@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
 import { applyPatches, Patch, produceWithPatches } from "..";
+import { runMultiple } from "./utils";
 
-describe.concurrent("test patch production", () => {
+runMultiple("test patch production", () => {
   it("should return the right patches on array push", async () => {
     const myObj: number[][] = [[], [], [], []];
     const [result, patches] = produceWithPatches(myObj, (draft) => {

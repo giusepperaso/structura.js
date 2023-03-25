@@ -1,4 +1,4 @@
-import { expect } from "vitest";
+import { expect, describe } from "vitest";
 import {
   applyPatches,
   convertPatchesToStandard as convert,
@@ -29,6 +29,19 @@ export function produceTest<T extends object, Q>(
   expect(result).toEqual(applyPatches(state, convert(patches)));
   expect(target(state)).toEqual(applyPatches(result, convert(reverse)));
   return result;
+}
+
+export function runMultiple(description: string, testFn: Function) {
+  describe.concurrent.each([
+    { autoFreeze: false, strictCopy: false },
+    { autoFreeze: true, strictCopy: false },
+    { autoFreeze: false, strictCopy: true },
+    //{ autoFreeze: true, strictCopy: true },
+  ])(description, ({ autoFreeze, strictCopy }) => {
+    enableAutoFreeze(autoFreeze);
+    enableStrictCopy(strictCopy);
+    testFn();
+  });
 }
 
 // we add the flag DEBUG just so we can set it to true and debug something just in case

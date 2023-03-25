@@ -1,6 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
 import { original, produce, snapshot } from "..";
-describe.concurrent("helpers work as expected", () => {
+import { runMultiple } from "./utils";
+
+runMultiple("helpers work as expected", () => {
   it("snapshot helper works as expected, before and after modification", async () => {
     const myObj = { t: [0], t2: {} };
     produce(myObj, (draft) => {

@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { produceTest as produce } from "./utils";
+import { expect, it } from "vitest";
+import { runMultiple, produceTest as produce } from "./utils";
 
-describe.concurrent("tests transpositions of element", () => {
+runMultiple("tests transpositions of element", () => {
   it("works with arrays traspositions via reverse", async () => {
     const myObj = [{ a: 0 }, { a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }];
     const result = produce(myObj, (draft) => {

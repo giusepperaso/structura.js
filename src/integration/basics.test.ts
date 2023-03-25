@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
 import { produce as plainProduce } from "..";
 import { produceTest as produce } from "./utils";
-import { Obj, Obj2 } from "./utils";
+import { Obj, Obj2, runMultiple } from "./utils";
 
-describe.concurrent("tests all(most) of the basic types", () => {
+runMultiple("tests all(most) of the basic types", () => {
   it("works with primitives as root", async () => {
     const myObj = 1;
     const result = plainProduce(myObj, (draft) => {

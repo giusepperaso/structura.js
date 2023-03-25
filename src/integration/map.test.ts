@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { Obj } from "./utils";
+import { expect, it } from "vitest";
+import { runMultiple, Obj } from "./utils";
 import { produceTest as produce } from "./utils";
 
 type Entry = [string, Obj<number>];
 
-describe.concurrent("verify that Maps work correctly", async () => {
+runMultiple("verify that Maps work correctly", async () => {
   it("works with maps with no nesting", async () => {
     const myObj = new Map();
     myObj.set("test", [0]);
