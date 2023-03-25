@@ -313,16 +313,11 @@ export function produce<T, Q>(
     unwrapState = (state as WithTraps<T>)[Traps_target];
     currData = (state as WithTraps)[Traps_data];
   } else if (Object.isFrozen(state)) {
-    if (!data.has(state as object)) {
-      // if frozen, crate the shallow clone in advance and use it as target (same reason above)
-      const newState = shallowClone(state) as T;
-      currData = proxify(newState as object, data, handler);
-      data.set(state as object, currData);
-      currData.shallow = newState as object;
-    } else {
-      // but if we already have data for the current frozen object, we just reuse the data
-      currData = data.get(state as object);
-    }
+    // if frozen, crate the shallow clone in advance and use it as target (same reason above)
+    const newState = shallowClone(state) as T;
+    currData = proxify(newState as object, data, handler);
+    data.set(state as object, currData);
+    currData.shallow = newState as object;
   } else {
     currData = proxify(state as object, data, handler);
   }
