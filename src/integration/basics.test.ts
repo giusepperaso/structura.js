@@ -103,6 +103,14 @@ runMultiple("tests all(most) of the basic types", () => {
     });
     expect(result.test1).not.toBe(myObj.test1);
   });
+  it("array splice to work well", async () => {
+    const myObj = { test1: [0, 1, 2] };
+    const result = produce(myObj, (draft) => {
+      draft.test1.splice(1, 1);
+      expect(draft.test1).toEqual([0, 2]);
+    });
+    expect(result.test1).toEqual([0, 2]);
+  });
   it("works with null", async () => {
     const result = plainProduce(null, (state) => {
       if (typeof state === "number") {
