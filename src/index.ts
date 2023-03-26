@@ -179,9 +179,9 @@ export function produce<T, Q>(
           } else if (p === Methods.get) {
             return function (k: Prop) {
               const x = actualTarget.get(k);
-              return !isPrimitive(x)
-                ? proxify(x, data, handler, t, k).proxy
-                : x;
+              return isPrimitive(x)
+                ? x
+                : proxify(x, data, handler, t, k, type).proxy;
             };
           } else if (p === Methods.values || p === Methods.entries) {
             return function* iterator() {
@@ -191,14 +191,21 @@ export function produce<T, Q>(
               let proxy;
               let links;
               for (entry of entries) {
-                proxy = proxify(entry[1], data, handler, t, entry[0]).proxy;
+                const entryV = entry[1];
+                proxy = isPrimitive(entryV)
+                  ? entryV
+                  : proxify(entryV, data, handler, t, entry[0], type).proxy;
                 yield isEntries ? [links, proxy] : proxy;
               }
             };
           } else if (p === Methods.forEach) {
             return function forEach(fn: Function) {
               actualTarget.forEach(function (x: object, k: Prop) {
-                fn(proxify(x, data, handler, t, k).proxy);
+                fn(
+                  isPrimitive(x)
+                    ? x
+                    : proxify(x, data, handler, t, k, type).proxy
+                );
               });
             };
           } else {
@@ -228,18 +235,28 @@ export function produce<T, Q>(
           } else if (p === Methods.values || p === Methods.entries) {
             return function* iterator() {
               const isEntries = p === Methods.entries;
+              // in the current version, maps and sets are used directly as targets even if frozen,
+              // because this has no side effects and simplifies the logic a lot;
+              // however, if frozen sets were to be preventively shallow cloned,
+              // it would be necessary to spread the values() iterator into an array to avoid an infinite loop
               const values = actualTarget.values();
               let value;
               let proxy;
               for (value of values) {
-                proxy = proxify(value, data, handler, t, value).proxy;
+                proxy = isPrimitive(value)
+                  ? value
+                  : proxify(value, data, handler, t, value, type).proxy;
                 yield isEntries ? [proxy, proxy] : proxy;
               }
             };
           } else if (p === Methods.forEach) {
             return function forEach(fn: Function) {
               actualTarget.forEach(function (x: object) {
-                fn(proxify(x, data, handler, t, x).proxy);
+                fn(
+                  isPrimitive(x)
+                    ? x
+                    : proxify(x, data, handler, t, x, type).proxy
+                );
               });
             };
           } else {
@@ -252,20 +269,6 @@ export function produce<T, Q>(
           currData.inverseLength = (t as UnknownArr).length;
         }
         return v.bind(currData.proxy);
-      } else if (Object.isFrozen(v)) {
-        // getOwnPropertyDescriptor trap doesn't allow to return
-        // descriptors different from the target,
-        // so we can't proxy frozen objects, because we couldn't write their props;
-        // we create instead the shallow copy in advance, so we can use it as the target
-        if (!data.has(v as object)) {
-          const newTarget = shallowClone(v);
-          const currData = proxify(newTarget, data, handler, t, p);
-          currData.shallow = newTarget;
-          data.set(v as object, currData);
-          return currData.proxy;
-        }
-        // this will not work if you freeze the original object v in the producer after accessing it once
-        return data.get(v as object).proxy;
       } else {
         return proxify(v, data, handler, t, p).proxy;
       }
@@ -314,12 +317,6 @@ export function produce<T, Q>(
     // if the state is already a draft, just use it
     unwrapState = (state as WithTraps<T>)[Traps_target];
     currData = (state as WithTraps)[Traps_data];
-  } else if (Object.isFrozen(state)) {
-    // if frozen, crate the shallow clone in advance and use it as target (same reason above)
-    const newState = shallowClone(state) as T;
-    currData = proxify(newState as object, data, handler);
-    data.set(state as object, currData);
-    currData.shallow = newState as object;
   } else {
     currData = proxify(state as object, data, handler);
   }
@@ -501,18 +498,26 @@ export type TargetData = {
   modified: boolean;
 };
 
-export type CreateProxyArgs = [object, Data, ProxyHandler<object>];
-export type CreateProxy =
-  | ((...args: [...CreateProxyArgs, object?, Link?]) => TargetData)
-  | ((...args: CreateProxyArgs) => TargetData);
+export const createProxy = function (
+  obj: object,
+  data: Data,
+  handler: ProxyHandler<object>,
+  parent?: object,
+  link?: Link,
+  type?: Types
+): TargetData {
+  if (Object.isFrozen(obj) && type !== Types.Map && type !== Types.Set) {
+    if (!data.has(obj)) {
+      const newTarget = shallowClone(obj);
+      const currData = createProxy(newTarget, data, handler, parent, link);
+      currData.shallow = newTarget;
+      data.set(obj, currData);
+      //data.set(newTarget, currData);
+      return currData;
+    }
+    return data.get(obj) as TargetData;
+  }
 
-export const createProxy: CreateProxy = function (
-  obj,
-  data,
-  handler,
-  parent,
-  link
-) {
   let currData: TargetData;
   if (data.has(obj)) {
     currData = data.get(obj) as TargetData;
