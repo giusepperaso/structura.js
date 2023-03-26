@@ -5,6 +5,20 @@ import { produceTest as produce } from "./utils";
 type Entry = [string, Obj<number>];
 
 runMultiple("verify that Maps work correctly", async () => {
+  it("subsequents map modification", async () => {
+    const myObj: Map<string, number[]> = new Map([["test", [0]]]);
+    const result = produce(myObj, (draft) => {
+      for (const v of draft.values()) {
+        v[0]++;
+      }
+    });
+    produce(result, (draft) => {
+      for (const v of draft.values()) {
+        v[0]++;
+      }
+    });
+    expect(1).toBe(1);
+  });
   it("works with maps with no nesting", async () => {
     const myObj = new Map();
     myObj.set("test", [0]);

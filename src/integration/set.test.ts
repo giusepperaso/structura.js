@@ -2,6 +2,20 @@ import { expect, it } from "vitest";
 import { runMultiple, produceTest as produce } from "./utils";
 
 runMultiple("verify that Sets work correctly", () => {
+  it("subsequents sets modification", async () => {
+    const myObj: Set<number[]> = new Set([[0]]);
+    const result = produce(myObj, (draft) => {
+      for (const v of draft.values()) {
+        v[0]++;
+      }
+    });
+    produce(result, (draft) => {
+      for (const v of draft.values()) {
+        v[0]++;
+      }
+    });
+    expect(1).toBe(1);
+  });
   it("works with sets forEach and no nesting", async () => {
     const myObj: Set<number[]> = new Set();
     myObj.add([0]);
