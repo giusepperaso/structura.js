@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { original, produce, snapshot } from "..";
+import { freeze, original, produce, snapshot } from "..";
 import { runMultiple } from "./utils";
 
 runMultiple("helpers work as expected", () => {
@@ -20,5 +20,10 @@ runMultiple("helpers work as expected", () => {
       expect(_snapshot.t).not.toBe(_original.t);
       expect(_snapshot.t2).toBe(_original.t2);
     });
+  });
+  it("freezes everything", async () => {
+    expect(Object.isFrozen(freeze({}, true, true))).toBe(true);
+    expect(Object.isFrozen(freeze([], true, true))).toBe(true);
+    expect(Object.isFrozen(freeze(new Map([[{}, []]]), true, true))).toBe(true);
   });
 });
