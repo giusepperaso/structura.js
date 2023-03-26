@@ -37,11 +37,17 @@ export function runMultiple(description: string, testFn: Function) {
     { autoFreeze: true, strictCopy: false },
     { autoFreeze: false, strictCopy: true },
     //{ autoFreeze: true, strictCopy: true },
-  ])(description, ({ autoFreeze, strictCopy }) => {
-    enableAutoFreeze(autoFreeze);
-    enableStrictCopy(strictCopy);
-    testFn();
-  });
+  ])(
+    description + " ( autoFreeze: $autoFreeze, strictCopy: $strictCopy )",
+    ({ autoFreeze, strictCopy }) => {
+      // beforeAll must be called here inside because it must work for the single describe block
+      beforeAll(() => {
+        enableAutoFreeze(autoFreeze);
+        enableStrictCopy(strictCopy);
+      });
+      testFn();
+    }
+  );
 }
 
 // we add the flag DEBUG just so we can set it to true and debug something just in case
