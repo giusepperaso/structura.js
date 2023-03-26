@@ -1,4 +1,4 @@
-import { expect, describe } from "vitest";
+import { expect, describe, beforeAll } from "vitest";
 import {
   applyPatches,
   convertPatchesToStandard as convert,
