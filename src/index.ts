@@ -179,9 +179,7 @@ export function produce<T, Q>(
           } else if (p === Methods.get) {
             return function (k: Prop) {
               const x = actualTarget.get(k);
-              return isPrimitive(x)
-                ? x
-                : proxify(x, data, handler, t, k, type).proxy;
+              return isPrimitive(x) ? x : proxify(x, data, handler, t, k).proxy;
             };
           } else if (p === Methods.values || p === Methods.entries) {
             return function* iterator() {
@@ -194,18 +192,14 @@ export function produce<T, Q>(
                 const entryV = entry[1];
                 proxy = isPrimitive(entryV)
                   ? entryV
-                  : proxify(entryV, data, handler, t, entry[0], type).proxy;
+                  : proxify(entryV, data, handler, t, entry[0]).proxy;
                 yield isEntries ? [links, proxy] : proxy;
               }
             };
           } else if (p === Methods.forEach) {
             return function forEach(fn: Function) {
               actualTarget.forEach(function (x: object, k: Prop) {
-                fn(
-                  isPrimitive(x)
-                    ? x
-                    : proxify(x, data, handler, t, k, type).proxy
-                );
+                fn(isPrimitive(x) ? x : proxify(x, data, handler, t, k).proxy);
               });
             };
           } else {
@@ -245,18 +239,14 @@ export function produce<T, Q>(
               for (value of values) {
                 proxy = isPrimitive(value)
                   ? value
-                  : proxify(value, data, handler, t, value, type).proxy;
+                  : proxify(value, data, handler, t, value).proxy;
                 yield isEntries ? [proxy, proxy] : proxy;
               }
             };
           } else if (p === Methods.forEach) {
             return function forEach(fn: Function) {
               actualTarget.forEach(function (x: object) {
-                fn(
-                  isPrimitive(x)
-                    ? x
-                    : proxify(x, data, handler, t, x, type).proxy
-                );
+                fn(isPrimitive(x) ? x : proxify(x, data, handler, t, x).proxy);
               });
             };
           } else {
@@ -503,19 +493,21 @@ export const createProxy = function (
   data: Data,
   handler: ProxyHandler<object>,
   parent?: object,
-  link?: Link,
-  type?: Types
+  link?: Link
 ): TargetData {
-  if (Object.isFrozen(obj) && type !== Types.Map && type !== Types.Set) {
-    if (!data.has(obj)) {
-      const newTarget = shallowClone(obj);
-      const currData = createProxy(newTarget, data, handler, parent, link);
-      currData.shallow = newTarget;
-      data.set(obj, currData);
-      //data.set(newTarget, currData);
-      return currData;
+  if (Object.isFrozen(obj)) {
+    const type = getTypeString(obj);
+    if (type !== Types.Map && type !== Types.Set) {
+      if (!data.has(obj)) {
+        const newTarget = shallowClone(obj);
+        const currData = createProxy(newTarget, data, handler, parent, link);
+        currData.shallow = newTarget;
+        data.set(obj, currData);
+        //data.set(newTarget, currData);
+        return currData;
+      }
+      return data.get(obj) as TargetData;
     }
-    return data.get(obj) as TargetData;
   }
 
   let currData: TargetData;
@@ -778,7 +770,6 @@ export function applyPatches<T>(
   let newState: T | object = state;
   let producerReturn;
   const clones: WeakMap<object, object> = new WeakMap();
-
   const traversedPatches: WeakMap<Patch | JSONPatch, boolean> = new WeakMap();
   if (!isPrimitive(state)) {
     const unwrapState = (
