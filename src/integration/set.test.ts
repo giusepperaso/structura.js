@@ -55,6 +55,7 @@ runMultiple("verify that Sets work correctly", () => {
     const myObj2: Set<number[]> = new Set();
     myObj.add(myObj2);
     myObj2.add([0]);
+    Object.freeze(myObj2);
     const result = produce(myObj, (draft) => {
       for (const v of draft.values()) {
         for (const sub of v.values()) {
