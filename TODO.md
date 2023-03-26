@@ -2,6 +2,10 @@
 
 ## TODO
 
+- [ ] (⬛CODE) correct the nomenclature and behaviour of the helpers
+    - [ ] original should always return the original object even if it's not the target of the proxy
+    - [ ] target should return the target of the proxy
+    - [ ] clone should return the shallow copy of the object
 - [ ] (⬛CODE) enum also for op of json patches
 - [ ] (🟦TYPE) better types for json patches
 - [ ] (🟪DOCS) documentate new settings and remove docs for old helpers, write breaking changes
@@ -21,6 +25,7 @@
 
 ## SOLVED
 
+- [x] (🟧BUGS) frozen sets caused infinite loops
 - [x] (🟩TEST) each test should possibly also run on strict copy and/or auto freeze
 - [x] (🟧BUGS) patches don't work with circular references
 - [x] (🟩TEST) generate and try patches in every test
