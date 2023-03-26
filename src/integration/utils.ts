@@ -4,7 +4,6 @@ import {
   convertPatchesToStandard as convert,
   enableAutoFreeze,
   enableStrictCopy,
-  original,
   Producer,
   produceWithPatches,
   target,
@@ -12,10 +11,6 @@ import {
 
 export type Obj<T = unknown> = { [key: string]: T };
 export type Obj2<T = unknown> = Obj<Obj<T>>;
-
-export function isProxy(obj: unknown) {
-  return original(obj) !== obj;
-}
 
 // by using this helper, we also test for patches and reverse patches
 

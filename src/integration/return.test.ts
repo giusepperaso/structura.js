@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
-import { Obj2, isProxy, runMultiple } from "./utils";
-import { produceTest as produce } from "./utils";
+import { isDraft } from "..";
+import { Obj2, runMultiple, produceTest as produce } from "./utils";
 
 runMultiple("try returning directly from the producer", async () => {
   it("can return the same type", async () => {
@@ -70,7 +70,7 @@ runMultiple("try returning directly from the producer", async () => {
       return obj;
     });
     expect(myObj).not.toBe(result);
-    expect(isProxy(result)).toBe(false);
+    expect(isDraft(result)).toBe(false);
     expect(myObj[0]).toBe(result);
   });
 });
