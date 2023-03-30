@@ -415,24 +415,41 @@ export function freeze<T>(
         map.set = map.clear = map.delete = errFrozen;
         Object.freeze(obj);
         if (deep) {
-          map.forEach((v, k) => {
-            freeze(k, true, true);
-            freeze(v, true, true);
-          });
+          try {
+            map.forEach((v, k) => {
+              freeze(k, true, true);
+              freeze(v, true, true);
+            });
+          } catch (_) {}
         }
         break;
       case Types.Set:
         const set = obj as UnknownSet;
         set.add = set.clear = set.delete = errFrozen;
         Object.freeze(obj);
-        if (deep) set.forEach((v) => freeze(v, true, true));
+        if (deep) {
+          try {
+            set.forEach((v) => freeze(v, true, true));
+          } catch (_) {}
+        }
         break;
       default:
-        Object.freeze(obj);
-        if (deep) {
+        let errors = false;
+        try {
+          Object.freeze(obj);
+        } catch (_) {
+          errors = true;
+        }
+        if (deep && !errors) {
           const keys = Reflect.ownKeys(obj as object);
           for (let i = 0; i !== keys.length; i++) {
-            freeze(obj[keys[i] as keyof T], true, true);
+            let toFreeze;
+            try {
+              toFreeze = obj[keys[i] as keyof T];
+            } catch (_) {
+              break;
+            }
+            freeze(toFreeze, true, true);
           }
         }
     }
