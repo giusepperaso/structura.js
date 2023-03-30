@@ -317,7 +317,7 @@ export function produce<T, Q>(
     if (hasReturn) {
       if (!data.has(result as object)) pStore.patches = [];
       const op = Actions.producer_return;
-      pStore.patches.push({ v: result, op });
+      pStore.patches.push({ v: target(result), op });
       pStore.inversePatches.push({ v: produced, op });
     }
     if (!Settings.standardPatches) {
