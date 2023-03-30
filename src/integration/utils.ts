@@ -31,7 +31,7 @@ export function runMultiple(description: string, testFn: Function) {
     { autoFreeze: false, strictCopy: false },
     { autoFreeze: true, strictCopy: false },
     { autoFreeze: false, strictCopy: true },
-    //{ autoFreeze: true, strictCopy: true },
+    { autoFreeze: true, strictCopy: true },
   ])(
     description + " ( autoFreeze: $autoFreeze, strictCopy: $strictCopy )",
     ({ autoFreeze, strictCopy }) => {
