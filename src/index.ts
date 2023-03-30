@@ -408,7 +408,7 @@ export function freeze<T>(
   runtime: boolean = false,
   deep: boolean = false
 ): T {
-  if (runtime && !Object.isFrozen(obj) && !isDraft(obj) && isDraftable(obj)) {
+  if (runtime && isDraftable(obj) && !Object.isFrozen(obj) && !isDraft(obj)) {
     switch (getTypeString(obj)) {
       case Types.Map:
         const map = obj as UnknownMap;
