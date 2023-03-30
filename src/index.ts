@@ -818,6 +818,10 @@ export function applyPatch<T>(
       break;
     case Actions.delete:
       delete (current as UnknownObj)[patch.p as Prop];
+      // handle the case in which we remove the last element from an array
+      if (Array.isArray(current) && current.length - 1 === Number(patch.p))
+        current.length -= 1;
+      debugger;
       break;
     case Actions.delete_map:
     case Actions.delete_set:
@@ -927,8 +931,14 @@ export function applyPatch<T>(
               else (curr as UnknownSet).add(key);
               break;
             default:
-              if (action === "remove") delete (curr as UnknownObj)[key as Prop];
-              else (curr as UnknownObj)[key as Prop] = patch.value;
+              if (action === "remove") {
+                delete (curr as UnknownObj)[key as Prop];
+                // handle the case in which we remove the last element from an array
+                if (Array.isArray(curr) && curr.length - 1 === Number(key))
+                  curr.length -= 1;
+              } else {
+                (curr as UnknownObj)[key as Prop] = patch.value;
+              }
           }
         }
       });
