@@ -740,7 +740,8 @@ function walkParents(
     }
   }
   const currParents = currData.parents;
-  if (currParents.size) {
+  const hasParents = !!currParents.size;
+  if (hasParents) {
     for (const [parent, links] of currParents.entries()) {
       walkParents(
         mainState,
@@ -755,7 +756,13 @@ function walkParents(
       );
     }
   }
-  if (patchStore && mainState === t) {
+  if (
+    patchStore &&
+    // we only append patches to the main array for the root object
+    (!hasParents || // simpler case: no circular reference is found so we use absence of parents to append patches
+      mainState === t || // if the target is the mainState we also know that we have to append the patches
+      (data.get(mainState as object) as TargetData).shallow === t) // for frozen objects, the target of the proxy is the shallow clone of the main state
+  ) {
     for (let i = 0; i != currPatches.length; i++) {
       patchStore.patches.push(currPatches[i].patch);
       patchStore.inversePatches.push(currPatches[i].inverse);
