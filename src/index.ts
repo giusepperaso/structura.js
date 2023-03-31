@@ -296,9 +296,10 @@ export function produce<T, Q>(
       const actualTarget = (currData && currData.shallow) || t;
       const descriptor = Object.getOwnPropertyDescriptor(actualTarget, p);
       if (!descriptor) return undefined;
-      const d = {
-        writable: descriptor.writable,
-        configurable: descriptor.configurable,
+      return {
+        writable: true,
+        configurable:
+          p === "length" && Array.isArray(t) ? descriptor.configurable : true,
         enumerable: descriptor.enumerable,
         value: actualTarget[p],
       };
