@@ -148,7 +148,8 @@ export function produce<T, Q>(
     ? { patches: [], inversePatches: [] }
     : null;
   const handler = {
-    get(t: object, p: Prop, r: object) {
+    get(_t: any, p: Prop, r: object) {
+      const t = (Array.isArray(_t) ? _t[0].obj : _t.obj) as object;
       if (p === Traps_self) return t;
       const currData = data.get(t);
       if (p === Traps_data) return currData;
@@ -263,28 +264,34 @@ export function produce<T, Q>(
         return proxify(v, data, handler, t, p).proxy;
       }
     },
-    set(t: object, p: Prop, v: unknown, r: object) {
-      if (Reflect.get(t, p, r) !== v)
+    set(_t: any, p: Prop, v: unknown, r: object) {
+      const t = (Array.isArray(_t) ? _t[0].obj : _t.obj) as object;
+      if (Reflect.get(t, p, r) !== v) {
         walkParents(state, Actions.set, data, pStore, t, p, v);
+      }
       return true;
     },
-    deleteProperty(t: object, p: Prop) {
+    deleteProperty(_t: any, p: Prop) {
+      const t = (Array.isArray(_t) ? _t[0].obj : _t.obj) as object;
       walkParents(state, Actions.delete, data, pStore, t, p);
       return true;
     },
-    has(t: object, p: Prop) {
+    has(_t: any, p: Prop) {
       if (p === Traps_self || p === Traps_target || p === Traps_data)
         return true;
+      const t = (Array.isArray(_t) ? _t[0].obj : _t.obj) as object;
       const currData = data.get(t);
       const actualTarget = (currData && currData.shallow) || t;
       return p in actualTarget;
     },
-    ownKeys(t: object) {
+    ownKeys(_t: any) {
+      const t = (Array.isArray(_t) ? _t[0].obj : _t.obj) as object;
       const currData = data.get(t);
       const actualTarget = (currData && currData.shallow) || t;
       return Reflect.ownKeys(actualTarget);
     },
-    getOwnPropertyDescriptor(t: object, p: Prop) {
+    getOwnPropertyDescriptor(_t: any, p: Prop) {
+      const t = (Array.isArray(_t) ? _t[0].obj : _t.obj) as object;
       const currData = data.get(t);
       const actualTarget = (currData && currData.shallow) || t;
       const descriptor = Object.getOwnPropertyDescriptor(actualTarget, p);
@@ -297,7 +304,8 @@ export function produce<T, Q>(
       };
       return d;
     },
-    getPrototypeOf(t: object) {
+    getPrototypeOf(_t: any) {
+      const t = (Array.isArray(_t) ? _t[0].obj : _t.obj) as object;
       return Object.getPrototypeOf(t);
     },
   };
@@ -512,21 +520,6 @@ export const createProxy = function (
   parent?: object,
   link?: Link
 ): TargetData {
-  if (Object.isFrozen(obj)) {
-    const type = getTypeString(obj);
-    if (type !== Types.Map && type !== Types.Set) {
-      if (!data.has(obj)) {
-        const newTarget = shallowClone(obj);
-        const currData = createProxy(newTarget, data, handler, parent, link);
-        currData.shallow = newTarget;
-        data.set(obj, currData);
-        //data.set(newTarget, currData);
-        return currData;
-      }
-      return data.get(obj) as TargetData;
-    }
-  }
-
   let currData: TargetData;
   if (data.has(obj)) {
     currData = data.get(obj) as TargetData;
@@ -544,7 +537,7 @@ export const createProxy = function (
     }
   } else {
     currData = {
-      proxy: new Proxy(obj, handler),
+      proxy: new Proxy(Array.isArray(obj) ? [{ obj }] : { obj }, handler),
       modified: false,
       shallow: null,
       parents: parent
