@@ -22,13 +22,13 @@ runMultiple("tests transpositions of element", () => {
   });
 
   it("manual transposition/reverse", async () => {
-    const myObj = [{ a: 0 }, { a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }];
+    const myObj = [{ a: 0 }, { a: 1 }, { a: 2 }, { a: 3 }, { a: 444 }];
     const result = produce(myObj, (draft) => {
       draft[0].a = 11;
       const e0 = draft[0];
       const e1 = draft[1];
       const tt = (draft[0] = draft[4]);
-      tt.a = 99999; // this would not work because tt is now a reference to a proxy
+      tt.a = 99999; // this didn't work because tt is now a reference to a proxy
       // with the new update, it is just ignored
       draft[1] = draft[3];
       draft[3] = e1;
