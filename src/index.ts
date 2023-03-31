@@ -303,7 +303,6 @@ export function produce<T, Q>(
         enumerable: descriptor.enumerable,
         value: actualTarget[p],
       };
-      return d;
     },
     getPrototypeOf(_t: any) {
       const t = (Array.isArray(_t) ? _t[0].obj : _t.obj) as object;
