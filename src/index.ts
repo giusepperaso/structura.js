@@ -569,7 +569,6 @@ function walkParents(
     if (shallow === null) {
       type = getTypeString(t);
       shallow = currData.shallow = shallowClone(t, type as Types);
-      data.set(shallow, currData);
     }
   }
   // don't use p directly but use link because p may be different or undefined
@@ -787,7 +786,6 @@ export function applyPatches<T>(
   let newState: T | object = state;
   let producerReturn;
   const clones: WeakMap<object, object> = new WeakMap();
-  const traversedPatches: WeakMap<Patch | JSONPatch, boolean> = new WeakMap();
   if (!isPrimitive(state)) {
     const unwrapState = (
       Traps_target in (state as WithTraps)
@@ -799,7 +797,10 @@ export function applyPatches<T>(
     clones.set(newState, newState);
   }
   for (let i = 0; i !== patches.length; i++) {
-    producerReturn = applyPatch(newState, patches[i], clones, traversedPatches);
+    // you have to pass a different weakmap for each parent patch,
+    // otherwise if the same patches are present at different levels,
+    // they will not be used
+    producerReturn = applyPatch(newState, patches[i], clones, new WeakMap());
     if (typeof producerReturn !== "undefined")
       newState = producerReturn as object;
   }
@@ -831,7 +832,6 @@ export function applyPatch<T>(
       // handle the case in which we remove the last element from an array
       if (Array.isArray(current) && current.length - 1 === Number(patch.p))
         current.length -= 1;
-      debugger;
       break;
     case Actions.delete_map:
     case Actions.delete_set:
@@ -871,10 +871,11 @@ export function applyPatch<T>(
       next = patch.next;
       if (next) {
         for (let i = 0; i !== next.length; i++) {
-          if (!traversedPatches.has(next[i]))
+          const childPatch = next[i];
+          if (!traversedPatches.has(childPatch))
             applyPatch(
               childShallow as object,
-              next[i],
+              childPatch,
               clones,
               traversedPatches
             );
