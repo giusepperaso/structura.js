@@ -1,4 +1,4 @@
-const enum Types {
+enum Types {
   primitive = "primitive",
   function = "function",
   object = "object",
@@ -478,8 +478,18 @@ export function isDraft<T>(obj: T) {
   return !isPrimitive(obj) && Traps_self in (obj as object);
 }
 
-export function isDraftable(obj: unknown) {
-  return !isPrimitive(obj);
+export const DraftableTypes = Object.values(Types).filter(
+  (v) => v.charAt(0) === "["
+);
+
+export function isDraftable(value: unknown): boolean {
+  if (!value) return false;
+  const type = typeof value;
+  if (type === Types.function) return true;
+  return (
+    type === Types.object &&
+    DraftableTypes.includes(getTypeString(value) as Types)
+  );
 }
 
 export type Patch = {
