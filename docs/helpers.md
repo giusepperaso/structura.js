@@ -27,15 +27,27 @@ produce({ n: 1 }, (draft) => {
 })
 ```
 
-## data
+## itemData
 
 Gets the data associated with the passed portion of the draft; it is unlikely that you need this.
 
 ```typescript
 produce({ n: 1 }, (draft) => {
-    target(draft) === data(draft).shallow // false
+    target(draft) === itemData(draft).shallow // false
     draft.n++;
-    target(draft) === data(draft).shallow // true
+    target(draft) === itemData(draft).shallow // true
+})
+```
+
+## allData
+
+Gets a map of all the data associated with the draft; it is unlikely that you need this.
+
+```typescript
+produce({ n: 1 }, (draft) => {
+    target(draft) === allData(draft).get(original(draft)).shallow // false
+    draft.n++;
+    target(draft) === allData(draft).get(original(draft)).shallow // true
 })
 ```
 
