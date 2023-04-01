@@ -20,51 +20,51 @@ b.suite(
   b.add("STRUCTURA (no strict copy)", () => {
     enableStrictCopy(false);
     structura(getMyObj(), (draft) => {
-      draft["prop111"].prop = 2;
-      draft["prop1111"].prop = 2;
-      draft["prop222"].prop = 2;
+      for (let i = 0; i !== 3; i++) {
+        draft["prop" + i].prop = 2;
+      }
     });
   }),
 
-  b.add("STRUCTURA (with stict copy)", () => {
+  b.add("STRUCTURA (with strict copy)", () => {
     enableStrictCopy(true);
     structura(getMyObj(), (draft) => {
-      draft["prop111"].prop = 2;
-      draft["prop1111"].prop = 2;
-      draft["prop222"].prop = 2;
+      for (let i = 0; i !== 3; i++) {
+        draft["prop" + i].prop = 2;
+      }
     });
   }),
 
   b.add("IMMER (no auto freeze)", () => {
     setAutoFreeze(false);
     immer(getMyObj(), (draft) => {
-      draft["prop111"].prop = 2;
-      draft["prop1111"].prop = 2;
-      draft["prop222"].prop = 2;
+      for (let i = 0; i !== 3; i++) {
+        draft["prop" + i].prop = 2;
+      }
     });
   }),
 
   b.add("IMMER (with auto freeze)", () => {
     setAutoFreeze(true);
     immer(getMyObj(), (draft) => {
-      draft["prop111"].prop = 2;
-      draft["prop1111"].prop = 2;
-      draft["prop222"].prop = 2;
+      for (let i = 0; i !== 3; i++) {
+        draft["prop" + i].prop = 2;
+      }
     });
   }),
 
   b.add("IMMUTABLE (no toJS)", () => {
     const map = immutable(getMyObj());
-    map.setIn(["prop111", "prop"], 2);
-    map.setIn(["prop1111", "prop"], 2);
-    map.setIn(["prop222", "prop"], 2);
+    for (let i = 0; i !== 3; i++) {
+      map.setIn(["prop" + i, "prop"], 2);
+    }
   }),
 
   b.add("IMMUTABLE (with toJS)", () => {
     const map = immutable(getMyObj());
-    map.setIn(["prop111", "prop"], 2);
-    map.setIn(["prop1111", "prop"], 2);
-    map.setIn(["prop222", "prop"], 2);
+    for (let i = 0; i !== 3; i++) {
+      map.setIn(["prop" + i, "prop"], 2);
+    }
     map.toJS();
   }),
 

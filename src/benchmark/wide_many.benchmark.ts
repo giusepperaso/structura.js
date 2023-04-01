@@ -20,249 +20,51 @@ b.suite(
   b.add("STRUCTURA (no strict copy)", () => {
     enableStrictCopy(false);
     structura(getMyObj(), (draft) => {
-      draft["prop111"].prop = 2;
-      draft["prop1111"].prop = 2;
-      draft["prop222"].prop = 2;
-      draft["prop2222"].prop = 2;
-      draft["prop333"].prop = 2;
-      draft["prop3333"].prop = 2;
-      draft["prop444"].prop = 2;
-      draft["prop4444"].prop = 2;
-      draft["prop555"].prop = 2;
-      draft["prop5557"].prop = 2;
-      draft["prop666"].prop = 2;
-      draft["prop6666"].prop = 2;
-      draft["prop777"].prop = 2;
-      draft["prop7777"].prop = 2;
-      draft["prop888"].prop = 2;
-      draft["prop8888"].prop = 2;
-      draft["prop999"].prop = 2;
-      draft["prop9999"].prop = 2;
-      draft["prop111"].prop = 3;
-      draft["prop1111"].prop = 3;
-      draft["prop222"].prop = 3;
-      draft["prop2222"].prop = 3;
-      draft["prop333"].prop = 3;
-      draft["prop3333"].prop = 3;
-      draft["prop444"].prop = 3;
-      draft["prop4444"].prop = 3;
-      draft["prop555"].prop = 3;
-      draft["prop5557"].prop = 3;
-      draft["prop666"].prop = 3;
-      draft["prop6666"].prop = 3;
-      draft["prop777"].prop = 3;
-      draft["prop7777"].prop = 3;
-      draft["prop888"].prop = 3;
-      draft["prop8888"].prop = 3;
-      draft["prop999"].prop = 3;
-      draft["prop9999"].prop = 3;
+      for (let i = 0; i !== 100; i++) {
+        draft["prop" + i].prop = 2;
+      }
     });
   }),
 
   b.add("STRUCTURA (with strict copy)", () => {
     enableStrictCopy(true);
     structura(getMyObj(), (draft) => {
-      draft["prop111"].prop = 2;
-      draft["prop1111"].prop = 2;
-      draft["prop222"].prop = 2;
-      draft["prop2222"].prop = 2;
-      draft["prop333"].prop = 2;
-      draft["prop3333"].prop = 2;
-      draft["prop444"].prop = 2;
-      draft["prop4444"].prop = 2;
-      draft["prop555"].prop = 2;
-      draft["prop5557"].prop = 2;
-      draft["prop666"].prop = 2;
-      draft["prop6666"].prop = 2;
-      draft["prop777"].prop = 2;
-      draft["prop7777"].prop = 2;
-      draft["prop888"].prop = 2;
-      draft["prop8888"].prop = 2;
-      draft["prop999"].prop = 2;
-      draft["prop9999"].prop = 2;
-      draft["prop111"].prop = 3;
-      draft["prop1111"].prop = 3;
-      draft["prop222"].prop = 3;
-      draft["prop2222"].prop = 3;
-      draft["prop333"].prop = 3;
-      draft["prop3333"].prop = 3;
-      draft["prop444"].prop = 3;
-      draft["prop4444"].prop = 3;
-      draft["prop555"].prop = 3;
-      draft["prop5557"].prop = 3;
-      draft["prop666"].prop = 3;
-      draft["prop6666"].prop = 3;
-      draft["prop777"].prop = 3;
-      draft["prop7777"].prop = 3;
-      draft["prop888"].prop = 3;
-      draft["prop8888"].prop = 3;
-      draft["prop999"].prop = 3;
-      draft["prop9999"].prop = 3;
+      for (let i = 0; i !== 100; i++) {
+        draft["prop" + i].prop = 2;
+      }
     });
   }),
 
   b.add("IMMER (no auto freeze)", () => {
     setAutoFreeze(false);
     immer(getMyObj(), (draft) => {
-      draft["prop111"].prop = 2;
-      draft["prop1111"].prop = 2;
-      draft["prop222"].prop = 2;
-      draft["prop2222"].prop = 2;
-      draft["prop333"].prop = 2;
-      draft["prop3333"].prop = 2;
-      draft["prop444"].prop = 2;
-      draft["prop4444"].prop = 2;
-      draft["prop555"].prop = 2;
-      draft["prop5557"].prop = 2;
-      draft["prop666"].prop = 2;
-      draft["prop6666"].prop = 2;
-      draft["prop777"].prop = 2;
-      draft["prop7777"].prop = 2;
-      draft["prop888"].prop = 2;
-      draft["prop8888"].prop = 2;
-      draft["prop999"].prop = 2;
-      draft["prop9999"].prop = 2;
-      draft["prop111"].prop = 3;
-      draft["prop1111"].prop = 3;
-      draft["prop222"].prop = 3;
-      draft["prop2222"].prop = 3;
-      draft["prop333"].prop = 3;
-      draft["prop3333"].prop = 3;
-      draft["prop444"].prop = 3;
-      draft["prop4444"].prop = 3;
-      draft["prop555"].prop = 3;
-      draft["prop5557"].prop = 3;
-      draft["prop666"].prop = 3;
-      draft["prop6666"].prop = 3;
-      draft["prop777"].prop = 3;
-      draft["prop7777"].prop = 3;
-      draft["prop888"].prop = 3;
-      draft["prop8888"].prop = 3;
-      draft["prop999"].prop = 3;
-      draft["prop9999"].prop = 3;
+      for (let i = 0; i !== 100; i++) {
+        draft["prop" + i].prop = 2;
+      }
     });
   }),
 
   b.add("IMMER (with auto freeze)", () => {
     setAutoFreeze(true);
     immer(getMyObj(), (draft) => {
-      draft["prop111"].prop = 2;
-      draft["prop1111"].prop = 2;
-      draft["prop222"].prop = 2;
-      draft["prop2222"].prop = 2;
-      draft["prop333"].prop = 2;
-      draft["prop3333"].prop = 2;
-      draft["prop444"].prop = 2;
-      draft["prop4444"].prop = 2;
-      draft["prop555"].prop = 2;
-      draft["prop5557"].prop = 2;
-      draft["prop666"].prop = 2;
-      draft["prop6666"].prop = 2;
-      draft["prop777"].prop = 2;
-      draft["prop7777"].prop = 2;
-      draft["prop888"].prop = 2;
-      draft["prop8888"].prop = 2;
-      draft["prop999"].prop = 2;
-      draft["prop9999"].prop = 2;
-      draft["prop111"].prop = 3;
-      draft["prop1111"].prop = 3;
-      draft["prop222"].prop = 3;
-      draft["prop2222"].prop = 3;
-      draft["prop333"].prop = 3;
-      draft["prop3333"].prop = 3;
-      draft["prop444"].prop = 3;
-      draft["prop4444"].prop = 3;
-      draft["prop555"].prop = 3;
-      draft["prop5557"].prop = 3;
-      draft["prop666"].prop = 3;
-      draft["prop6666"].prop = 3;
-      draft["prop777"].prop = 3;
-      draft["prop7777"].prop = 3;
-      draft["prop888"].prop = 3;
-      draft["prop8888"].prop = 3;
-      draft["prop999"].prop = 3;
-      draft["prop9999"].prop = 3;
+      for (let i = 0; i !== 100; i++) {
+        draft["prop" + i].prop = 2;
+      }
     });
   }),
 
   b.add("IMMUTABLE (no toJS)", () => {
     const map = immutable(getMyObj());
-    map.setIn(["prop111", "prop"], 2);
-    map.setIn(["prop1111", "prop"], 2);
-    map.setIn(["prop222", "prop"], 2);
-    map.setIn(["prop2222", "prop"], 2);
-    map.setIn(["prop333", "prop"], 2);
-    map.setIn(["prop3333", "prop"], 2);
-    map.setIn(["prop444", "prop"], 2);
-    map.setIn(["prop4444", "prop"], 2);
-    map.setIn(["prop555", "prop"], 2);
-    map.setIn(["prop5557", "prop"], 2);
-    map.setIn(["prop666", "prop"], 2);
-    map.setIn(["prop6666", "prop"], 2);
-    map.setIn(["prop777", "prop"], 2);
-    map.setIn(["prop7777", "prop"], 2);
-    map.setIn(["prop888", "prop"], 2);
-    map.setIn(["prop8888", "prop"], 2);
-    map.setIn(["prop999", "prop"], 2);
-    map.setIn(["prop9999", "prop"], 2);
-    map.setIn(["prop111", "prop"], 3);
-    map.setIn(["prop1111", "prop"], 3);
-    map.setIn(["prop222", "prop"], 3);
-    map.setIn(["prop2222", "prop"], 3);
-    map.setIn(["prop333", "prop"], 3);
-    map.setIn(["prop3333", "prop"], 3);
-    map.setIn(["prop444", "prop"], 3);
-    map.setIn(["prop4444", "prop"], 3);
-    map.setIn(["prop555", "prop"], 3);
-    map.setIn(["prop5557", "prop"], 3);
-    map.setIn(["prop666", "prop"], 3);
-    map.setIn(["prop6666", "prop"], 3);
-    map.setIn(["prop777", "prop"], 3);
-    map.setIn(["prop7777", "prop"], 3);
-    map.setIn(["prop888", "prop"], 3);
-    map.setIn(["prop8888", "prop"], 3);
-    map.setIn(["prop999", "prop"], 3);
-    map.setIn(["prop9999", "prop"], 3);
+    for (let i = 0; i !== 100; i++) {
+      map.setIn(["prop" + i, "prop"], 2);
+    }
   }),
 
   b.add("IMMUTABLE (with toJS)", () => {
     const map = immutable(getMyObj());
-    map.setIn(["prop111", "prop"], 2);
-    map.setIn(["prop1111", "prop"], 2);
-    map.setIn(["prop222", "prop"], 2);
-    map.setIn(["prop2222", "prop"], 2);
-    map.setIn(["prop333", "prop"], 2);
-    map.setIn(["prop3333", "prop"], 2);
-    map.setIn(["prop444", "prop"], 2);
-    map.setIn(["prop4444", "prop"], 2);
-    map.setIn(["prop555", "prop"], 2);
-    map.setIn(["prop5557", "prop"], 2);
-    map.setIn(["prop666", "prop"], 2);
-    map.setIn(["prop6666", "prop"], 2);
-    map.setIn(["prop777", "prop"], 2);
-    map.setIn(["prop7777", "prop"], 2);
-    map.setIn(["prop888", "prop"], 2);
-    map.setIn(["prop8888", "prop"], 2);
-    map.setIn(["prop999", "prop"], 2);
-    map.setIn(["prop9999", "prop"], 2);
-    map.setIn(["prop111", "prop"], 3);
-    map.setIn(["prop1111", "prop"], 3);
-    map.setIn(["prop222", "prop"], 3);
-    map.setIn(["prop2222", "prop"], 3);
-    map.setIn(["prop333", "prop"], 3);
-    map.setIn(["prop3333", "prop"], 3);
-    map.setIn(["prop444", "prop"], 3);
-    map.setIn(["prop4444", "prop"], 3);
-    map.setIn(["prop555", "prop"], 3);
-    map.setIn(["prop5557", "prop"], 3);
-    map.setIn(["prop666", "prop"], 3);
-    map.setIn(["prop6666", "prop"], 3);
-    map.setIn(["prop777", "prop"], 3);
-    map.setIn(["prop7777", "prop"], 3);
-    map.setIn(["prop888", "prop"], 3);
-    map.setIn(["prop8888", "prop"], 3);
-    map.setIn(["prop999", "prop"], 3);
-    map.setIn(["prop9999", "prop"], 3);
+    for (let i = 0; i !== 100; i++) {
+      map.setIn(["prop" + i, "prop"], 2);
+    }
     map.toJS();
   }),
 

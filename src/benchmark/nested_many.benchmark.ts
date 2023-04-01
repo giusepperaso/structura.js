@@ -19,7 +19,7 @@ b.suite(
     enableStrictCopy(false);
     structura(getMyObj(), (draft) => {
       let curr = draft.prop;
-      for (let i = 0; i != 35; i++) {
+      for (let i = 0; i != 100; i++) {
         curr = curr.prop;
         curr.test = 2;
       }
@@ -30,7 +30,7 @@ b.suite(
     enableStrictCopy(true);
     structura(getMyObj(), (draft) => {
       let curr = draft.prop;
-      for (let i = 0; i != 35; i++) {
+      for (let i = 0; i != 100; i++) {
         curr = curr.prop;
         curr.test = 2;
       }
@@ -41,7 +41,7 @@ b.suite(
     setAutoFreeze(false);
     immer(getMyObj(), (draft: any) => {
       let curr = draft.prop;
-      for (let i = 0; i != 35; i++) {
+      for (let i = 0; i != 100; i++) {
         curr = curr.prop;
         curr.test = 2;
       }
@@ -51,7 +51,7 @@ b.suite(
   b.add("IMMUTABLE (no toJS)", () => {
     const map = immutable(getMyObj());
     let curr = [];
-    for (let i = 0; i != 35; i++) {
+    for (let i = 0; i != 100; i++) {
       curr.push("prop");
       map.setIn(curr, 2);
     }
