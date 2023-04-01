@@ -423,12 +423,10 @@ export function freeze<T>(
         map.set = map.clear = map.delete = errFrozen;
         Object.freeze(obj);
         if (deep) {
-          try {
-            map.forEach((v, k) => {
-              freeze(k, true, true);
-              freeze(v, true, true);
-            });
-          } catch (_) {}
+          map.forEach((v, k) => {
+            freeze(k, true, true);
+            freeze(v, true, true);
+          });
         }
         break;
       case Types.Set:
@@ -436,28 +434,15 @@ export function freeze<T>(
         set.add = set.clear = set.delete = errFrozen;
         Object.freeze(obj);
         if (deep) {
-          try {
-            set.forEach((v) => freeze(v, true, true));
-          } catch (_) {}
+          set.forEach((v) => freeze(v, true, true));
         }
         break;
       default:
-        let errors = false;
-        try {
-          Object.freeze(obj);
-        } catch (_) {
-          errors = true;
-        }
-        if (deep && !errors) {
+        Object.freeze(obj);
+        if (deep) {
           const keys = Reflect.ownKeys(obj as object);
           for (let i = 0; i !== keys.length; i++) {
-            let toFreeze;
-            try {
-              toFreeze = obj[keys[i] as keyof T];
-            } catch (_) {
-              break;
-            }
-            freeze(toFreeze, true, true);
+            freeze(obj[keys[i] as keyof T], true, true);
           }
         }
     }
