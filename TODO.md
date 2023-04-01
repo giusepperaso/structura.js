@@ -23,6 +23,7 @@
 
 ## SOLVED
 
+- [x] (🟨PERF) store type in the currData
 - [x] (⬜FEAT) full compatibility with [this rfc of redux toolkit](https://github.com/reduxjs/redux-toolkit/pull/3074)
 - [x] (🟧BUGS) test fails with both standard patches and auto freeze enabled
 - [x] (🟧BUGS) frozen sets caused infinite loops
@@ -54,7 +55,6 @@
 - ~~[ ] (🟨PERF) appended: WeakSet could be used to see if an element was external to the tree, so we could avoid cloning it~~
 - ~~[ ] (🟨PERF) remove some closures, expecially the proxy traps, the addLink and actionLink~~
 - ~~[ ] (🟨PERF) getOwnPropertySymbols adds some overhead on copy: we could disable it with a flag if necessary. Is it worth?~~
-- ~~[ ] (🟨PERF) store type somewhere for fast lookup~~
 - ~~[ ] (🟨PERF) typeof v is taken two times, the second time for checking if it's a function. Is it worth solving?~~
 - ~~[ ] (⬜FEAT) allow switching implementations~~
 

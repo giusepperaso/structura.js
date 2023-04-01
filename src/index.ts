@@ -805,7 +805,7 @@ export function applyPatches<T>(
     // you have to pass a different weakmap for each parent patch,
     // otherwise if the same patches are present at different levels,
     // they will not be used
-    producerReturn = applyPatch(newState, patches[i], clones, new WeakMap());
+    producerReturn = applyPatch(newState, patches[i], clones, new WeakSet());
     if (typeof producerReturn !== "undefined")
       newState = producerReturn as object;
   }
@@ -816,10 +816,10 @@ export function applyPatch<T>(
   current: T,
   patch: Patch | JSONPatch,
   clones: WeakMap<object, object>,
-  traversedPatches: WeakMap<Patch | JSONPatch, boolean>
+  traversedPatches: WeakSet<Patch | JSONPatch>
 ) {
   if (!patch) return;
-  traversedPatches.set(patch, true);
+  traversedPatches.add(patch);
   const action = patch.op;
   let childShallow, child, next;
   switch (action) {
