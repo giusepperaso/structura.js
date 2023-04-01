@@ -148,12 +148,12 @@ export function produce<T, Q>(
     ? { patches: [], inversePatches: [] }
     : null;
   const handler = {
-    get(wrap: { 0: TargetData }, p: Prop, r: object) {
+    get(wrap: TargetDataWrapper, p: Prop, r: object) {
       const currData = wrap[0];
       const t = currData.original as object;
       if (p === Traps_self) return t;
       if (p === Traps_data) return currData;
-      const actualTarget = (currData && currData.shallow) || t;
+      const actualTarget = currData.shallow || t;
       if (p === Traps_target) return actualTarget;
       const v = Reflect.get(actualTarget, p, r);
       if (isPrimitive(v)) return v;
@@ -192,16 +192,10 @@ export function produce<T, Q>(
               let proxy;
               let links;
               for (entry of entries) {
-                const entryV = entry[1];
+                const entryV = entry[1] as object;
                 proxy = isPrimitive(entryV)
                   ? entryV
-                  : proxify(
-                      entryV as object,
-                      data,
-                      handler,
-                      t,
-                      entry[0] as Link
-                    ).proxy;
+                  : proxify(entryV, data, handler, t, entry[0] as Link).proxy;
                 yield isEntries ? [links, proxy] : proxy;
               }
             };
@@ -273,7 +267,7 @@ export function produce<T, Q>(
         return proxify(v, data, handler, t, p).proxy;
       }
     },
-    set(wrap: { 0: TargetData }, p: Prop, v: unknown, r: object) {
+    set(wrap: TargetDataWrapper, p: Prop, v: unknown, r: object) {
       const currData = wrap[0];
       const t = currData.original as object;
       if (Reflect.get(t, p, r) !== v) {
@@ -281,30 +275,30 @@ export function produce<T, Q>(
       }
       return true;
     },
-    deleteProperty(wrap: { 0: TargetData }, p: Prop) {
+    deleteProperty(wrap: TargetDataWrapper, p: Prop) {
       const currData = wrap[0];
       const t = currData.original as object;
       walkParents(state, Actions.delete, data, pStore, t, p);
       return true;
     },
-    has(wrap: { 0: TargetData }, p: Prop) {
+    has(wrap: TargetDataWrapper, p: Prop) {
       if (p === Traps_self || p === Traps_target || p === Traps_data)
         return true;
       const currData = wrap[0];
       const t = currData.original as object;
-      const actualTarget = (currData && currData.shallow) || t;
+      const actualTarget = currData.shallow || t;
       return p in actualTarget;
     },
-    ownKeys(wrap: { 0: TargetData }) {
+    ownKeys(wrap: TargetDataWrapper) {
       const currData = wrap[0];
       const t = currData.original as object;
-      const actualTarget = (currData && currData.shallow) || t;
+      const actualTarget = currData.shallow || t;
       return Reflect.ownKeys(actualTarget);
     },
-    getOwnPropertyDescriptor(wrap: { 0: TargetData }, p: Prop) {
+    getOwnPropertyDescriptor(wrap: TargetDataWrapper, p: Prop) {
       const currData = wrap[0];
       const t = currData.original as object;
-      const actualTarget = (currData && currData.shallow) || t;
+      const actualTarget = currData.shallow || t;
       const descriptor = Object.getOwnPropertyDescriptor(actualTarget, p);
       if (!descriptor) return undefined;
       return {
@@ -315,7 +309,7 @@ export function produce<T, Q>(
         value: actualTarget[p as keyof typeof actualTarget],
       };
     },
-    getPrototypeOf(wrap: { 0: TargetData }) {
+    getPrototypeOf(wrap: TargetDataWrapper) {
       const currData = wrap[0];
       const t = currData.original as object;
       return Object.getPrototypeOf(t);
@@ -521,6 +515,7 @@ export type TargetData = {
   inverseLength?: number;
   modified: boolean;
 };
+export type TargetDataWrapper = [TargetData];
 
 export const createProxy = function (
   obj: object,
@@ -554,9 +549,8 @@ export const createProxy = function (
         ? new Map([[parent, new Map([[link, null]])]])
         : new Map(),
     } as TargetData;
-    const wrapper =
-      currData.type === Types.Array ? [currData] : { 0: currData };
-    currData.proxy = new Proxy(wrapper, handler);
+    const wrap = currData.type === Types.Array ? [currData] : { 0: currData };
+    currData.proxy = new Proxy(wrap, handler);
     data.set(obj, currData);
   }
   return currData;
