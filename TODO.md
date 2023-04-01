@@ -20,10 +20,9 @@
 
 ## IN PROGRESS
 
-- [80%] (⬜FEAT) full compatibility with [this rfc of redux toolkit](https://github.com/reduxjs/redux-toolkit/pull/3074)
-
 ## SOLVED
 
+- [x] (⬜FEAT) full compatibility with [this rfc of redux toolkit](https://github.com/reduxjs/redux-toolkit/pull/3074)
 - [x] (🟧BUGS) test fails with both standard patches and auto freeze enabled
 - [x] (🟧BUGS) frozen sets caused infinite loops
 - [x] (🟩TEST) each test should possibly also run on strict copy and/or auto freeze
