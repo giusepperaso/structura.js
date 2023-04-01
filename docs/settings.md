@@ -4,7 +4,7 @@ There are very few settings in Structura because almost everything is active by 
 
 ## Enable standard patches
 
-Patches in Immer use a proprietary format. If you want instead to use standard json patches, you must active the corresponding setting.
+Patches in Structura use a proprietary format. If you want instead to use standard json patches, you must active the corresponding setting.
 
 Alternatively you can use the <a href="./helpers.html#convertpatchestostandard">converting helper</a> to convert non-standard patches that were already created to standard json patches.
 
