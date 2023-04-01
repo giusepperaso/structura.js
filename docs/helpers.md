@@ -53,6 +53,8 @@ Structura generates patches that are not compliant to standard JSON Patches, how
 
 Note that by default the path of the newly generated patches will be an array, and this is the same behaviour as Immer. If you want instead a slash-separated string path like in the JSON Patch RFC, the second argument should be set to false.
 
+Alternatively to this helper, you can just <a href="./settings.html#enable-standard-patches">turn a setting on</a> to tell Structura to always use standard patches.
+
 ```typescript
 const state = { sub: { n: 1 } };
 
@@ -70,4 +72,18 @@ const json_patches_str_path = convertPatchesToStandard(patches, false) // [{ op:
 
 applyPatches(state, json_patches_arr_path).sub.n === 2 // true
 applyPatches(state, json_patches_str_path).sub.n === 2 // true
+```
+
+## snapshot
+
+Returns a snapshot of the current state, similarly to 'current' in Immer.
+
+Note: basically you are getting a deep clone of the object, so this is very slow and you should use it only for debug purposes.
+
+```typescript
+produce({ n: 1 }, (draft) => {
+    target(draft) === data(draft).shallow // false
+    draft.n++;
+    target(draft) === data(draft).shallow // true
+})
 ```

@@ -29,12 +29,14 @@ import { freeze } from "structurajs";
 const frozen_at_compile_time = freeze(newState); 
 
 frozen_at_compile_time.push(5) // DOESN'T COMPILE
-(frozen_at_compile_time as any).push(5) // it works
+//@ts-ignore
+frozen_at_compile_time.push(5) // it works
 
 const frozen_at_both_run_and_compile_time = freeze(newState, true); 
 
 frozen_at_both_run_and_compile_time.push(5) // DOESN'T COMPILE
-(frozen_at_both_run_and_compile_time as any).push(5) // WILL THROW AN EXCEPTION AT RUNTIME
+//@ts-ignore
+frozen_at_compile_time.push(5) // WILL THROW AN EXCEPTION AT RUNTIME
 ```
 
 Note that freeze also has a third argument called "deep" which will only take effect if both deep and runtime are true.

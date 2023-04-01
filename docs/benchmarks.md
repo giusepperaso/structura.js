@@ -4,9 +4,9 @@ Click on any image to see the respective chart in a new tab.
 
 The bars are referred respectively to those libraries:
 
-1) *Structura* - optimizations: without strict copy
-2) *Immer* - optimizations: without autofreeze, maps, sets and patches
-3) *Immutable* - optimizations: without calling toJS/fromJS, which are slow
+1) *Structura* - with or without strict copy (maps, sets and patches are always enabled)
+2) *Immer* - with or without autofreeze (maps, sets and patches are always disabled)
+3) *Immutable* - with or without calling toJS (fromJS is never used)
 
 **The higher and greener the bar, the better.**
 

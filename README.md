@@ -10,7 +10,7 @@
 
 The library is very similar to [Immer.js](https://immerjs.github.io/immer/), but it has some advantages over it:
 
-- up to ~22x more performant, even faster than [Immutable](https://github.com/immutable-js/immutable-js) most of the time
+- up to ~10x more performant, even faster than [Immutable](https://github.com/immutable-js/immutable-js) most of the time
 - freezes the object only at compile time by leveraging Typescript, while other libraries freeze the object at runtime with Object.freeze, which may be slow expecially for nested objects
 - circular and multiple references are supported
 - can return and modify the draft at the same time
@@ -22,6 +22,7 @@ The library is actually in alpha state. It is probably already usable (many comp
 
 ## BREAKING CHANGES
 
+- v.0.9.0-alpha: produceWithStandardPatches was removed from the library; use [enableStandardPatches(true)](https://giusepperaso.github.io/structura.js/settings.html#enable-standard-patches) instead
 - v.0.8.0-alpha: patches use 'op' instead of 'action' as key for the operation; they can also be passed in the JSON format
 - v.0.6.0-alpha: revert back to accept primitives, just don't draft them; also accept the in operator
 - ~~v.0.5.0-alpha: don't accept primitive types at runtime~~

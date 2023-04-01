@@ -2,14 +2,11 @@
 
 ## TODO
 
+- [ ] (⬜FEAT) support async producers, this means that when you get the result you should check if it is a promise
+- [ ] (⬛CODE) remove some closures, expecially the proxy traps, the addLink and actionLink
 - [ ] (⬛CODE) try a better solution instead than no-op patch
-- [ ] (⬛CODE) correct the nomenclature and behaviour of the helpers
-    - [ ] original should always return the original object even if it's not the target of the proxy
-    - [ ] target should return the target of the proxy
-    - [ ] clone should return the shallow copy of the object
 - [ ] (⬛CODE) enum also for op of json patches
 - [ ] (🟦TYPE) better types for json patches
-- [ ] (🟪DOCS) documentate new settings and remove docs for old helpers, write breaking changes
 - [ ] (⬜FEAT) json patches don't support "" as key if the path is a string ( to solve this, use a placeholder like ___empty___)
 - [ ] (⬜FEAT) maybe use proxy revocable? maybe not necessary because they are already garbage collected
 - [ ] (⬜FEAT) "NOTHING" as return, so you can return undefined
@@ -21,8 +18,14 @@
 
 ## IN PROGRESS
 
+- [ ] (⬛CODE) correct the nomenclature and behaviour of the helpers
+    - [x] original should always return the original object
+    - [ ] target should be renamed to make more understandable what it does
+    - [ ] clone should always return the shallow copy of the object or null
+
 ## SOLVED
 
+- [x] (🟪DOCS) documentate new settings and remove docs for old helpers, write breaking changes
 - [x] (🟨PERF) store type in the currData
 - [x] (⬜FEAT) full compatibility with [this rfc of redux toolkit](https://github.com/reduxjs/redux-toolkit/pull/3074)
 - [x] (🟧BUGS) test fails with both standard patches and auto freeze enabled
@@ -51,9 +54,7 @@
 
 - ~~[ ] (⬜FEAT) maybe implement those types? TypedArray, DataView, File, Blob, FileList, DomException~~
 - ~~[ ] (⬜FEAT) maybe implement those proxy traps? defineProperty, setPrototypeOF, preventExtensions, apply~~
-- ~~[ ] (⬜FEAT) support async producers~~
 - ~~[ ] (🟨PERF) appended: WeakSet could be used to see if an element was external to the tree, so we could avoid cloning it~~
-- ~~[ ] (🟨PERF) remove some closures, expecially the proxy traps, the addLink and actionLink~~
 - ~~[ ] (🟨PERF) getOwnPropertySymbols adds some overhead on copy: we could disable it with a flag if necessary. Is it worth?~~
 - ~~[ ] (🟨PERF) typeof v is taken two times, the second time for checking if it's a function. Is it worth solving?~~
 - ~~[ ] (⬜FEAT) allow switching implementations~~
