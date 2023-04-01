@@ -2,6 +2,7 @@
 
 ## TODO
 
+- [ ] (⬛CODE) try a better solution instead than no-op patch
 - [ ] (⬛CODE) correct the nomenclature and behaviour of the helpers
     - [ ] original should always return the original object even if it's not the target of the proxy
     - [ ] target should return the target of the proxy
