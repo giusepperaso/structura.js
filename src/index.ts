@@ -391,7 +391,7 @@ export function snapshot<T>(obj: T): T {
   if (!isDraft(obj)) return obj;
   function deep<Q>(v: unknown, k: unknown, clone: Q) {
     if (clone !== null && typeof clone === "object") {
-      const typeString = getTypeString(clone);
+      const typeString = toString(clone);
       const child = cloneOrOriginal(v as object);
       if (typeString === Types.Map) {
         (clone as unknown as UnknownMap).set(k, child);
@@ -423,7 +423,7 @@ export function freeze<T>(
   deep: boolean = false
 ): T {
   if (runtime && isDraftable(obj) && !Object.isFrozen(obj) && !isDraft(obj)) {
-    switch (getTypeString(obj)) {
+    switch (toString(obj)) {
       case Types.Map:
         const map = obj as UnknownMap;
         map.set = map.clear = map.delete = errFrozen;
@@ -478,8 +478,7 @@ export function isDraftable(value: unknown): boolean {
   const type = typeof value;
   if (type === Types.function) return true;
   return (
-    type === Types.object &&
-    DraftableTypes.includes(getTypeString(value) as Types)
+    type === Types.object && DraftableTypes.includes(toString(value) as Types)
   );
 }
 
@@ -542,7 +541,7 @@ export const createProxy = function (
   } else {
     currData = {
       original: obj,
-      type: getTypeString(obj),
+      type: toString(obj),
       shallow: null,
       modified: false,
       parents: parent
@@ -921,7 +920,7 @@ export function applyPatch<T>(
         if (!isLast) {
           // if it's not the last portion of the path, we just replace the child with a shallow clone
           let clone: T;
-          switch (getTypeString(curr)) {
+          switch (toString(curr)) {
             case Types.Map:
               clone = getClone((curr as UnknownMap).get(key)) as T;
               (curr as UnknownMap).set(key, clone);
@@ -938,7 +937,7 @@ export function applyPatch<T>(
           curr = clone;
         } else {
           // if it's the last element, we do the action in "op"
-          switch (getTypeString(curr)) {
+          switch (toString(curr)) {
             case Types.Map:
               if (action === "remove") (curr as UnknownMap).delete(key);
               else (curr as UnknownMap).set(key, patch.value);
@@ -1014,18 +1013,16 @@ export function isPrimitive(x: unknown): x is Primitive {
   return false;
 }
 
-const toString = Object.prototype.toString;
+const _toString = Object.prototype.toString;
 
-function getTypeString<T>(x: T) {
-  return toString.call(x);
+function toString<T>(x: T) {
+  return _toString.call(x);
 }
 
 function getType<T>(x: T) {
-  return isPrimitive(x)
-    ? "primitive"
-    : typeof x === "function"
-    ? "function"
-    : toString.call(x);
+  if (isPrimitive(x)) return "primitive";
+  if (typeof x === "function") return "function";
+  return _toString.call(x);
 }
 
 type ForEach = (v: unknown, k: unknown | undefined, c: unknown) => void;
