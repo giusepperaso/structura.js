@@ -761,11 +761,12 @@ function walkParents(
     }
   }
   if (
-    patchStore &&
     // we only append patches to the main array for the root object
-    (!hasParents || // simpler case: no circular reference is found so we use absence of parents to append patches
-      mainState === t || // if the target is the mainState we also know that we have to append the patches
-      (data.get(mainState as object) as TargetData).shallow === t) // for frozen objects, the target of the proxy is the shallow clone of the main state
+    patchStore &&
+    // simpler case: no circular reference is found so we use absence of parents to append patches
+    (!hasParents ||
+      // if the target is the mainState we also know that we have to append the patches
+      mainState === t)
   ) {
     for (let i = 0; i != currPatches.length; i++) {
       patchStore.patches.push(currPatches[i].patch);
