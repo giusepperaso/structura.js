@@ -1019,7 +1019,7 @@ function toString<T>(x: T) {
   return _toString.call(x);
 }
 
-function getType<T>(x: T) {
+function toStringExtended<T>(x: T) {
   if (isPrimitive(x)) return "primitive";
   if (typeof x === "function") return "function";
   return _toString.call(x);
@@ -1081,7 +1081,8 @@ function strictCopyProps<F>(from: F, forEach?: ForEach) {
 }
 
 function shallowClone<T>(x: T, type?: Types, forEach?: ForEach): object {
-  const fn = cloneFns[type || (getType(x) as Types)] || cloneFns[Types.Object];
+  const fn =
+    cloneFns[type || (toStringExtended(x) as Types)] || cloneFns[Types.Object];
   return (fn as Function)(x, forEach);
 }
 
