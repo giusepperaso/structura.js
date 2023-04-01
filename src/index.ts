@@ -56,12 +56,14 @@ export const enableStandardPatches = (v = true) =>
 
 const Traps_self = Symbol();
 const Traps_target = Symbol();
-const Traps_data = Symbol();
+const Traps_item_data = Symbol();
+const Traps_all_data = Symbol();
 
 export type WithTraps<T = object> = {
   [Traps_self]: T;
   [Traps_target]: T;
-  [Traps_data]: TargetData;
+  [Traps_item_data]: ItemData;
+  [Traps_all_data]: AllData;
 };
 
 export type Primitive = null | undefined | boolean | number | string | symbol;
@@ -148,16 +150,17 @@ export function produce<T, Q>(
     ? { patches: [], inversePatches: [] }
     : null;
   const handler = {
-    get(wrap: TargetDataWrapper, p: Prop, r: object) {
-      const currData = wrap[0];
-      const t = currData.original as object;
+    get(wrap: ItemDataWrapper, p: Prop, r: object) {
+      const itemData = wrap[0];
+      const t = itemData.original as object;
       if (p === Traps_self) return t;
-      if (p === Traps_data) return currData;
-      const actualTarget = currData.shallow || t;
+      if (p === Traps_item_data) return itemData;
+      if (p === Traps_all_data) return data;
+      const actualTarget = itemData.shallow || t;
       if (p === Traps_target) return actualTarget;
       const v = Reflect.get(actualTarget, p, r);
       if (isPrimitive(v)) return v;
-      const type = currData.type;
+      const type = itemData.type;
       if (type === Types.Map) {
         if (typeof v === Types.function) {
           if (p === Methods.set) {
@@ -258,47 +261,52 @@ export function produce<T, Q>(
           }
         }
       } else if (typeof v === Types.function) {
-        const currData = proxify(t, data, handler);
+        const itemData = proxify(t, data, handler);
         if (type === Types.Array) {
-          currData.inverseLength = (t as UnknownArr).length;
+          itemData.inverseLength = (t as UnknownArr).length;
         }
-        return v.bind(currData.proxy);
+        return v.bind(itemData.proxy);
       } else {
         return proxify(v, data, handler, t, p).proxy;
       }
     },
-    set(wrap: TargetDataWrapper, p: Prop, v: unknown, r: object) {
-      const currData = wrap[0];
-      const t = currData.original as object;
+    set(wrap: ItemDataWrapper, p: Prop, v: unknown, r: object) {
+      const itemData = wrap[0];
+      const t = itemData.original as object;
       if (Reflect.get(t, p, r) !== v) {
         walkParents(state, Actions.set, data, pStore, t, p, v);
       }
       return true;
     },
-    deleteProperty(wrap: TargetDataWrapper, p: Prop) {
-      const currData = wrap[0];
-      const t = currData.original as object;
+    deleteProperty(wrap: ItemDataWrapper, p: Prop) {
+      const itemData = wrap[0];
+      const t = itemData.original as object;
       walkParents(state, Actions.delete, data, pStore, t, p);
       return true;
     },
-    has(wrap: TargetDataWrapper, p: Prop) {
-      if (p === Traps_self || p === Traps_target || p === Traps_data)
+    has(wrap: ItemDataWrapper, p: Prop) {
+      if (
+        p === Traps_self ||
+        p === Traps_target ||
+        p === Traps_item_data ||
+        p === Traps_all_data
+      )
         return true;
-      const currData = wrap[0];
-      const t = currData.original as object;
-      const actualTarget = currData.shallow || t;
+      const itemData = wrap[0];
+      const t = itemData.original as object;
+      const actualTarget = itemData.shallow || t;
       return p in actualTarget;
     },
-    ownKeys(wrap: TargetDataWrapper) {
-      const currData = wrap[0];
-      const t = currData.original as object;
-      const actualTarget = currData.shallow || t;
+    ownKeys(wrap: ItemDataWrapper) {
+      const itemData = wrap[0];
+      const t = itemData.original as object;
+      const actualTarget = itemData.shallow || t;
       return Reflect.ownKeys(actualTarget);
     },
-    getOwnPropertyDescriptor(wrap: TargetDataWrapper, p: Prop) {
-      const currData = wrap[0];
-      const t = currData.original as object;
-      const actualTarget = currData.shallow || t;
+    getOwnPropertyDescriptor(wrap: ItemDataWrapper, p: Prop) {
+      const itemData = wrap[0];
+      const t = itemData.original as object;
+      const actualTarget = itemData.shallow || t;
       const descriptor = Object.getOwnPropertyDescriptor(actualTarget, p);
       if (!descriptor) return undefined;
       return {
@@ -309,23 +317,23 @@ export function produce<T, Q>(
         value: actualTarget[p as keyof typeof actualTarget],
       };
     },
-    getPrototypeOf(wrap: TargetDataWrapper) {
-      const currData = wrap[0];
-      const t = currData.original as object;
+    getPrototypeOf(wrap: ItemDataWrapper) {
+      const itemData = wrap[0];
+      const t = itemData.original as object;
       return Object.getPrototypeOf(t);
     },
   };
-  let currData: TargetData,
+  let itemData: ItemData,
     unwrapState: T = state;
-  if (Traps_data in (state as WithTraps)) {
+  if (Traps_item_data in (state as WithTraps)) {
     // if the state is already a draft, just use it
     unwrapState = (state as WithTraps<T>)[Traps_target];
-    currData = (state as WithTraps)[Traps_data];
+    itemData = (state as WithTraps)[Traps_item_data];
   } else {
-    currData = proxify(state as object, data, handler);
+    itemData = proxify(state as object, data, handler);
   }
-  const result = producer(currData.proxy as UnFreeze<T>);
-  const produced = currData.modified ? currData.shallow : unwrapState;
+  const result = producer(itemData.proxy as UnFreeze<T>);
+  const produced = itemData.modified ? itemData.shallow : unwrapState;
   const hasReturn = typeof result !== "undefined";
   if (patchCallback && pStore) {
     if (hasReturn) {
@@ -382,20 +390,29 @@ export function original<T>(obj: T) {
   return (obj as T & { [Traps_self]: T })[Traps_self] || obj;
 }
 
-export function data<T>(obj: T) {
+export function itemData<T>(obj: T) {
   if (typeof obj === "undefined" || obj === null) return;
-  return (obj as T & { [Traps_data]: WeakMap<object, TargetData> })[Traps_data];
+  return (obj as T & { [Traps_item_data]: ItemData })[Traps_item_data];
+}
+
+export function allData<T>(obj: T) {
+  if (typeof obj === "undefined" || obj === null) return;
+  return (obj as T & { [Traps_all_data]: WeakMap<object, ItemData> })[
+    Traps_all_data
+  ];
 }
 
 export function snapshot<T>(obj: T): T {
   if (!isDraft(obj)) return obj;
   function deep<Q>(v: unknown, k: unknown, clone: Q) {
-    if (clone !== null && typeof clone === "object") {
-      const typeString = toString(clone);
-      const child = cloneOrOriginal(v as object);
-      if (typeString === Types.Map) {
+    if (clone === null) return;
+    const type = typeof clone;
+    if (type === Types.object || type === Types.function) {
+      const typeStr = toStringType(clone);
+      const child = cloneOrOriginal(v);
+      if (typeStr === Types.Map) {
         (clone as unknown as UnknownMap).set(k, child);
-      } else if (typeString === Types.Set) {
+      } else if (typeStr === Types.Set) {
         (clone as unknown as UnknownSet).add(child);
       } else {
         (clone as UnknownObj)[k as Prop] = child;
@@ -404,13 +421,11 @@ export function snapshot<T>(obj: T): T {
   }
   // if it already has a clone then clone it again,
   // else return the original
-  function cloneOrOriginal(t: object) {
-    const _target = target(t);
-    return _target !== original(t)
-      ? (shallowClone(_target, undefined, deep) as T)
-      : (_target as T);
+  function cloneOrOriginal(t: unknown) {
+    const ori = original(t);
+    return target(t) === ori ? ori : shallowClone(t, undefined, deep);
   }
-  return cloneOrOriginal(obj as object);
+  return cloneOrOriginal(obj) as T;
 }
 
 const errFrozen = () => {
@@ -422,8 +437,13 @@ export function freeze<T>(
   runtime: boolean = false,
   deep: boolean = false
 ): T {
-  if (runtime && isDraftable(obj) && !Object.isFrozen(obj) && !isDraft(obj)) {
-    switch (toString(obj)) {
+  if (
+    runtime &&
+    isDraftable(obj) &&
+    !Object.isFrozen(obj) &&
+    !(Traps_self in (obj as object))
+  ) {
+    switch (toStringType(obj)) {
       case Types.Map:
         const map = obj as UnknownMap;
         map.set = map.clear = map.delete = errFrozen;
@@ -469,7 +489,7 @@ export function isDraft<T>(obj: T) {
   return !isPrimitive(obj) && Traps_self in (obj as object);
 }
 
-export const DraftableTypes = Object.values(Types).filter(
+export const DraftableTypes: string[] = Object.values(Types).filter(
   (v) => v.charAt(0) === "["
 );
 
@@ -477,9 +497,7 @@ export function isDraftable(value: unknown): boolean {
   if (!value) return false;
   const type = typeof value;
   if (type === Types.function) return true;
-  return (
-    type === Types.object && DraftableTypes.includes(toString(value) as Types)
-  );
+  return type === Types.object && DraftableTypes.includes(toStringType(value));
 }
 
 export type Patch = {
@@ -504,8 +522,8 @@ export type Link = Prop | object;
 export type LinkMap = Map<Link, PatchPair | null | true>;
 export type ParentMap = Map<object, LinkMap>;
 
-export type Data = WeakMap<object, TargetData>;
-export type TargetData = {
+export type AllData = WeakMap<object, ItemData>;
+export type ItemData = {
   proxy: object;
   type: string;
   original: object;
@@ -514,20 +532,20 @@ export type TargetData = {
   inverseLength?: number;
   modified: boolean;
 };
-export type TargetDataWrapper = [TargetData];
+export type ItemDataWrapper = [ItemData];
 
 export const createProxy = function (
   obj: object,
-  data: Data,
+  data: AllData,
   handler: ProxyHandler<object>,
   parent?: object,
   link?: Link
-): TargetData {
-  let currData: TargetData;
+): ItemData {
+  let itemData: ItemData;
   if (data.has(obj)) {
-    currData = data.get(obj) as TargetData;
+    itemData = data.get(obj) as ItemData;
     if (parent) {
-      const parents = currData.parents;
+      const parents = itemData.parents;
       if (parents.has(parent)) {
         // the parents reference is useful in two ways:
         // avoids reusing the same patch twice in subsequent calls and also avoids multiple references problems;
@@ -539,26 +557,26 @@ export const createProxy = function (
       }
     }
   } else {
-    currData = {
+    itemData = {
       original: obj,
-      type: toString(obj),
+      type: toStringType(obj),
       shallow: null,
       modified: false,
       parents: parent
         ? new Map([[parent, new Map([[link, null]])]])
         : new Map(),
-    } as TargetData;
-    const wrap = currData.type === Types.Array ? [currData] : { 0: currData };
-    currData.proxy = new Proxy(wrap, handler);
-    data.set(obj, currData);
+    } as ItemData;
+    const wrap = itemData.type === Types.Array ? [itemData] : { 0: itemData };
+    itemData.proxy = new Proxy(wrap, handler);
+    data.set(obj, itemData);
   }
-  return currData;
+  return itemData;
 };
 
 function walkParents(
   mainState: unknown,
   action: Actions,
-  data: Data,
+  data: AllData,
   patchStore: PatchStore | null,
   t: object,
   p?: Prop,
@@ -567,22 +585,22 @@ function walkParents(
   prevPatches?: PatchPair[]
 ) {
   const currPatches: PatchPair[] = [];
-  const currData = data.get(t) as TargetData;
-  let shallow = currData.shallow;
-  const type = currData.type;
-  if (!currData.modified) {
-    currData.modified = true;
+  const itemData = data.get(t) as ItemData;
+  let shallow = itemData.shallow;
+  const type = itemData.type;
+  if (!itemData.modified) {
+    itemData.modified = true;
     if (shallow === null) {
-      shallow = currData.shallow = shallowClone(t, type as Types);
+      shallow = itemData.shallow = shallowClone(t, type as Types);
     }
   }
   // don't use p directly but use link because p may be different or undefined
   function actionLink(inverseAction: Actions, link: Link, v: unknown) {
     let prevChildAtLink = null;
     if (action === Actions.set) {
-      if (link === "length" && typeof currData.inverseLength !== "undefined") {
-        prevChildAtLink = currData.inverseLength;
-        delete currData.inverseLength; // is this really necessary?
+      if (link === "length" && typeof itemData.inverseLength !== "undefined") {
+        prevChildAtLink = itemData.inverseLength;
+        delete itemData.inverseLength; // is this really necessary?
       } else {
         prevChildAtLink = (shallow as UnknownObj)[link as Prop];
       }
@@ -610,7 +628,7 @@ function walkParents(
       action === Actions.add_set;
     if (isAddOperation) {
       if (data.has(prevChildAtLink as object)) {
-        const prevChildData = data.get(prevChildAtLink as object) as TargetData;
+        const prevChildData = data.get(prevChildAtLink as object) as ItemData;
         const parentData = prevChildData.parents.get(t);
         if (parentData) {
           parentData.delete(link);
@@ -752,7 +770,7 @@ function walkParents(
       if (!someTraversed) return;
     }
   }
-  const currParents = currData.parents;
+  const currParents = itemData.parents;
   const hasParents = !!currParents.size;
   if (hasParents) {
     for (const [parent, links] of currParents.entries()) {
@@ -920,7 +938,7 @@ export function applyPatch<T>(
         if (!isLast) {
           // if it's not the last portion of the path, we just replace the child with a shallow clone
           let clone: T;
-          switch (toString(curr)) {
+          switch (toStringType(curr)) {
             case Types.Map:
               clone = getClone((curr as UnknownMap).get(key)) as T;
               (curr as UnknownMap).set(key, clone);
@@ -937,7 +955,7 @@ export function applyPatch<T>(
           curr = clone;
         } else {
           // if it's the last element, we do the action in "op"
-          switch (toString(curr)) {
+          switch (toStringType(curr)) {
             case Types.Map:
               if (action === "remove") (curr as UnknownMap).delete(key);
               else (curr as UnknownMap).set(key, patch.value);
@@ -1015,11 +1033,11 @@ export function isPrimitive(x: unknown): x is Primitive {
 
 const _toString = Object.prototype.toString;
 
-function toString<T>(x: T) {
+function toStringType<T>(x: T) {
   return _toString.call(x);
 }
 
-function toStringExtended<T>(x: T) {
+function toStringArchtype<T>(x: T) {
   if (isPrimitive(x)) return "primitive";
   if (typeof x === "function") return "function";
   return _toString.call(x);
@@ -1082,7 +1100,7 @@ function strictCopyProps<F>(from: F, forEach?: ForEach) {
 
 function shallowClone<T>(x: T, type?: Types, forEach?: ForEach): object {
   const fn =
-    cloneFns[type || (toStringExtended(x) as Types)] || cloneFns[Types.Object];
+    cloneFns[type || (toStringArchtype(x) as Types)] || cloneFns[Types.Object];
   return (fn as Function)(x, forEach);
 }
 
