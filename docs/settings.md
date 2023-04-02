@@ -53,3 +53,17 @@ To revert the setting:
 ```typescript
 enableStrictCopy(false); 
 ```
+
+## Change more settings at once
+
+If you have to set multiple settings at once, it may be more convenient to directly manipulate the Settings object:
+
+```typescript
+import { Settings } from "structurajs";
+
+Object.assign(Settings, {
+    autoFreeze: true,
+    standardPatches: true,
+    strictCopy: true
+})
+```

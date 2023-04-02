@@ -2,11 +2,10 @@ import { expect, describe, beforeAll } from "vitest";
 import {
   applyPatches,
   convertPatchesToStandard as convert,
-  enableAutoFreeze,
-  enableStrictCopy,
   Producer,
   produceWithPatches,
   target,
+  Settings,
 } from "../..";
 
 export type Obj<T = unknown> = { [key: string]: T };
@@ -34,11 +33,10 @@ export function runMultiple(description: string, testFn: Function) {
     { autoFreeze: true, strictCopy: true },
   ])(
     description + " ( autoFreeze: $autoFreeze, strictCopy: $strictCopy )",
-    ({ autoFreeze, strictCopy }) => {
+    (mergeSettings) => {
       // beforeAll must be called here inside because it must work for the single describe block
       beforeAll(() => {
-        enableAutoFreeze(autoFreeze);
-        enableStrictCopy(strictCopy);
+        Object.assign(Settings, mergeSettings);
       });
       testFn();
     }
