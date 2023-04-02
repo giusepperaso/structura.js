@@ -2,6 +2,7 @@
 
 ## TODO
 
+- [ ] (🟩TEST) increase test coverage
 - [ ] (⬜FEAT) support async producers, this means that when you get the result you should check if it is a promise
 - [ ] (⬛CODE) try a better solution instead than no-op patch
 - [ ] (⬛CODE) enum also for op of json patches
