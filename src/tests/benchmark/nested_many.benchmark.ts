@@ -1,5 +1,5 @@
 import b from "benny";
-import { enableStrictCopy, produce as structura } from "../index";
+import { enableStrictCopy, produce as structura } from "../../index";
 import { produce as immer, setAutoFreeze } from "immer";
 import { Map as immutable } from "immutable";
 
@@ -13,13 +13,13 @@ function getMyObj() {
 }
 
 b.suite(
-  "Produce nested object with few modifications",
+  "Produce nested object with many modifications",
 
   b.add("STRUCTURA (no strict copy)", () => {
     enableStrictCopy(false);
     structura(getMyObj(), (draft) => {
       let curr = draft.prop;
-      for (let i = 0; i != 3; i++) {
+      for (let i = 0; i != 100; i++) {
         curr = curr.prop;
         curr.test = 2;
       }
@@ -30,7 +30,7 @@ b.suite(
     enableStrictCopy(true);
     structura(getMyObj(), (draft) => {
       let curr = draft.prop;
-      for (let i = 0; i != 3; i++) {
+      for (let i = 0; i != 100; i++) {
         curr = curr.prop;
         curr.test = 2;
       }
@@ -41,7 +41,7 @@ b.suite(
     setAutoFreeze(false);
     immer(getMyObj(), (draft: any) => {
       let curr = draft.prop;
-      for (let i = 0; i != 3; i++) {
+      for (let i = 0; i != 100; i++) {
         curr = curr.prop;
         curr.test = 2;
       }
@@ -51,7 +51,7 @@ b.suite(
   b.add("IMMUTABLE (no toJS)", () => {
     const map = immutable(getMyObj());
     let curr = [];
-    for (let i = 0; i != 3; i++) {
+    for (let i = 0; i != 100; i++) {
       curr.push("prop");
       map.setIn(curr, 2);
     }
@@ -59,5 +59,5 @@ b.suite(
 
   b.cycle(),
   b.complete(),
-  b.save({ file: "nested_few", format: "chart.html" })
+  b.save({ file: "nested_many", format: "chart.html" })
 );

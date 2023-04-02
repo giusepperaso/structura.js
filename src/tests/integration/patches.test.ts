@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { applyPatches, Patch, produceWithPatches } from "..";
+import { applyPatches, Patch, produceWithPatches } from "../..";
 import { runMultiple } from "./utils";
 
 runMultiple("test patch production", () => {

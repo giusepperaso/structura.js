@@ -1,5 +1,5 @@
 import b from "benny";
-import { enableStrictCopy, produce as structura } from "../index";
+import { enableStrictCopy, produce as structura } from "../../index";
 import { produce as immer, setAutoFreeze } from "immer";
 import { Map as immutable } from "immutable";
 

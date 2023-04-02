@@ -10,8 +10,6 @@
 - [ ] (⬜FEAT) maybe use proxy revocable? maybe not necessary because they are already garbage collected
 - [ ] (⬜FEAT) "NOTHING" as return, so you can return undefined
 - [ ] (⬛CODE) add more comments in code
-- [ ] (⬛CODE) split the logic in multiple reusable functions
-- [ ] (⬛CODE) organize the code better in multiple files
 - [ ] (⬛CODE) give better names to variables and types
 - [ ] (🟫BENC) add benchmarks for patches
 
@@ -24,6 +22,8 @@
 
 ## SOLVED
 
+- [x] (⬛CODE) split the logic in multiple reusable functions
+- [x] (⬛CODE) organize the code better in multiple files
 - [x] (🟨PERF) turn the proxy trap into a class
 - [x] (🟪DOCS) documentate new settings and remove docs for old helpers, write breaking changes
 - [x] (🟨PERF) store type in the currData

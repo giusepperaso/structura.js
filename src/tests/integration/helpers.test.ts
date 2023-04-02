@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { freeze, original, produce, snapshot } from "..";
+import { freeze, original, produce, snapshot } from "../..";
 import { runMultiple } from "./utils";
 
 runMultiple("helpers work as expected", () => {

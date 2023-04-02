@@ -24,7 +24,7 @@
     "preview": "vite preview",
     "test": "vitest --coverage",
     "test:prod": "vitest run",
-    "benchmark": "node --experimental-specifier-resolution=node --loader ts-node/esm ./src/benchmark",
+    "benchmark": "node --experimental-specifier-resolution=node --loader ts-node/esm ./src/tests/benchmark",
     "benchmark:only": "npm run benchmark --skip-screenshots --skip-copy",
     "benchmark:screenshot": "npm run benchmark --skip-benchmarks --skip-copy",
     "benchmark:copy": "npm run benchmark --skip-benchmarks --skip-screenshots",

@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { produce as plainProduce } from "..";
+import { produce as plainProduce } from "../..";
 import { produceTest as produce } from "./utils";
 import { Obj, Obj2, runMultiple } from "./utils";
 

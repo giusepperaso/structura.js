@@ -1,5 +1,6 @@
 import { vi, expect, it } from "vitest";
-import { produce, createProxy } from "..";
+import { produce } from "../..";
+import { createProxy } from "../../proxy/createProxy";
 import { runMultiple } from "./utils";
 
 runMultiple("proxy and traps tests", async () => {

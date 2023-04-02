@@ -11,7 +11,7 @@ const RUN_COPY = !process.env.npm_config_skip_copy;
 const pages: Page[] = [];
 
 (async () => {
-  const files = fs.readdirSync("./src/benchmark");
+  const files = fs.readdirSync("./src/tests/benchmark");
   for (const file of files) {
     const benchmark = file.match(/^([a-zA-Z_\-0-9]+)\.benchmark\.[tj]s$/);
     if (benchmark) {
@@ -22,7 +22,7 @@ const pages: Page[] = [];
       if (RUN_SCREENSHOTS) {
         pages.push({
           wait: 1500,
-          url: `file://${__dirname}/../../../benchmark/results/${name}.chart.html`,
+          url: `file://${__dirname}/../../../../benchmark/results/${name}.chart.html`,
           name,
         });
       }

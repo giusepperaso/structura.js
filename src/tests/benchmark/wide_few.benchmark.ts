@@ -1,69 +1,74 @@
 import b from "benny";
-import { enableStrictCopy, produce as structura } from "../index";
+import { enableStrictCopy, produce as structura } from "../../index";
 import { produce as immer, setAutoFreeze } from "immer";
 import { Map as immutable } from "immutable";
+import { Obj2 } from "../integration/utils";
+
+function getMyObj() {
+  const myObj: Obj2<number> = {};
+  for (let i = 0; i != 10000; i++) {
+    myObj["prop" + i] = {
+      prop: 1,
+    };
+  }
+  return myObj;
+}
 
 b.suite(
-  "Produce small object with few modications",
+  "Produce wide object with few modifications",
 
   b.add("STRUCTURA (no strict copy)", () => {
     enableStrictCopy(false);
-    const myObj = { test: 1 };
-    structura(myObj, (draft) => {
+    structura(getMyObj(), (draft) => {
       for (let i = 0; i !== 3; i++) {
-        draft.test++;
+        draft["prop" + i].prop = 2;
       }
     });
   }),
 
   b.add("STRUCTURA (with strict copy)", () => {
     enableStrictCopy(true);
-    const myObj = { test: 1 };
-    structura(myObj, (draft) => {
+    structura(getMyObj(), (draft) => {
       for (let i = 0; i !== 3; i++) {
-        draft.test++;
+        draft["prop" + i].prop = 2;
       }
     });
   }),
 
   b.add("IMMER (no auto freeze)", () => {
     setAutoFreeze(false);
-    const myObj = { test: 1 };
-    immer(myObj, (draft) => {
+    immer(getMyObj(), (draft) => {
       for (let i = 0; i !== 3; i++) {
-        draft.test++;
+        draft["prop" + i].prop = 2;
       }
     });
   }),
 
   b.add("IMMER (with auto freeze)", () => {
     setAutoFreeze(true);
-    const myObj = { test: 1 };
-    immer(myObj, (draft) => {
+    immer(getMyObj(), (draft) => {
       for (let i = 0; i !== 3; i++) {
-        draft.test++;
+        draft["prop" + i].prop = 2;
       }
     });
   }),
 
   b.add("IMMUTABLE (no toJS)", () => {
-    const myObj = { test: 1 };
-    const map = immutable(myObj);
+    const map = immutable(getMyObj());
     for (let i = 0; i !== 3; i++) {
-      map.set("test", i + 2);
+      map.setIn(["prop" + i, "prop"], 2);
     }
   }),
 
   b.add("IMMUTABLE (with toJS)", () => {
-    const myObj = { test: 1 };
-    const map = immutable(myObj);
+    const map = immutable(getMyObj());
     for (let i = 0; i !== 3; i++) {
-      map.set("test", i + 2);
+      map.setIn(["prop" + i, "prop"], 2);
     }
     map.toJS();
   }),
 
   b.cycle(),
   b.complete(),
-  b.save({ file: "small_few", format: "chart.html" })
+  b.save({ file: "wide_few", format: "chart.html" })
 );

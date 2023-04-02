@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { isDraft } from "..";
+import { isDraft } from "../..";
 import { Obj2, runMultiple, produceTest as produce } from "./utils";
 
 runMultiple("try returning directly from the producer", async () => {
