@@ -3,7 +3,6 @@
 ## TODO
 
 - [ ] (⬜FEAT) support async producers, this means that when you get the result you should check if it is a promise
-- [ ] (⬛CODE) remove some closures, expecially the proxy traps, the addLink and actionLink
 - [ ] (⬛CODE) try a better solution instead than no-op patch
 - [ ] (⬛CODE) enum also for op of json patches
 - [ ] (🟦TYPE) better types for json patches
@@ -25,6 +24,7 @@
 
 ## SOLVED
 
+- [x] (🟨PERF) turn the proxy trap into a class
 - [x] (🟪DOCS) documentate new settings and remove docs for old helpers, write breaking changes
 - [x] (🟨PERF) store type in the currData
 - [x] (⬜FEAT) full compatibility with [this rfc of redux toolkit](https://github.com/reduxjs/redux-toolkit/pull/3074)
@@ -52,6 +52,8 @@
 
 ## DISCARDED
 
+- ~~[ ] (🟨PERF) freeze the objects while you draft (not doable because if you have any other modifications it will fail them)~~
+- ~~[ ] (🟨PERF) turn walk parents into a class (actually I tried and it worsen performance)~~
 - ~~[ ] (⬜FEAT) maybe implement those types? TypedArray, DataView, File, Blob, FileList, DomException~~
 - ~~[ ] (⬜FEAT) maybe implement those proxy traps? defineProperty, setPrototypeOF, preventExtensions, apply~~
 - ~~[ ] (🟨PERF) appended: WeakSet could be used to see if an element was external to the tree, so we could avoid cloning it~~
