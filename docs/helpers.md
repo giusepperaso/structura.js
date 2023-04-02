@@ -1,5 +1,60 @@
 # Helpers
 
+## isDraft
+
+Returns true if the passed object is the draft or a portion of it
+
+```typescript
+const state = { item: { n: 1 } }
+produce(state, (draft) => {
+    isDraft(state) // false;
+    isDraft(draft) // true;
+    isDraft(draft.item) // true;
+})
+```
+
+## isDraftable
+
+Returns true if the passed object can be drafted. It is true for Objects (even instances od classes), Arrays, Maps, Sets, RegExps, Strings, Numbers, Booleans, Dates and Functions.
+
+```typescript
+isDraftable({}) // true;
+isDraftable([]) // true;
+isDraftable(new class {}) // true;
+isDraftable(new String("draftable")) // true;
+isDraftable("non-draftable") // false;
+isDraftable(function() {}) // true;
+```
+
+Objects may result non-draftable if theirs [toStringTag symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/toStringTag) is not included in the list of the supported tags.
+
+You could extend this behaviour by adding an entry inside DraftableTypes:
+
+```typescript
+import { DraftableTypes } from "structurajs";
+
+class MyClass {
+  get [Symbol.toStringTag]() {
+    return 'MyClass';
+  }
+}
+
+DraftableTypes.push("[object MyClass]");
+```
+
+## target
+
+Gets the shallow cloned object if any modification happened at this level of the draft, or the original object otherwise.
+
+```typescript
+produce({ n: 1 }, (draft) => {
+    target(draft) === original(draft) // true
+    draft.n++;
+    target(draft) === original(draft) // false
+    original(draft).n === 1 // true
+    target(draft).n === 2 // true
+})
+```
 ## original
 
 Gets the original object from the draft or a portion of the draft
