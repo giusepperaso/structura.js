@@ -120,5 +120,11 @@ runMultiple("tests all(most) of the basic types", () => {
     });
     expect(result).toBe(undefined);
   });
+  it("works with async producers", async () => {
+    const result = await plainProduce({ n: 1 }, async (draft) => {
+      draft.n = 2;
+    });
+    expect(result.n).toBe(2);
+  });
   // regexp, date etc...
 });
