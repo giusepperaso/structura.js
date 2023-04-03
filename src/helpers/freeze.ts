@@ -8,8 +8,7 @@ import {
 import { isDraftable } from "./draft";
 import { Traps_self } from "./traps";
 
-export type FreezeOnce<T> = T &
-  (T extends Freeze<infer Q> ? Freeze<Q> : Freeze<T>);
+export type FreezeOnce<T> = T extends Freeze<infer Q> ? Freeze<Q> : Freeze<T>;
 
 export type Freeze<T> = T extends Primitive
   ? T
@@ -55,7 +54,7 @@ export function freeze<T>(
   obj: T,
   runtime: boolean = false,
   deep: boolean = false
-): T {
+): FreezeOnce<T> {
   if (
     runtime &&
     isDraftable(obj) &&

@@ -18,7 +18,9 @@ import { Settings } from "../helpers/settings";
 import { Primitive } from "../helpers/types";
 import { Actions } from "../internals/walkParents";
 
-export type Producer<T, Q> = (draft: UnFreeze<T>) => Q | void | UnFreeze<T>;
+export type DraftableState<T> = T | FreezeOnce<T>;
+
+export type Producer<T, Q> = (draft: UnFreeze<T>) => Q | void;
 
 export type ProduceOptions = { proxify?: typeof createProxy };
 
@@ -32,7 +34,7 @@ export type PatchCallback<T> = T extends Primitive
     ) => void;
 
 export function produce<T, Q>(
-  state: T,
+  state: DraftableState<T>,
   producer: Producer<T, Q>,
   patchCallback?: PatchCallback<T>,
   { proxify = createProxy }: ProduceOptions = {}
@@ -57,7 +59,7 @@ export function produce<T, Q>(
     : null;
   const handler = new CreateProxyHandler(state, data, pStore, proxify);
   let itemData: ItemData,
-    unwrapState: T = state;
+    unwrapState: DraftableState<T> = state;
   if (Traps_item_data in (state as WithTraps)) {
     // if the state is already a draft, just use it
     unwrapState = (state as WithTraps<T>)[Traps_target];
@@ -92,7 +94,9 @@ export function produce<T, Q>(
   return final;
 }
 
-export function produceWithPatches<T, Q>(...args: [T, Producer<T, Q>]) {
+export function produceWithPatches<T, Q>(
+  ...args: [DraftableState<T>, Producer<T, Q>]
+) {
   let patches: Patch[];
   let inverse: Patch[];
   function setPatches(_patches: Patch[], _inverse: Patch[]) {
