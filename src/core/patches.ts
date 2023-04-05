@@ -142,9 +142,9 @@ export function applyPatch<T>(
     case "remove":
       // if path is not an array, let's split it; also remove non truish portions
       const p = patch.path as JSONPatch["path"];
-      const pathList = (Array.isArray(p) ? p : p.split("/")).filter(
-        (p) => !!p || p === 0 // can't use "" as index in string version
-      );
+      const pathList = (Array.isArray(p) ? p : p.split("/"))
+        .filter((p) => !!p || p === 0)
+        .map((p) => (p === "__empty__" ? "" : p)); // allow "" as index in string version
       // if the path is empty, just return the value
       if (!pathList.length) {
         return (patch as JSONPatch & { op: "replace" }).value;
@@ -241,7 +241,7 @@ export function convertPatchesToStandard(
         action === Actions.delete_set;
       converted.push({
         op: isDeleteOp ? "remove" : "replace",
-        path: pathArray ? newPath : "/" + newPath.join("/"), // can't use "" as index in string version
+        path: pathArray ? newPath : __stdBuildStringPath(newPath),
         value: patch.v,
       });
     }
@@ -251,4 +251,14 @@ export function convertPatchesToStandard(
     }
   }
   return converted;
+}
+
+function __stdBuildStringPath(newPath: unknown[]) {
+  // we use a more complicated version to allow "" as index in string version
+  let ret = "";
+  for (let i = 0; i !== newPath.length; i++) {
+    const p = newPath[i];
+    ret += "/" + (p === "" ? "__empty__" : p);
+  }
+  return ret;
 }

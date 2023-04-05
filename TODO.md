@@ -8,7 +8,6 @@
 - [ ] (⬛CODE) try a better solution instead than no-op patch
 - [ ] (⬛CODE) enum also for op of json patches
 - [ ] (🟦TYPE) better types for json patches
-- [ ] (⬜FEAT) json patches don't support "" as key if the path is a string ( to solve this, use a placeholder like ___empty___)
 - [ ] (⬜FEAT) maybe use proxy revocable? maybe not necessary because they are already garbage collected
 - [ ] (⬛CODE) add more comments in code
 - [ ] (⬛CODE) give better names to variables and types
@@ -22,6 +21,7 @@
     - [ ] clone should always return the shallow copy of the object or null
 
 ## SOLVED
+- [x] (⬜FEAT) json patches don't support "" as key if the path is a string ( to solve this, use a placeholder like ___empty___)
 - [x] (⬜FEAT) "NOTHING" as return, so you can return undefined
 - [x] (⬜FEAT) support async producers,so  when you get the result you should check if it is a promise
 - [x] (⬛CODE) split the logic in multiple reusable functions
