@@ -1,4 +1,4 @@
-import { AllData, ItemData, createProxy } from "../proxy/createProxy";
+import { ItemData, createProxy } from "../proxy/createProxy";
 import { isDraftable } from "../helpers/draft";
 import { FreezeOnce, UnFreeze, freeze } from "../helpers/freeze";
 import {
