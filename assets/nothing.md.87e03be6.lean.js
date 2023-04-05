@@ -1,0 +1,1 @@
+import{_ as s,c as n,o as a,a as o}from"./app.d6a8910e.js";const i=JSON.parse('{"title":"Returning undefined","description":"","frontmatter":{},"headers":[],"relativePath":"nothing.md"}'),p={name:"nothing.md"},l=o("",4),e=[l];function t(r,c,D,y,A,F){return a(),n("div",null,e)}const d=s(p,[["render",t]]);export{i as __pageData,d as default};
