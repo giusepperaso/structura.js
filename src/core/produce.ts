@@ -1,4 +1,4 @@
-import { ItemData, createProxy } from "../proxy/createProxy";
+import { AllData, ItemData, createProxy } from "../proxy/createProxy";
 import { isDraftable } from "../helpers/draft";
 import { FreezeOnce, UnFreeze, freeze } from "../helpers/freeze";
 import {
@@ -15,16 +15,20 @@ import {
 } from "./patches";
 import { CreateProxyHandler } from "../proxy/proxyHandler";
 import { Settings } from "../helpers/settings";
-import { Primitive } from "../helpers/types";
+import { Primitive, Types, toStringType } from "../helpers/types";
 import { Actions } from "../internals/walkParents";
 
 export type DraftableState<T> = T | FreezeOnce<T>;
 
-export type Producer<T, Q> = (draft: UnFreeze<T>) => Q | void;
+export type Producer<T, Q, IS_ASYNC = false> = (
+  draft: UnFreeze<T>
+) => IS_ASYNC extends true ? Promise<Q | void> : Q | void;
 
 export type ProduceOptions = { proxify?: typeof createProxy };
 
-export type ProduceReturn<T, Q> = FreezeOnce<Q extends void ? T : Q>;
+export type ProduceReturn<T, Q, IS_ASYNC = false> = IS_ASYNC extends true
+  ? Promise<FreezeOnce<Q extends void ? T : Q>>
+  : FreezeOnce<Q extends void ? T : Q>;
 
 export type PatchCallback<T> = T extends Primitive
   ? never
@@ -33,13 +37,15 @@ export type PatchCallback<T> = T extends Primitive
       inversePatches: Patch[] | JSONPatch[]
     ) => void;
 
-export function produce<T, Q>(
+export const NOTHING = {};
+
+export function produce<T, Q, IS_ASYNC = false>(
   state: DraftableState<T>,
-  producer: Producer<T, Q>,
+  producer: Producer<T, Q, IS_ASYNC>,
   patchCallback?: PatchCallback<T>,
   { proxify = createProxy }: ProduceOptions = {}
-): ProduceReturn<T, Q> {
-  type R = ProduceReturn<T, Q>;
+): ProduceReturn<T, Q, IS_ASYNC> {
+  type R = ProduceReturn<T, Q, IS_ASYNC>;
   if (!isDraftable(state)) {
     const result = producer(state as UnFreeze<T>) as R;
     if (patchCallback) {
@@ -67,35 +73,50 @@ export function produce<T, Q>(
   } else {
     itemData = proxify(state as object, data, handler);
   }
-  const result = producer(itemData.proxy as UnFreeze<T>);
-  const produced = itemData.modified ? itemData.shallow : unwrapState;
-  const hasReturn = typeof result !== "undefined";
-  if (patchCallback && pStore) {
-    if (hasReturn) {
-      if (!data.has(result as object)) pStore.patches = [];
-      const op = Actions.producer_return;
-      pStore.patches.push({ v: target(result), op });
-      pStore.inversePatches.push({ v: produced, op });
+  const resultOrPromise = producer(itemData.proxy as UnFreeze<T>);
+
+  function processResult(result: void | Q | typeof NOTHING) {
+    const produced = itemData.modified ? itemData.shallow : unwrapState;
+    const hasReturn = typeof result !== "undefined";
+    const isNOTHING = result === NOTHING;
+    if (patchCallback && pStore) {
+      if (hasReturn) {
+        if (!isNOTHING && !data.has(result as object)) pStore.patches = [];
+        const op = Actions.producer_return;
+        pStore.patches.push({
+          v: isNOTHING ? undefined : target(result),
+          op,
+        });
+        pStore.inversePatches.push({ v: produced, op });
+      }
+      if (!Settings.standardPatches) {
+        patchCallback(pStore.patches, pStore.inversePatches.reverse());
+      } else {
+        patchCallback(
+          convertPatchesToStandard(pStore.patches),
+          convertPatchesToStandard(pStore.inversePatches.reverse())
+        );
+      }
     }
-    if (!Settings.standardPatches) {
-      patchCallback(pStore.patches, pStore.inversePatches.reverse());
-    } else {
-      patchCallback(
-        convertPatchesToStandard(pStore.patches),
-        convertPatchesToStandard(pStore.inversePatches.reverse())
-      );
+    if (isNOTHING) return undefined;
+    const processed = (hasReturn ? target(result) : produced) as R;
+    if (Settings.autoFreeze) {
+      freeze(unwrapState, true, true);
+      freeze(processed, true, true);
     }
+    return processed;
   }
-  const final = (hasReturn ? target(result) : produced) as R;
-  if (Settings.autoFreeze) {
-    freeze(state, true, true);
-    freeze(final, true, true);
+
+  if (toStringType(resultOrPromise) === Types.Promise) {
+    return (resultOrPromise as Promise<Q | void>).then(processResult) as R;
   }
-  return final;
+
+  return processResult(resultOrPromise) as R;
 }
 
-export function produceWithPatches<T, Q>(
-  ...args: [DraftableState<T>, Producer<T, Q>]
+export function produceWithPatches<T, Q, IS_ASYNC = false>(
+  state: DraftableState<T>,
+  producer: Producer<T, Q, IS_ASYNC>
 ) {
   let patches: Patch[];
   let inverse: Patch[];
@@ -103,16 +124,41 @@ export function produceWithPatches<T, Q>(
     patches = _patches;
     inverse = _inverse;
   }
-  const result = produce(...args, setPatches as PatchCallback<T>);
+  const result = produce(state, producer, setPatches as PatchCallback<T>);
   return [result, patches!, inverse!] as const;
 }
 
-export function safeProduce<T>(...args: Parameters<typeof produce<T, T>>) {
-  return produce<T, T>(...args);
+export async function asyncProduceWithPatches<T, Q>(
+  state: DraftableState<T>,
+  producer: Producer<T, Q, true>
+) {
+  let patches: Patch[];
+  let inverse: Patch[];
+  function setPatches(_patches: Patch[], _inverse: Patch[]) {
+    patches = _patches;
+    inverse = _inverse;
+  }
+  return produce(state, producer, setPatches as PatchCallback<T>).then(
+    (result) => [result, patches!, inverse!] as const
+  );
 }
 
-export function safeProduceWithPatches<T>(
+export const safeProduce: <T>(
+  ...args: Parameters<typeof produce<T, T>>
+) => ReturnType<typeof produce<T, T>> = produce;
+
+export const safeProduceWithPatches: <T>(
   ...args: Parameters<typeof produceWithPatches<T, T>>
-) {
-  return produceWithPatches<T, T>(...args);
-}
+) => ReturnType<typeof produceWithPatches<T, T>> = produceWithPatches;
+
+export const asyncProduce: <T, Q>(
+  ...args: Parameters<typeof produce<T, Q, true>>
+) => ReturnType<typeof produce<T, Q, true>> = produce;
+
+export const asyncSafeProduce: <T>(
+  ...args: Parameters<typeof produce<T, T, true>>
+) => ReturnType<typeof produce<T, T, true>> = produce;
+
+export const asyncSafeProduceWithPatches: <T>(
+  ...args: Parameters<typeof asyncProduceWithPatches<T, T>>
+) => ReturnType<typeof asyncProduceWithPatches<T, T>> = asyncProduceWithPatches;

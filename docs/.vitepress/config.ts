@@ -21,6 +21,8 @@ export default defineConfig({
           { text: "When to use", link: "/when-to-use" },
           { text: "Freezing", link: "/freezing" },
           { text: "Patches", link: "/patches" },
+          { text: "Async Producers", link: "/async" },
+          { text: "Returning undefined", link: "/nothing" },
           { text: "Helpers", link: "/helpers" },
           { text: "Settings", link: "/settings" },
           { text: "Edge cases", link: "/edge-cases" },

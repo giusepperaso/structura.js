@@ -6,7 +6,7 @@ export function isDraft<T>(obj: T) {
 }
 
 export const DraftableTypes: string[] = Object.values(Types).filter(
-  (v) => v.charAt(0) === "["
+  (v) => v.charAt(0) === "[" && v !== Types.Promise
 );
 
 export function isDraftable(value: unknown): boolean {

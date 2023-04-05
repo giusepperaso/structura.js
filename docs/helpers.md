@@ -42,19 +42,6 @@ class MyClass {
 DraftableTypes.push("[object MyClass]");
 ```
 
-## target
-
-Gets the shallow cloned object if any modification happened at this level of the draft, or the original object otherwise.
-
-```typescript
-produce({ n: 1 }, (draft) => {
-    target(draft) === original(draft) // true
-    draft.n++;
-    target(draft) === original(draft) // false
-    original(draft).n === 1 // true
-    target(draft).n === 2 // true
-})
-```
 ## original
 
 Gets the original object from the draft or a portion of the draft
@@ -149,8 +136,9 @@ Note: basically you are getting a deep clone of the object, so this is very slow
 
 ```typescript
 produce({ n: 1 }, (draft) => {
-    target(draft) === data(draft).shallow // false
+    const saved = snapshot(draft)
     draft.n++;
-    target(draft) === data(draft).shallow // true
+    console.log(draft.n); // 2
+    console.log(saved.n); // 1
 })
 ```

@@ -2,16 +2,14 @@
 
 ## TODO
 
-
+- [ ] (🟪DOCS) write a reference documentation
 - [ ] (🟩TEST) type testing
 - [ ] (🟩TEST) increase test coverage
-- [ ] (⬜FEAT) support async producers, this means that when you get the result you should check if it is a promise
 - [ ] (⬛CODE) try a better solution instead than no-op patch
 - [ ] (⬛CODE) enum also for op of json patches
 - [ ] (🟦TYPE) better types for json patches
 - [ ] (⬜FEAT) json patches don't support "" as key if the path is a string ( to solve this, use a placeholder like ___empty___)
 - [ ] (⬜FEAT) maybe use proxy revocable? maybe not necessary because they are already garbage collected
-- [ ] (⬜FEAT) "NOTHING" as return, so you can return undefined
 - [ ] (⬛CODE) add more comments in code
 - [ ] (⬛CODE) give better names to variables and types
 - [ ] (🟫BENC) add benchmarks for patches
@@ -24,6 +22,8 @@
     - [ ] clone should always return the shallow copy of the object or null
 
 ## SOLVED
+- [x] (⬜FEAT) "NOTHING" as return, so you can return undefined
+- [x] (⬜FEAT) support async producers,so  when you get the result you should check if it is a promise
 - [x] (⬛CODE) split the logic in multiple reusable functions
 - [x] (⬛CODE) organize the code better in multiple files
 - [x] (🟨PERF) turn the proxy trap into a class
@@ -54,7 +54,7 @@
 
 ## DISCARDED
 
-- ~~[ ] (🟨PERF) maybe use only two proxies instead of creating one each time (undoable because you would lose the target ref)~~
+- ~~[ ] (🟨PERF) maybe use only two proxies instead of creating one each time (not doable because you would lose the target ref)~~
 - ~~[ ] (🟨PERF) freeze the objects while you draft (not doable because if you have any other modifications it will fail them)~~
 - ~~[ ] (🟨PERF) turn walk parents into a class (actually I tried and it worsen performance)~~
 - ~~[ ] (⬜FEAT) maybe implement those types? TypedArray, DataView, File, Blob, FileList, DomException~~

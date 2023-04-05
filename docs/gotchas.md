@@ -45,6 +45,8 @@ const state = { test: 1 }
 const result = safeProduce(state, (draft) => draft.test = 2)
 ```
 
+safeProduceWithPatches is similar to safeProduce but it has the same behaviour of produceWithPatches
+
 ## Potential dangling proxy references if you assign unproxied objects into the draft
 
 If you create a new object "A", then you assign a portion "B" of the draft to it and later you assign "A" back into the draft, you will get stuck with a dangling proxy reference inside the result:

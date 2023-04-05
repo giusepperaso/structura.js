@@ -11,6 +11,7 @@ export enum Types {
   RegExp = "[object RegExp]",
   Map = "[object Map]",
   Set = "[object Set]",
+  Promise = "[object Promise]",
 }
 
 export type Primitive = null | undefined | boolean | number | string | symbol;

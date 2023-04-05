@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { produce as plainProduce } from "../..";
+import { asyncProduce, produce as plainProduce } from "../..";
 import { produceTest as produce } from "./utils";
 import { Obj, Obj2, runMultiple } from "./utils";
 
@@ -120,11 +120,11 @@ runMultiple("tests all(most) of the basic types", () => {
     });
     expect(result).toBe(undefined);
   });
-  /* it("works with async producers", async () => {
-    const result = await plainProduce({ n: 1 }, async (draft) => {
+  it("works with async producers", async () => {
+    const result = await asyncProduce({ n: 1 }, async (draft) => {
       draft.n = 2;
     });
     expect(result.n).toBe(2);
-  }); */
+  });
   // regexp, date etc...
 });

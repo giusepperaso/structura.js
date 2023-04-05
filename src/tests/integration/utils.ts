@@ -13,9 +13,9 @@ export type Obj2<T = unknown> = Obj<Obj<T>>;
 
 // by using this helper, we also test for patches and reverse patches
 
-export function produceTest<T extends object, Q>(
+export function produceTest<T extends object, Q, IS_ASYNC = false>(
   state: T,
-  producer: Producer<T, Q>
+  producer: Producer<T, Q, IS_ASYNC>
 ) {
   const [result, patches, reverse] = produceWithPatches(state, producer);
   expect(result).toEqual(applyPatches(state, patches));
