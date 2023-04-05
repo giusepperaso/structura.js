@@ -3,7 +3,7 @@
 ## TODO
 
 - [ ] (🟪DOCS) write a reference documentation
-- [ ] (🟩TEST) type testing
+
 - [ ] (🟩TEST) increase test coverage
 - [ ] (⬛CODE) try a better solution instead than no-op patch
 - [ ] (⬛CODE) enum also for op of json patches
@@ -15,6 +15,7 @@
 
 ## IN PROGRESS
 
+- [~40%] (🟩TEST) type testing
 - [ ] (⬛CODE) correct the nomenclature and behaviour of the helpers
     - [x] original should always return the original object
     - [ ] target should be renamed to make more understandable what it does
