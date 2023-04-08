@@ -2,9 +2,8 @@
 
 ## TODO
 
+- [ ] (🟪DOCS) version in docs
 - [ ] (🟪DOCS) write a reference documentation
-
-- [ ] (🟩TEST) increase test coverage
 - [ ] (⬛CODE) try a better solution instead than no-op patch
 - [ ] (⬛CODE) enum also for op of json patches
 - [ ] (🟦TYPE) better types for json patches
@@ -15,13 +14,14 @@
 
 ## IN PROGRESS
 
-- [~40%] (🟩TEST) type testing
+- [90%] (🟩TEST) increase test coverage
 - [ ] (⬛CODE) correct the nomenclature and behaviour of the helpers
     - [x] original should always return the original object
     - [ ] target should be renamed to make more understandable what it does
     - [ ] clone should always return the shallow copy of the object or null
 
 ## SOLVED
+- [x] (🟩TEST) type testing
 - [x] (⬜FEAT) json patches don't support "" as key if the path is a string ( to solve this, use a placeholder like ___empty___)
 - [x] (⬜FEAT) "NOTHING" as return, so you can return undefined
 - [x] (⬜FEAT) support async producers,so  when you get the result you should check if it is a promise
