@@ -110,6 +110,7 @@ export function walkParents(
         if (isAddOperation) {
           linkMap.set(link, null);
         } else {
+          // those lines are probably unreachable because maybe childParents.has(t) is always false
           linkMap.delete(link);
           if (!linkMap.size) childParents.delete(t);
         }
