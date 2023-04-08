@@ -13,7 +13,7 @@ import { original, target } from "./traps";
 export function snapshot<T>(obj: T): T {
   if (!isDraft(obj)) return obj;
   function deep<Q>(v: unknown, k: unknown, clone: Q) {
-    if (clone === null) return;
+    if (!clone) return;
     const type = typeof clone;
     if (type === Types.object || type === Types.function) {
       const typeStr = toStringType(clone);
@@ -31,7 +31,8 @@ export function snapshot<T>(obj: T): T {
   // else return the original
   function cloneOrOriginal(t: unknown) {
     const ori = original(t);
-    return target(t) === ori ? ori : shallowClone(t, undefined, deep);
+    const tar = target(t);
+    return tar === ori ? ori : shallowClone(tar, undefined, deep);
   }
   return cloneOrOriginal(obj) as T;
 }
