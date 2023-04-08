@@ -253,8 +253,9 @@ export function convertPatchesToStandard(
   return converted;
 }
 
+// internal function to build string paths in standard patches
+// we use a more complicated version instead of a simple join to allow "" as index in string version
 function __stdBuildStringPath(newPath: unknown[]) {
-  // we use a more complicated version to allow "" as index in string version
   let ret = "";
   for (let i = 0; i !== newPath.length; i++) {
     const p = newPath[i];

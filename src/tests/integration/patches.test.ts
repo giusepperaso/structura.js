@@ -1,5 +1,10 @@
 import { expect, it } from "vitest";
-import { applyPatches, Patch, produceWithPatches } from "../..";
+import {
+  applyPatches,
+  asyncProduceWithPatches,
+  Patch,
+  produceWithPatches,
+} from "../..";
 import { runMultiple } from "./utils";
 
 runMultiple("test patch production", () => {
@@ -172,5 +177,16 @@ runMultiple("test patch production", () => {
     expect(!!rev).toBe(true);
     expect(patches[0].v).toBe(4);
     expect(rev[0].v).toBe(2);
+  });
+  it("works with async producers with patches", async () => {
+    const [result, patches, reverse] = await asyncProduceWithPatches(
+      { n: 1 },
+      async (draft) => {
+        draft.n = 2;
+      }
+    );
+    expect(result.n).toBe(2);
+    expect(Array.isArray(patches)).toBe(true);
+    expect(Array.isArray(reverse)).toBe(true);
   });
 });
