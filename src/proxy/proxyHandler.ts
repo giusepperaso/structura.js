@@ -30,8 +30,6 @@ export const enum Methods {
 
 export type ItemDataWrapper = [ItemData];
 
-// METTI LE TRAP DENTRO UNA ENUM COSI PUOI ANCHE CICLARLI!!!!
-
 export class CreateProxyHandler {
   state: unknown;
   data: AllData;
