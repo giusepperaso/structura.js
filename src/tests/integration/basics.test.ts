@@ -48,6 +48,18 @@ runMultiple("tests all(most) of the basic types", () => {
       draft.prop2.sub = 3;
     });
   });
+  it("works with class instances", async () => {
+    class Test {
+      prop = 1;
+    }
+    const test = new Test;
+    const result = produce(test, (draft) => {
+      draft.prop++;
+    });
+    expect(test).not.toBe(result);
+    expect(test.prop).toBe(1);
+    expect(result.prop).toBe(2);
+  });
   it("works with arrays", async () => {
     const myObj = [
       {
