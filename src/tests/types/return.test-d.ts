@@ -17,4 +17,11 @@ describe("check the return type of the result", () => {
     });
     expectTypeOf(result).toMatchTypeOf(obj.sub);
   });
+  test("should allow calling methods on both draft and the returned object", () => {
+    const obj = { date: new Date(), time: 0 };
+    const result = produce(obj, (draft) => {
+      draft.time = draft.date.getTime();
+    });
+    expectTypeOf(result.date.getTime()).toMatchTypeOf(1);
+  });
 });
