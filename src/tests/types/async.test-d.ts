@@ -31,7 +31,9 @@ describe("async producers should work", () => {
     const promise = produce(obj, async (draft) => {
       draft.n++;
     });
-    //@ts-expect-error can't work because the resulting type is Promise<void>
+    //@ts-expect-error can't work because the resulting type is never
+    promise.then(data=>data)
+    //@ts-expect-error can't work because the resulting type is never
     expectTypeOf(promise).toMatchTypeOf(Promise.resolve(obj));
   });
 });

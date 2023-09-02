@@ -26,9 +26,13 @@ export type Producer<T, Q, IS_ASYNC = false> = (
 
 export type ProduceOptions = { proxify?: typeof createProxy };
 
+export type DiscardVoid<Q, T> = Q extends void ? T : Q;
+
 export type ProduceReturn<T, Q, IS_ASYNC = false> = IS_ASYNC extends true
-  ? Promise<FreezeOnce<Q extends void ? T : Q>>
-  : FreezeOnce<Q extends void ? T : Q>;
+  ? Promise<FreezeOnce<DiscardVoid<Q, T>>>
+  : DiscardVoid<Q, T> extends Promise<unknown>
+  ? never
+  : FreezeOnce<DiscardVoid<Q, T>>;
 
 export type PatchCallback<T> = T extends Primitive
   ? never
