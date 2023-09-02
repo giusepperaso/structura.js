@@ -40,6 +40,8 @@ export type UnFreeze<T> = T extends Primitive
   ? Set<UnFreeze<M>>
   : T extends ReadonlySet<infer M>
   ? Set<UnFreeze<M>>
+  : T extends Function
+  ? T
   : T extends object
   ? UnFreezedObject<T>
   : T;

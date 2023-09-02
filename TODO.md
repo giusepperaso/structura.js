@@ -2,6 +2,9 @@
 
 ## TODO
 
+- [ ] (⬜FEAT) allow switching implementations, via hooks and optionally mutable version (an example of this could be to mutate CRDTs via structura)
+- [ ] (⬜FEAT) hooks/callbacks for proxy traps or operations
+- [ ] (⬜FEAT) add mutable version without copy
 - [ ] (🟪DOCS) version in docs
 - [ ] (🟪DOCS) write a reference documentation
 - [ ] (⬛CODE) try a better solution instead than no-op patch
@@ -63,6 +66,5 @@
 - ~~[ ] (🟨PERF) appended: WeakSet could be used to see if an element was external to the tree, so we could avoid cloning it~~
 - ~~[ ] (🟨PERF) getOwnPropertySymbols adds some overhead on copy: we could disable it with a flag if necessary. Is it worth?~~
 - ~~[ ] (🟨PERF) typeof v is taken two times, the second time for checking if it's a function. Is it worth solving?~~
-- ~~[ ] (⬜FEAT) allow switching implementations~~
 
 
