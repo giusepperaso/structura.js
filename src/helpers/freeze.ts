@@ -22,6 +22,8 @@ export type Freeze<T> = T extends Primitive
   ? ReadonlySet<Freeze<M>>
   : T extends ReadonlySet<infer M>
   ? ReadonlySet<Freeze<M>>
+  : T extends Function
+  ? T
   : T extends object
   ? FreezedObject<T>
   : T;
