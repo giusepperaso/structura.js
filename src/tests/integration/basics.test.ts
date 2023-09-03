@@ -52,7 +52,7 @@ runMultiple("tests all(most) of the basic types", () => {
     class Test {
       prop = 1;
     }
-    const test = new Test;
+    const test = new Test();
     const result = produce(test, (draft) => {
       draft.prop++;
     });
@@ -131,6 +131,16 @@ runMultiple("tests all(most) of the basic types", () => {
       return undefined;
     });
     expect(result).toBe(undefined);
+  });
+  it("works with dates", async () => {
+    const myDate = {a:new Date()};
+
+    const result = produce(myDate, (draft) => {
+      console.log(draft.a.getDate());
+      draft.a.setDate(1); // add a day
+    });
+
+    //expect(myDate.getTime()).not.toBe(result.getTime());
   });
   it("works with async producers", async () => {
     const result = await asyncProduce({ n: 1 }, async (draft) => {

@@ -19,10 +19,12 @@ export const enum Actions {
   delete_set,
   clear_map,
   clear_set,
+  set_date,
   append,
   // only found in patches:
   append_map,
   append_set,
+  set_date_reverse,
   producer_return,
   no_op,
 }
@@ -48,6 +50,7 @@ export function walkParents(
       shallow = itemData.shallow = shallowClone(t, type as Types);
     }
   }
+
   // don't use p directly but use link because p may be different or undefined
   function actionLink(inverseAction: Actions, link: Link, v: unknown) {
     let prevChildAtLink = null;
@@ -72,6 +75,10 @@ export function walkParents(
       action === Actions.clear_set
     ) {
       prevChildAtLink = link;
+    } else if (
+      action === Actions.set_date
+    ) {
+      prevChildAtLink = (shallow as Date).getTime()
     }
     if (action === Actions.set || action === Actions.set_map) {
       if (typeof prevChildAtLink !== "undefined") inverseAction = action;
@@ -117,6 +124,7 @@ export function walkParents(
       }
     }
   }
+
   if (action === Actions.set) {
     const actualValue = target(v);
     actionLink(Actions.delete, p as Prop, actualValue);
@@ -152,6 +160,9 @@ export function walkParents(
       actionLink(Actions.add_set, actualValue, actualValue);
     }
     (shallow as UnknownSet).clear();
+  } else if (action === Actions.set_date) {
+    actionLink(Actions.set_date_reverse, p as Link, v);
+    ((shallow as Date)[p as keyof Date] as Function)(...(v as unknown[]));
   } else if (action === Actions.append) {
     if (links) {
       let someTraversed = false;

@@ -163,6 +163,18 @@ export class CreateProxyHandler {
           return v.bind(proxify(t, data, handler).proxy);
         }
       }
+    }
+    if (type === Types.Date) {
+      if (typeof v === Types.function) {
+        if ((p as string).indexOf(Methods.set) === 0) {
+          return function (...args: unknown[]) {
+            walkParents(state, Actions.set_date, data, pStore, t, p, args);
+            return r;
+          };
+        } else {
+          return (actualTarget as Date)[p as keyof Date].bind(actualTarget);
+        }
+      }
     } else if (typeof v === Types.function) {
       const itemData = proxify(t, data, handler);
       if (type === Types.Array) {

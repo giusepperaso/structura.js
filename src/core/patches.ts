@@ -134,6 +134,14 @@ export function applyPatch<T>(
         }
       }
       break;
+    case Actions.set_date:
+      // we call a method on the date with the passed arguments
+      ((current as Date)[patch.p as keyof Date] as Function)(...patch.v as unknown[]);
+      break;
+    case Actions.set_date_reverse:
+      // this patch is used only to reverse a date, we set time from a previous timestamp
+      (current as Date).setTime(patch.v as number)
+      break;
     case Actions.producer_return:
       return patch.v;
     /* ------------- JSON Patch RFC compatibility ------------- */
@@ -207,6 +215,7 @@ export function applyPatch<T>(
       });
       break;
   }
+  return;
 }
 
 export function convertPatchesToStandard(

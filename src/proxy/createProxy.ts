@@ -49,7 +49,9 @@ export const createProxy = function (
         ? new Map([[parent, new Map([[link, null]])]])
         : new Map(),
     } as ItemData;
+
     const wrap = itemData.type === Types.Array ? [itemData] : { 0: itemData };
+    
     itemData.proxy = new Proxy(wrap, handler);
     data.set(obj, itemData);
   }
