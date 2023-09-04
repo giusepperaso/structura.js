@@ -136,10 +136,6 @@ export function applyPatch<T>(
       break;
     case Actions.set_date:
       // we call a method on the date with the passed arguments
-      ((current as Date)[patch.p as keyof Date] as Function)(...patch.v as unknown[]);
-      break;
-    case Actions.set_date_reverse:
-      // this patch is used only to reverse a date, we set time from a previous timestamp
       (current as Date).setTime(patch.v as number)
       break;
     case Actions.producer_return:
@@ -200,6 +196,10 @@ export function applyPatch<T>(
             case Types.Set:
               if (action === "remove") (curr as UnknownSet).delete(key);
               else (curr as UnknownSet).add(key);
+              break;
+            case Types.Date:
+              (curr as Date).setTime(patch.value as number)
+              debugger
               break;
             default:
               if (action === "remove") {

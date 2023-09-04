@@ -24,7 +24,6 @@ export const enum Actions {
   // only found in patches:
   append_map,
   append_set,
-  set_date_reverse,
   producer_return,
   no_op,
 }
@@ -75,10 +74,9 @@ export function walkParents(
       action === Actions.clear_set
     ) {
       prevChildAtLink = link;
-    } else if (
-      action === Actions.set_date
-    ) {
-      prevChildAtLink = (shallow as Date).getTime()
+    } else if (action === Actions.set_date) {
+      // the value is the previous date in this case
+      prevChildAtLink = v;
     }
     if (action === Actions.set || action === Actions.set_map) {
       if (typeof prevChildAtLink !== "undefined") inverseAction = action;
@@ -97,11 +95,23 @@ export function walkParents(
       }
     }
     if (patchStore) {
+      let patchValue = v;
       let patchAction = action;
-      if (action === Actions.clear_map) patchAction = Actions.delete_map;
-      if (action === Actions.clear_set) patchAction = Actions.delete_set;
+
+      if (action === Actions.clear_map) {
+        // clear does not exist as a patch action because it would be redudant,
+        // infact we can use delete instead
+        patchAction = Actions.delete_map;
+      } else if (action === Actions.clear_set) {
+        // same above
+        patchAction = Actions.delete_set;
+      } else if (action === Actions.set_date) {
+        // for dates we need to extract the value from timestamp
+        patchValue = (shallow as Date).getTime();
+      }
+
       currPatches.push({
-        patch: { v, p: link, op: patchAction },
+        patch: { v: patchValue, p: link, op: patchAction },
         inverse: {
           v: prevChildAtLink,
           p: link,
@@ -161,8 +171,11 @@ export function walkParents(
     }
     (shallow as UnknownSet).clear();
   } else if (action === Actions.set_date) {
-    actionLink(Actions.set_date_reverse, p as Link, v);
+    // before creating patches, we need the old time and the new time
+    const prevTime = (shallow as Date).getTime();
     ((shallow as Date)[p as keyof Date] as Function)(...(v as unknown[]));
+    // only after we can execute action link and create patches
+    actionLink(Actions.set_date, p as Link, prevTime);
   } else if (action === Actions.append) {
     if (links) {
       let someTraversed = false;

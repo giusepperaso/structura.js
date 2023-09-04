@@ -136,11 +136,11 @@ runMultiple("tests all(most) of the basic types", () => {
     const myDate = {a:new Date()};
 
     const result = produce(myDate, (draft) => {
-      console.log(draft.a.getDate());
-      draft.a.setDate(1); // add a day
+      draft.a.setDate(draft.a.getDate() + 1);
+      draft.a.setDate(draft.a.getDate() + 1);
     });
 
-    //expect(myDate.getTime()).not.toBe(result.getTime());
+    expect(myDate.a.getTime()).not.toBe(result.a.getTime());
   });
   it("works with async producers", async () => {
     const result = await asyncProduce({ n: 1 }, async (draft) => {

@@ -2,7 +2,6 @@
 
 ## TODO
 
-- [ ] (🟧BUGS) date methods don't work
 - [ ] (⬜FEAT) allow switching implementations, via hooks and optionally mutable version (an example of this could be to mutate CRDTs via structura)
 - [ ] (⬜FEAT) hooks/callbacks for proxy traps or operations
 - [ ] (⬜FEAT) add mutable version without copy
@@ -25,6 +24,7 @@
     - [ ] clone should always return the shallow copy of the object or null
 
 ## SOLVED
+- [x] (🟧BUGS) date methods don't work
 - [x] (🟧BUGS) methods don't work
 - [x] (🟩TEST) type testing
 - [x] (⬜FEAT) json patches don't support "" as key if the path is a string ( to solve this, use a placeholder like ___empty___)
