@@ -136,11 +136,12 @@ runMultiple("tests all(most) of the basic types", () => {
     const myDate = {a:new Date()};
 
     const result = produce(myDate, (draft) => {
-      draft.a.setDate(draft.a.getDate() + 1);
-      draft.a.setDate(draft.a.getDate() + 1);
+      draft.a.setSeconds(draft.a.getSeconds() + 1);
+      draft.a.setSeconds(draft.a.getSeconds() + 1);
     });
 
     expect(myDate.a.getTime()).not.toBe(result.a.getTime());
+    expect(myDate.a.getTime()).toBe(result.a.getTime() - 2000);
   });
   it("works with async producers", async () => {
     const result = await asyncProduce({ n: 1 }, async (draft) => {
