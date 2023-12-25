@@ -14,6 +14,7 @@
 - [ ] (⬛CODE) add more comments in code
 - [ ] (⬛CODE) give better names to variables and types
 - [ ] (🟫BENC) add benchmarks for patches
+- [ ] (🟫BENC) add benchmarks against newer versions of Immer
 
 ## IN PROGRESS
 
