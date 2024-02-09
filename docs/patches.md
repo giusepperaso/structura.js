@@ -60,7 +60,7 @@ expect(undone).toEqual(makeObj());
 
 ## Apply patches mutatively
 
-Sometimes you may want to apply patches to an object without mutating it. You can do it via *applyPatchesMutatively*:
+Sometimes you may want to apply patches to an object without cloning it. You can do it via *applyPatchesMutatively*:
 
 ```typescript
 const original = [{ A: 1 }];
