@@ -1,1 +1,0 @@
-import{_ as s,c as a,o as n,a as o}from"./app.d6a8910e.js";const i=JSON.parse('{"title":"Async Producers","description":"","frontmatter":{},"headers":[],"relativePath":"async.md"}'),p={name:"async.md"},l=o("",5),e=[l];function t(c,r,y,F,D,A){return n(),a("div",null,e)}const u=s(p,[["render",t]]);export{i as __pageData,u as default};
