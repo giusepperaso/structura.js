@@ -225,7 +225,7 @@ runMultiple("test patch production", () => {
   it("should apply the patches correctly with set", async () => {
     const makeObj: () => Set<{ [k: string]: number }>[] = () => [new Set()];
     const myObj = makeObj();
-    
+
     const [, patches, inverse] = produceWithPatches(makeObj(), (draft) => {
       draft[0].add({ A: 1 });
     });
@@ -302,7 +302,7 @@ runMultiple("test patch production", () => {
     const [, patches, inverse] = produceWithPatches(makeObj(), (draft) => {
       draft.clear();
     });
-    
+
     const result = applyPatches(myObj, patches);
     expect(result).toEqual(new Set());
 
@@ -336,23 +336,56 @@ runMultiple("test patch production", () => {
 
     enableAutoFreeze(false); // don't freeze or it will be impossible to modify the object
 
-    const [result, _patches, inverse] = produceWithPatches(original, (draft) => {
+    const [result, _patches, inverse] = produceWithPatches(
+      original,
+      (draft) => {
         draft.push({ A: 2 });
-    });
+      }
+    );
 
     // this will modify the result itself, mutatively without any cloning
     const newResult = applyPatchesMutatively(result, inverse);
     expect(result).toBe(newResult);
     expect(result).toEqual(original);
   });
+  it("should be able to apply patches mutatively and keep setters", async () => {
+    const original = new (class {
+      A = 1;
+      set(v: number) {
+        this.A = v;
+      }
+    })();
+
+    enableAutoFreeze(false); // don't freeze or it will be impossible to modify the object
+
+    const [result, _patches, inverse] = produceWithPatches(
+      original,
+      (draft) => {
+        draft.set(2);
+      }
+    );
+
+    expect(result.A).toBe(2);
+
+    // this will modify the result itself, mutatively without any cloning
+    const newResult = applyPatchesMutatively(result, inverse);
+    expect(result).toBe(newResult);
+    expect(result).toEqual(original);
+
+    result.set(5);
+    expect(result.A).toBe(5);
+  });
   it("should not be able to apply patches mutatively if the producer returns", async () => {
     const original = [{ A: 1 }];
 
     enableAutoFreeze(false); // don't freeze or it will be impossible to modify the object
 
-    const [result, _patches, inverse] = produceWithPatches(original, (_draft) => {
+    const [result, _patches, inverse] = produceWithPatches(
+      original,
+      (_draft) => {
         return [{ A: 2 }];
-    });
+      }
+    );
 
     // this WILL NOT work mutatively
     const newResult = applyPatchesMutatively(result, inverse);
