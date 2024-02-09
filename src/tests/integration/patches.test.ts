@@ -1,9 +1,12 @@
 import { expect, it } from "vitest";
 import {
   applyPatches,
+  applyPatchesMutatively,
   asyncProduceWithPatches,
   Patch,
   produceWithPatches,
+  convertPatchesToStandard as convert,
+  enableAutoFreeze,
 } from "../..";
 import { runMultiple } from "./utils";
 
@@ -81,10 +84,32 @@ runMultiple("test patch production", () => {
       draft[0].B = 2;
       draft.push({ C: 3 });
     });
+
     const result = applyPatches(myObj, patches);
     expect(result).toEqual([{ B: 2 }, { C: 3 }]);
+
     const undone = applyPatches(result, inverse);
     expect(undone).toEqual(makeObj());
+
+    {
+      const _myObj = structuredClone(myObj);
+      applyPatchesMutatively(_myObj, patches);
+      expect(result).toEqual(_myObj);
+
+      const _result = structuredClone(result);
+      applyPatchesMutatively(_result, inverse);
+      expect(undone).toEqual(_result);
+    }
+
+    {
+      const _myObj = structuredClone(myObj);
+      applyPatchesMutatively(_myObj, convert(patches));
+      expect(result).toEqual(_myObj);
+
+      const _result = structuredClone(result);
+      applyPatchesMutatively(_result, convert(inverse));
+      expect(undone).toEqual(_result);
+    }
   });
   it("should apply the patches correctly with array reverse", async () => {
     const makeObj: () => { [k: string]: number }[] = () => [{ A: 1 }, { A: 2 }];
@@ -92,10 +117,32 @@ runMultiple("test patch production", () => {
     const [, patches, inverse] = produceWithPatches(makeObj(), (draft) => {
       draft.reverse();
     });
+
     const result = applyPatches(myObj, patches);
     expect(result).toEqual([{ A: 2 }, { A: 1 }]);
+
     const undone = applyPatches(result, inverse);
     expect(undone).toEqual(makeObj());
+
+    {
+      const _myObj = structuredClone(myObj);
+      applyPatchesMutatively(_myObj, patches);
+      expect(result).toEqual(_myObj);
+
+      const _result = structuredClone(result);
+      applyPatchesMutatively(_result, inverse);
+      expect(undone).toEqual(_result);
+    }
+
+    {
+      const _myObj = structuredClone(myObj);
+      applyPatchesMutatively(_myObj, convert(patches));
+      expect(result).toEqual(_myObj);
+
+      const _result = structuredClone(result);
+      applyPatchesMutatively(_result, convert(inverse));
+      expect(undone).toEqual(_result);
+    }
   });
   it("should apply the patches correctly with array splice", async () => {
     const makeObj: () => { [k: string]: number }[] = () => [{ A: 1 }, { A: 4 }];
@@ -107,6 +154,26 @@ runMultiple("test patch production", () => {
     expect(result).toEqual([{ A: 1 }, { A: 2 }, { A: 3 }, { A: 4 }]);
     const undone = applyPatches(result, inverse);
     expect(undone).toEqual(makeObj());
+
+    {
+      const _myObj = structuredClone(myObj);
+      applyPatchesMutatively(_myObj, patches);
+      expect(result).toEqual(_myObj);
+
+      const _result = structuredClone(result);
+      applyPatchesMutatively(_result, inverse);
+      expect(undone).toEqual(_result);
+    }
+
+    {
+      const _myObj = structuredClone(myObj);
+      applyPatchesMutatively(_myObj, convert(patches));
+      expect(result).toEqual(_myObj);
+
+      const _result = structuredClone(result);
+      applyPatchesMutatively(_result, convert(inverse));
+      expect(undone).toEqual(_result);
+    }
   });
   it("should apply the patches correctly with producer return", async () => {
     const makeObj: () => number[] = () => [0];
@@ -114,10 +181,14 @@ runMultiple("test patch production", () => {
     const [, patches, inverse] = produceWithPatches(makeObj(), (draft) => {
       return [draft[0], 1];
     });
+
     const result = applyPatches(myObj, patches);
     expect(result).toEqual([0, 1]);
+
     const undone = applyPatches(result, inverse);
     expect(undone).toEqual(makeObj());
+
+    // will not work with applyPatchesMutatively
   });
   it("should apply the patches correctly with map", async () => {
     const makeObj: () => Map<string, number>[] = () => [new Map()];
@@ -127,19 +198,63 @@ runMultiple("test patch production", () => {
     });
     const result = applyPatches(myObj, patches);
     expect(result).toEqual([new Map([["A", 1]])]);
+
     const undone = applyPatches(result, inverse);
     expect(undone).toEqual(makeObj());
+
+    {
+      const _myObj = structuredClone(myObj);
+      applyPatchesMutatively(_myObj, patches);
+      expect(result).toEqual(_myObj);
+
+      const _result = structuredClone(result);
+      applyPatchesMutatively(_result, inverse);
+      expect(undone).toEqual(_result);
+    }
+
+    {
+      const _myObj = structuredClone(myObj);
+      applyPatchesMutatively(_myObj, convert(patches));
+      expect(result).toEqual(_myObj);
+
+      const _result = structuredClone(result);
+      applyPatchesMutatively(_result, convert(inverse));
+      expect(undone).toEqual(_result);
+    }
   });
   it("should apply the patches correctly with set", async () => {
     const makeObj: () => Set<{ [k: string]: number }>[] = () => [new Set()];
     const myObj = makeObj();
+    
     const [, patches, inverse] = produceWithPatches(makeObj(), (draft) => {
       draft[0].add({ A: 1 });
     });
+
     const result = applyPatches(myObj, patches);
     expect(result).toEqual([new Set([{ A: 1 }])]);
+
     const undone = applyPatches(result, inverse);
     expect(undone).toEqual(makeObj());
+
+    {
+      const _myObj = structuredClone(myObj);
+      applyPatchesMutatively(_myObj, patches);
+      expect(result).toEqual(_myObj);
+
+      const _result = applyPatches(myObj, patches); // don't clone or it will not work
+      applyPatchesMutatively(_result, inverse);
+      expect(undone).toEqual(_result);
+    }
+
+    {
+      const _myObj = structuredClone(myObj);
+      applyPatchesMutatively(_myObj, convert(patches));
+      expect(result).toEqual(_myObj);
+
+      const _result = applyPatches(myObj, patches); // don't clone or it will not work
+      applyPatchesMutatively(_result, convert(inverse));
+      expect(undone).toEqual(_result);
+    }
   });
   it("should apply the patches correctly with map clear", async () => {
     const makeObj: () => Map<string, number> = () =>
@@ -152,10 +267,32 @@ runMultiple("test patch production", () => {
     const [, patches, inverse] = produceWithPatches(makeObj(), (draft) => {
       draft.clear();
     });
+
     const result = applyPatches(myObj, patches);
     expect(result).toEqual(new Map());
+
     const undone = applyPatches(result, inverse);
     expect(undone).toEqual(makeObj());
+
+    {
+      const _myObj = structuredClone(myObj);
+      applyPatchesMutatively(_myObj, patches);
+      expect(result).toEqual(_myObj);
+
+      const _result = applyPatches(myObj, patches); // don't clone or it will not work
+      applyPatchesMutatively(_result, inverse);
+      expect(undone).toEqual(_result);
+    }
+
+    {
+      const _myObj = structuredClone(myObj);
+      applyPatchesMutatively(_myObj, convert(patches));
+      expect(result).toEqual(_myObj);
+
+      const _result = applyPatches(myObj, patches); // don't clone or it will not work
+      applyPatchesMutatively(_result, convert(inverse));
+      expect(undone).toEqual(_result);
+    }
   });
   it("should apply the patches correctly with set clear", async () => {
     // attention! : if the objects referred are not the same, this will not work!
@@ -165,10 +302,61 @@ runMultiple("test patch production", () => {
     const [, patches, inverse] = produceWithPatches(makeObj(), (draft) => {
       draft.clear();
     });
+    
     const result = applyPatches(myObj, patches);
     expect(result).toEqual(new Set());
+
     const undone = applyPatches(result, inverse);
     expect(undone).toEqual(makeObj());
+
+    // don't clone or it will not work
+
+    {
+      const _myObj = applyPatches(result, inverse);
+      applyPatchesMutatively(_myObj, patches);
+      expect(result).toEqual(_myObj);
+
+      const _result = applyPatches(myObj, patches);
+      applyPatchesMutatively(_result, inverse);
+      expect(undone).toEqual(_result);
+    }
+
+    {
+      const _myObj = applyPatches(result, inverse);
+      applyPatchesMutatively(_myObj, convert(patches));
+      expect(result).toEqual(_myObj);
+
+      const _result = applyPatches(myObj, patches);
+      applyPatchesMutatively(_result, convert(inverse));
+      expect(undone).toEqual(_result);
+    }
+  });
+  it("should be able to apply patches mutatively", async () => {
+    const original = [{ A: 1 }];
+
+    enableAutoFreeze(false); // don't freeze or it will be impossible to modify the object
+
+    const [result, _patches, inverse] = produceWithPatches(original, (draft) => {
+        draft.push({ A: 2 });
+    });
+
+    // this will modify the result itself, mutatively without any cloning
+    const newResult = applyPatchesMutatively(result, inverse);
+    expect(result).toBe(newResult);
+    expect(result).toEqual(original);
+  });
+  it("should not be able to apply patches mutatively if the producer returns", async () => {
+    const original = [{ A: 1 }];
+
+    enableAutoFreeze(false); // don't freeze or it will be impossible to modify the object
+
+    const [result, _patches, inverse] = produceWithPatches(original, (_draft) => {
+        return [{ A: 2 }];
+    });
+
+    // this WILL NOT work mutatively
+    const newResult = applyPatchesMutatively(result, inverse);
+    expect(result).not.toBe(newResult);
   });
   it("should return patches also with primitives", async () => {
     const [result, patches, rev] = produceWithPatches(2, (draft) => draft + 2);

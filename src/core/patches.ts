@@ -33,7 +33,8 @@ export type PatchPair = { patch: Patch; inverse: Patch };
 
 export function applyPatches<T>(
   state: T,
-  patches: Patch[] | JSONPatch[]
+  patches: Patch[] | JSONPatch[],
+  cloneFn: (obj: unknown) => object = shallowClone
 ): UnFreeze<T> {
   let newState: T | object = state;
   let producerReturn;
@@ -44,7 +45,7 @@ export function applyPatches<T>(
         ? (state as WithTraps)[Traps_target]
         : state
     ) as object;
-    newState = shallowClone(unwrapState) as object;
+    newState = cloneFn(unwrapState) as object;
     clones.set(unwrapState, newState);
     clones.set(newState, newState);
   }
@@ -52,18 +53,32 @@ export function applyPatches<T>(
     // you have to pass a different weakmap for each parent patch,
     // otherwise if the same patches are present at different levels,
     // they will not be used
-    producerReturn = applyPatch(newState, patches[i], clones, new WeakSet());
+    producerReturn = applyPatch(
+      newState,
+      patches[i],
+      clones,
+      new WeakSet(),
+      cloneFn
+    );
     if (typeof producerReturn !== "undefined")
       newState = producerReturn as object;
   }
   return newState as UnFreeze<T>;
 }
 
+export function applyPatchesMutatively<T>(
+  state: T,
+  patches: Patch[] | JSONPatch[]
+): UnFreeze<T> {
+  return applyPatches<T>(state, patches, (obj) => obj as object);
+}
+
 export function applyPatch<T>(
   current: T,
   patch: Patch | JSONPatch,
   clones: WeakMap<object, object>,
-  traversedPatches: WeakSet<Patch | JSONPatch>
+  traversedPatches: WeakSet<Patch | JSONPatch>,
+  cloneFn: (obj: unknown) => object = shallowClone
 ) {
   if (!patch) return;
   traversedPatches.add(patch);
@@ -104,7 +119,7 @@ export function applyPatch<T>(
         child = (current as UnknownObj)[patch.p as Prop] as object;
       }
       if (!clones.has(child)) {
-        childShallow = shallowClone(child);
+        childShallow = cloneFn(child);
         clones.set(child, childShallow);
         clones.set(childShallow, childShallow);
       } else {
@@ -136,7 +151,7 @@ export function applyPatch<T>(
       break;
     case Actions.set_date:
       // we call a method on the date with the passed arguments
-      (current as Date).setTime(patch.v as number)
+      (current as Date).setTime(patch.v as number);
       break;
     case Actions.producer_return:
       return patch.v;
@@ -157,7 +172,7 @@ export function applyPatch<T>(
       function getClone(objAtKey: unknown) {
         if (isPrimitive(objAtKey)) return objAtKey;
         if (!clones.has(objAtKey as object)) {
-          const child = shallowClone(objAtKey);
+          const child = cloneFn(objAtKey);
           clones.set(objAtKey as object, child);
           clones.set(child, child);
           return child;
@@ -198,8 +213,7 @@ export function applyPatch<T>(
               else (curr as UnknownSet).add(key);
               break;
             case Types.Date:
-              (curr as Date).setTime(patch.value as number)
-              debugger
+              (curr as Date).setTime(patch.value as number);
               break;
             default:
               if (action === "remove") {

@@ -57,3 +57,38 @@ expect(newResult).toEqual(result);
 const undone = applyPatches(newResult, inverse);
 expect(undone).toEqual(makeObj());
 ```
+
+## Apply patches mutatively
+
+Sometimes you may want to apply patches to an object without mutating it. You can do it via *applyPatchesMutatively*:
+
+```typescript
+const original = [{ A: 1 }];
+
+enableAutoFreeze(false); // don't freeze or it will be impossible to modify the object
+
+const [result, _patches, inverse] = produceWithPatches(original, (draft) => {
+    draft.push({ A: 2 });
+});
+
+// this will modify the result itself, mutatively without any cloning
+const newResult = applyPatchesMutatively(result, inverse);
+expect(result).toBe(newResult);
+expect(result).toEqual(original);
+```
+
+Note that this will not work if your producer returns a value, for example
+
+```typescript
+const original = [{ A: 1 }];
+
+enableAutoFreeze(false); // don't freeze or it will be impossible to modify the object
+
+const [result, _patches, inverse] = produceWithPatches(original, (_draft) => {
+    return [{ A: 2 }];
+});
+
+// this WILL NOT work mutatively
+const newResult = applyPatchesMutatively(result, inverse);
+expect(result).not.toBe(newResult);
+```
