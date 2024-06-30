@@ -9,7 +9,7 @@ import { produce } from "structurajs";
 const myObj = { count: 1 }
 
 const result = produce(myObj, (draft) => {
-    draft++;
+    draft.count++;
 })
 
 result.count === 2 // true
@@ -44,10 +44,10 @@ class MyClass {
     }
 }
 
-const myInstance = new myClass
+const myInstance = new MyClass();
 
 const result = produce(myInstance, (draft) => {
-    myInstance.increment();
+    draft.increment();
 })
 
 myInstance.count === 1 // true
