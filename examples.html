@@ -7,7 +7,7 @@
     <meta name="description" content="Fast typescript library for creating immutable states with structural sharing by using a mutable syntax">
     <link rel="stylesheet" href="/structura.js/assets/style.ce47f137.css">
     <link rel="modulepreload" href="/structura.js/assets/app.bb184d7f.js">
-    <link rel="modulepreload" href="/structura.js/assets/examples.md.b86e3772.lean.js">
+    <link rel="modulepreload" href="/structura.js/assets/examples.md.12214a33.lean.js">
     
     <script id="check-dark-light">(()=>{const e=localStorage.getItem("vitepress-theme-appearance"),a=window.matchMedia("(prefers-color-scheme: dark)").matches;(!e||e==="auto"?a:e==="dark")&&document.documentElement.classList.add("dark")})();</script>
   </head>
@@ -17,7 +17,7 @@
 <span class="line"><span style="color:#C792EA;">const</span><span style="color:#A6ACCD;"> myObj </span><span style="color:#89DDFF;">=</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">{</span><span style="color:#A6ACCD;"> </span><span style="color:#F07178;">count</span><span style="color:#89DDFF;">:</span><span style="color:#A6ACCD;"> </span><span style="color:#F78C6C;">1</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">}</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#C792EA;">const</span><span style="color:#A6ACCD;"> result </span><span style="color:#89DDFF;">=</span><span style="color:#A6ACCD;"> </span><span style="color:#82AAFF;">produce</span><span style="color:#A6ACCD;">(myObj</span><span style="color:#89DDFF;">,</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">(</span><span style="color:#A6ACCD;">draft</span><span style="color:#89DDFF;">)</span><span style="color:#A6ACCD;"> </span><span style="color:#C792EA;">=&gt;</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">{</span></span>
-<span class="line"><span style="color:#F07178;">    </span><span style="color:#A6ACCD;">draft</span><span style="color:#89DDFF;">++;</span></span>
+<span class="line"><span style="color:#F07178;">    </span><span style="color:#A6ACCD;">draft</span><span style="color:#89DDFF;">.</span><span style="color:#A6ACCD;">count</span><span style="color:#89DDFF;">++;</span></span>
 <span class="line"><span style="color:#89DDFF;">}</span><span style="color:#A6ACCD;">)</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#A6ACCD;">result</span><span style="color:#89DDFF;">.</span><span style="color:#A6ACCD;">count </span><span style="color:#89DDFF;">===</span><span style="color:#A6ACCD;"> </span><span style="color:#F78C6C;">2</span><span style="color:#A6ACCD;"> </span><span style="color:#676E95;">// true</span></span>
@@ -42,10 +42,10 @@
 <span class="line"><span style="color:#F07178;">    </span><span style="color:#89DDFF;">}</span></span>
 <span class="line"><span style="color:#89DDFF;">}</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#C792EA;">const</span><span style="color:#A6ACCD;"> myInstance </span><span style="color:#89DDFF;">=</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">new</span><span style="color:#A6ACCD;"> myClass</span></span>
+<span class="line"><span style="color:#C792EA;">const</span><span style="color:#A6ACCD;"> myInstance </span><span style="color:#89DDFF;">=</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">new</span><span style="color:#A6ACCD;"> </span><span style="color:#82AAFF;">MyClass</span><span style="color:#A6ACCD;">()</span><span style="color:#89DDFF;">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#C792EA;">const</span><span style="color:#A6ACCD;"> result </span><span style="color:#89DDFF;">=</span><span style="color:#A6ACCD;"> </span><span style="color:#82AAFF;">produce</span><span style="color:#A6ACCD;">(myInstance</span><span style="color:#89DDFF;">,</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">(</span><span style="color:#A6ACCD;">draft</span><span style="color:#89DDFF;">)</span><span style="color:#A6ACCD;"> </span><span style="color:#C792EA;">=&gt;</span><span style="color:#A6ACCD;"> </span><span style="color:#89DDFF;">{</span></span>
-<span class="line"><span style="color:#F07178;">    </span><span style="color:#A6ACCD;">myInstance</span><span style="color:#89DDFF;">.</span><span style="color:#82AAFF;">increment</span><span style="color:#F07178;">()</span><span style="color:#89DDFF;">;</span></span>
+<span class="line"><span style="color:#F07178;">    </span><span style="color:#A6ACCD;">draft</span><span style="color:#89DDFF;">.</span><span style="color:#82AAFF;">increment</span><span style="color:#F07178;">()</span><span style="color:#89DDFF;">;</span></span>
 <span class="line"><span style="color:#89DDFF;">}</span><span style="color:#A6ACCD;">)</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#A6ACCD;">myInstance</span><span style="color:#89DDFF;">.</span><span style="color:#A6ACCD;">count </span><span style="color:#89DDFF;">===</span><span style="color:#A6ACCD;"> </span><span style="color:#F78C6C;">1</span><span style="color:#A6ACCD;"> </span><span style="color:#676E95;">// true</span></span>
@@ -60,7 +60,7 @@
 <span class="line"></span>
 <span class="line"><span style="color:#A6ACCD;">myDate</span><span style="color:#89DDFF;">.</span><span style="color:#82AAFF;">getTime</span><span style="color:#A6ACCD;">() </span><span style="color:#89DDFF;">!==</span><span style="color:#A6ACCD;"> result</span><span style="color:#89DDFF;">.</span><span style="color:#82AAFF;">getTime</span><span style="color:#A6ACCD;">() </span><span style="color:#676E95;">// true</span></span>
 <span class="line"></span></code></pre></div></div></div></main><!--[--><!--]--><footer class="VPDocFooter" data-v-f0af2311 data-v-a54a85bd><!----><div class="prev-next" data-v-a54a85bd><div class="pager" data-v-a54a85bd><a class="pager-link prev" href="/structura.js/getting-started.html" data-v-a54a85bd><span class="desc" data-v-a54a85bd>Previous page</span><span class="title" data-v-a54a85bd>Getting Started</span></a></div><div class="has-prev pager" data-v-a54a85bd><a class="pager-link next" href="/structura.js/why-structura.html" data-v-a54a85bd><span class="desc" data-v-a54a85bd>Next page</span><span class="title" data-v-a54a85bd>Why Structura?</span></a></div></div></footer><!--[--><!--]--></div></div></div></div></div><!----><!--[--><!--]--></div></div>
-    <script>__VP_HASH_MAP__ = JSON.parse("{\"async.md\":\"7bf91b34\",\"benchmarks.md\":\"9699e77e\",\"contribute.md\":\"82acd067\",\"edge-cases.md\":\"fa4df361\",\"examples.md\":\"b86e3772\",\"freezing.md\":\"485dde97\",\"getting-started.md\":\"720a52dc\",\"gotchas.md\":\"e0b9f312\",\"helpers.md\":\"f7de692b\",\"index.md\":\"3c34272e\",\"nothing.md\":\"91041fb8\",\"patches.md\":\"4bb06316\",\"settings.md\":\"372f7912\",\"when-to-use.md\":\"c0b8e470\",\"why-structura.md\":\"c80aefd1\"}")</script>
+    <script>__VP_HASH_MAP__ = JSON.parse("{\"async.md\":\"7bf91b34\",\"benchmarks.md\":\"9699e77e\",\"contribute.md\":\"82acd067\",\"edge-cases.md\":\"fa4df361\",\"examples.md\":\"12214a33\",\"freezing.md\":\"485dde97\",\"getting-started.md\":\"720a52dc\",\"gotchas.md\":\"e0b9f312\",\"helpers.md\":\"f7de692b\",\"index.md\":\"3c34272e\",\"nothing.md\":\"91041fb8\",\"patches.md\":\"4bb06316\",\"settings.md\":\"372f7912\",\"when-to-use.md\":\"c0b8e470\",\"why-structura.md\":\"c80aefd1\"}")</script>
     <script type="module" async src="/structura.js/assets/app.bb184d7f.js"></script>
     
   </body>
