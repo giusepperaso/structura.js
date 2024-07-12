@@ -138,6 +138,8 @@ runMultiple("tests all(most) of the basic types", () => {
     const result = produce(myDate, (draft) => {
       draft.a.setSeconds(draft.a.getSeconds() + 1);
       draft.a.setSeconds(draft.a.getSeconds() + 1);
+
+      expect((new Date(draft.a)).toString()).toBe(draft.a.toString()); // compare to the second, since the constructor will drop milliseconds
     });
 
     expect(myDate.a.getTime()).not.toBe(result.a.getTime());
