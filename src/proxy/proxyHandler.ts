@@ -166,7 +166,10 @@ export class CreateProxyHandler {
     }
     if (type === Types.Date) {
       if (typeof v === Types.function) {
-        if ((p as string).indexOf(Methods.set) === 0) {
+        if ((p !== Symbol.toPrimitive) && (
+          (typeof p === 'symbol' && Symbol.keyFor(p)?.indexOf(Methods.set) === 0) ||
+          ((p as string).indexOf(Methods.set) === 0)
+        )) {
           return function (...args: unknown[]) {
             walkParents(state, Actions.set_date, data, pStore, t, p, args);
             return r;
