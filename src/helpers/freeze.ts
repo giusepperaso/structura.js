@@ -12,8 +12,10 @@ export type FreezeOnce<T> = T extends Freeze<infer Q> ? Freeze<Q> : Freeze<T>;
 
 export type Freeze<T> = T extends Primitive
   ? T
-  : T extends Array<infer U>
-  ? ReadonlyArray<Freeze<U>>
+  : T extends [infer H] 
+  ? readonly [Freeze<H>]
+  : T extends [infer H, ...infer T] 
+  ?  readonly [Freeze<H>, ...Freeze<T>] 
   : T extends Map<infer K, infer V>
   ? ReadonlyMap<Freeze<K>, Freeze<V>>
   : T extends ReadonlyMap<infer K, infer V>

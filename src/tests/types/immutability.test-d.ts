@@ -17,6 +17,18 @@ describe("results should be staticly immutable", () => {
     // @ts-expect-error nested result is immutable
     m.get("sd").n.n++;
   });
+  test("immutable tuple structure is kept", () => {
+    // If Freeze<X> does not translate to the expected type the entire line would be true as number, resulting in an error. 
+    // If the translation is correct, the line is true as true, giving no error.
+    true as FreezeOnce<number[]> extends readonly number[] ? true : number
+    true as FreezeOnce<(number |  string)[]> extends readonly (number |  string)[] ? true : number
+    true as FreezeOnce<[number, string]> extends readonly [number, string] ? true : number
+    true as FreezeOnce<[number, string, undefined]> extends readonly [number, string, undefined] ? true : number
+
+    true as FreezeOnce<[number, string]> extends readonly [number, [string]] ? number : true
+    true as FreezeOnce<[number, string]> extends readonly [number, string, undefined] ? number : true
+    true as FreezeOnce<(number | string)[]> extends readonly [number, string][] ? number : true
+  })
   test("multiple results are immutable", () => {
     const myObj: FreezeOnce<{ n: number }> = { n: 1 };
     // @ts-expect-error should be immutable
