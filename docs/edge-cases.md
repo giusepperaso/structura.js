@@ -1,6 +1,6 @@
 # Edge cases
 
-Structura supports some edge cases that are not always well handled by other libraries.
+Structura supports some edge cases that are not always well handled by other libraries. On the contrary, some edge cases are not well supported.
 
 ## Returning and modifying in the same producer
 
@@ -68,35 +68,21 @@ const newState5 = produce(state, (draft) => {
 })
 ```
 
-## Transpositions
+## Assigning draftable objects to non draftable objects
 
-You can reassign the key of a sub-object and the result will be what you expect
-
-Besides, this will not work if you assign to an object external from the draft
+If you try assigning a draftable object to a non draftable object as a sub property, you will be left with a dangling proxy
 
 ```typescript
 const state = [[1], [2]]
 
-// this works well
-const newState1 = produce(state, (draft) => {
-    const first = draft[0]
-    draft[0] = draft[1]
-    draft[1] = first
-})
-
-// this also works
-const newState2 = produce(state, (draft) => {
-    const first = draft[0]
-    draft[0] = draft[1]
-    draft[1] = first
-    first.push(9999)
-})
-
 // this does not work well because the new object
-// will remain with a proxy attached via its prop
+// will remain with a proxy attached via its prop;
+
 const newState3 = produce(state, (draft) => {
     const first = draft[0]
     const newObj = { prop: first }
     draft.push(newObj as any)
 })
+
+// newState3[2].prop is a proxy
 ```

@@ -15,5 +15,5 @@
 - test coverage is still not 100%
 - docs could be better
 - does not support IE and pre ES6 browsers and will never do
-- does not yet support ~~some proxy traps and~~ some data structures that Immer supports, but this is very likely to change in the future
+- does not yet support ~~some proxy traps and~~ an edge case that Immer supports ([this](./edge-cases.md#assigning-draftable-objects-to-non-draftable-objects)), but this is very likely to change in the future
 - generated patches are not compliant to any RFC, but ~~in the future this may change or there could be a converter~~ there is already a converter included in the library; besides applyPatches also accept standard JSON Patches
