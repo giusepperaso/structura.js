@@ -15,6 +15,12 @@
   "author": "Giuseppe Raso",
   "license": "MIT",
   "main": "./dist/index.js",
+  "exports":{
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "unpkg": "./dist/umd.js",
   "jsdelivr": "./dist/umd.js",
   "type": "module",
